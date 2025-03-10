@@ -1,0 +1,33 @@
+{
+  "name": "govno-world",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  "dev": "nodemon --watch ./src --exec ts-node ./src/index.ts",
+  "build": "tsc",
+  "start": "node dist/index.js"
+},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ceme4k1n/GOVNO-WORLD.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ceme4k1n/GOVNO-WORLD/issues"
+  },
+  "homepage": "https://github.com/Ceme4k1n/GOVNO-WORLD#readme",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.10",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  }
+}
