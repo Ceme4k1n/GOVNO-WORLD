@@ -2,12 +2,12 @@
   "name": "govno-world",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-  "dev": "nodemon --watch ./src --exec ts-node ./src/index.ts",
-  "build": "tsc",
-  "start": "node dist/index.js"
-},
+    "dev": "nodemon --watch ./src --exec ts-node ./src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Ceme4k1n/GOVNO-WORLD.git"

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Telegram Mini App</title>
+  </head>
+  <body>
+    <h1>Welcome to my Telegram Mini App</h1>
+    <p id="status">Validating user...</p>
+
+    <script>
+      // Проверяем, что запущено в Telegram WebApp
+      if (window.Telegram && window.Telegram.WebApp) {
+        const initData = window.Telegram.WebApp.initData
+
+        // Отправляем initData на сервер
+        fetch('http://localhost:3000/auth/validate-user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ initData }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              document.getElementById('status').innerText = 'User validated ✅'
+            } else {
+              document.getElementById('status').innerText = 'Validation failed ❌'
+            }
+          })
+          .catch((err) => {
+            console.error('Error:', err)
+            document.getElementById('status').innerText = 'An error occurred ❌'
+          })
+      } else {
+        document.getElementById('status').innerText = 'This app can only be opened in Telegram'
+      }
+    </script>
+  </body>
+</html>
