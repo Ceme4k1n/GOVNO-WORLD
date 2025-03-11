@@ -8,7 +8,12 @@ const app = express()
 const PORT = process.env.PORT || '4000'
 
 app.use(express.json())
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/anketa.html'))
+})
 app.use(express.static(path.join(__dirname, '../public')))
+
 app.use('/auth', authRouter)
 
 // const SSL_CERT_PATH = '/web/serf/certificate.crt'

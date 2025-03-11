@@ -23,12 +23,13 @@
 
       if (isTelegramWebApp()) {
         const initData = window.Telegram.WebApp.initData
+        const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe
         fetch('https://orchidshop.shop/auth/validate_user', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ initData }), // Send initData as JSON
+          body: JSON.stringify({ initData, initDataUnsafe }), // Send initData as JSON
         })
           .then((response) => {
             if (!response.ok) {
@@ -38,7 +39,7 @@
           })
           .then((data) => {
             if (data.success) {
-              document.getElementById('status').innerText = 'User validated ✅'
+              window.location.href = 'anketa.html'
             } else {
               document.getElementById('status').innerText = 'Validation failed ❌'
             }

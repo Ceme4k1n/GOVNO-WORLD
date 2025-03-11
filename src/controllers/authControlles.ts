@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import crypto from 'crypto'
+import db from '../database/db'
 
 const dotenv = require('dotenv')
 dotenv.config()
@@ -9,7 +10,9 @@ const MAX_TIME_DIFF = 300 // 5 минут
 
 export const validate_user = (req: Request, res: Response) => {
   const initData = req.body?.initData
+  const userId = req.body?.userId
   console.log(initData)
+  console.log(userId.user.id)
 
   if (!initData) {
     res.status(403).json({ error: 'initData is required' })
@@ -24,6 +27,30 @@ export const validate_user = (req: Request, res: Response) => {
 
   // Если данные прошли валидацию
   res.json({ success: true, message: 'User validated' })
+}
+
+export const user_reg = async (req: Request, res: Response) => {
+  const { initData, weight, age, height, toilet_visits, gender } = req.body
+
+  console.log(req.body.initData)
+
+  if (weight && age && height && toilet_visits) {
+    try {
+      const user = await db.any('SELECT username FROM govno_db.users WHERE tg_user_id = $1', [weight])
+      if (user.length > 0) {
+        res.status(502).json({ message: 'User alredy exist', user })
+        console.log('Юзер существует: ', user)
+        return
+      } else {
+        console.log('Пользователя можно добавить')
+
+        // await db.none('INSERT INTO users()')
+      }
+    } catch (error) {
+      console.error(error)
+      res.status(501).json({ error: 'Database error' })
+    }
+  }
 }
 
 // Функция для валидации данных initData

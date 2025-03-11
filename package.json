@@ -21,7 +21,9 @@
   "homepage": "https://github.com/Ceme4k1n/GOVNO-WORLD#readme",
   "dependencies": {
     "dotenv": "^16.4.7",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "pg": "^8.13.3",
+    "pg-promise": "^11.11.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
