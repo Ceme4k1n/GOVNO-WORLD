@@ -8,11 +8,11 @@ dotenv.config()
 const BOT_TOKEN = process.env.TG_TOKEN || 'test'
 const MAX_TIME_DIFF = 300 // 5 минут
 
-export const validate_user = (req: Request, res: Response) => {
-  const initData = req.body?.initData
-  const userId = req.body?.userId
+export const validate_user = async (req: Request, res: Response) => {
+  const { initData, initDataUnsafe } = req.body
+  const user_id = initDataUnsafe.user.id
   console.log(initData)
-  console.log(userId.user.id)
+  console.log(user_id)
 
   if (!initData) {
     res.status(403).json({ error: 'initData is required' })
@@ -30,21 +30,21 @@ export const validate_user = (req: Request, res: Response) => {
 }
 
 export const user_reg = async (req: Request, res: Response) => {
-  const { initData, weight, age, height, toilet_visits, gender } = req.body
+  const { eater, weight, age, height, toilet_visits, gender, initDataUnsafe } = req.body
 
-  console.log(req.body.initData)
+  const user_id = initDataUnsafe.user.id
+  const username = initDataUnsafe.user.username
 
   if (weight && age && height && toilet_visits) {
     try {
-      const user = await db.any('SELECT username FROM govno_db.users WHERE tg_user_id = $1', [weight])
+      const user = await db.any('SELECT username FROM govno_db.users WHERE tg_user_id = $1', [user_id])
       if (user.length > 0) {
         res.status(502).json({ message: 'User alredy exist', user })
         console.log('Юзер существует: ', user)
         return
       } else {
-        console.log('Пользователя можно добавить')
-
-        // await db.none('INSERT INTO users()')
+        await db.none('INSERT INTO govno_db.users(tg_user_id, username, user_age, user_height, user_weight, user_sex, user_eat, user_toilet_visits) VALUES($1,$2,$3,$4,$5,$6,$7,$8)', [user_id, username, age, height, weight, gender, eater, toilet_visits])
+        console.log('Пользователь добавлен')
       }
     } catch (error) {
       console.error(error)

@@ -102,12 +102,14 @@
       <input type="number" id="toilet_visits" placeholder="Сколько раз в день ходишь в туалет?" />
 
       <div class="gender">
-        <div class="male" onclick="selectGender('male')">Мужчина</div>
-        <div class="female" onclick="selectGender('female')">Женщина</div>
+        <div class="male" onclick="selectGender(true)">Мужчина</div>
+        <div class="female" onclick="selectGender(false)">Женщина</div>
       </div>
 
       <button onclick="submitForm()" id="submitBtn" disabled>Продолжить</button>
     </div>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
     <script src="./anketa.js"></script>
   </body>
 </html>

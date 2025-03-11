@@ -2,7 +2,7 @@ window.selectGender = function (gender) {
   const maleButton = document.querySelector('.male')
   const femaleButton = document.querySelector('.female')
 
-  if (gender === 'male') {
+  if (gender === true) {
     maleButton.classList.add('active')
     femaleButton.classList.remove('active')
   } else {
@@ -30,12 +30,12 @@ window.checkForm = function () {
 
 // ✅ Вот так делаем submitForm глобальным
 window.submitForm = function () {
-  //const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe
+  const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe
   const weight = document.getElementById('weight').value
   const age = document.getElementById('age').value
   const height = document.getElementById('height').value
   const toiletVisits = document.getElementById('toilet_visits').value
-
+  const eater = 1
   console.log('Анкета отправлена:')
   console.log('Вес:', weight)
   console.log('Возраст:', age)
@@ -44,18 +44,18 @@ window.submitForm = function () {
   console.log('Пол:', selectedGender)
 
   // 👉 Тут будет отправка формы на сервер
-  fetch('http://localhost:443/auth/user_reg', {
+  fetch('/auth/user_reg', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ weight, age, height, toilet_visits: toiletVisits, gender: selectedGender }),
+    body: JSON.stringify({ eater, weight, age, height, toilet_visits: toiletVisits, gender: selectedGender, initDataUnsafe }),
   })
     .then((res) => res.json())
     .then((data) => {
       if (data.success) {
         alert('Анкета успешно отправлена! 💩')
-        window.location.href = 'indez.html'
+        window.location.href = 'index.html'
       } else {
         alert('Ошибка при отправке анкеты 😢')
       }
