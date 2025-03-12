@@ -21,7 +21,7 @@ window.checkForm = function () {
   const toiletVisits = document.getElementById('toilet_visits').value
   const submitBtn = document.getElementById('submitBtn')
 
-  if (weight > 0 && weight <= 300 && age > 0 && age <= 200 && height > 0 && height <= 500 && toiletVisits > 0 && toiletVisits <= 20 && selectedGender) {
+  if (weight > 0 && weight <= 300 && age > 0 && age <= 200 && height > 0 && height <= 500 && toiletVisits > 0 && toiletVisits <= 20) {
     submitBtn.disabled = false
   } else {
     submitBtn.disabled = true
@@ -43,7 +43,6 @@ window.submitForm = function () {
   console.log('Походы в туалет:', toiletVisits)
   console.log('Пол:', selectedGender)
 
-  // 👉 Тут будет отправка формы на сервер
   fetch('/auth/user_reg', {
     method: 'POST',
     headers: {
@@ -51,13 +50,11 @@ window.submitForm = function () {
     },
     body: JSON.stringify({ eater, weight, age, height, toilet_visits: toiletVisits, gender: selectedGender, initDataUnsafe }),
   })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.success) {
-        alert('Анкета успешно отправлена! 💩')
-        window.location.href = 'index.html'
+    .then((res) => {
+      if (res.status === 200) {
+        window.location.href = 'test.html'
       } else {
-        alert('Ошибка при отправке анкеты 😢')
+        throw new Error(`Server responded with status ${response.status}`)
       }
     })
     .catch((err) => {

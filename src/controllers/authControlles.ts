@@ -7,6 +7,7 @@ dotenv.config()
 
 const BOT_TOKEN = process.env.TG_TOKEN || 'test'
 const MAX_TIME_DIFF = 300 // 5 минут
+const secretKey = crypto.createHmac('sha256', Buffer.from('WebAppData', 'utf-8')).update(BOT_TOKEN).digest()
 
 export const validate_user = async (req: Request, res: Response) => {
   const { initData, initDataUnsafe } = req.body
@@ -25,11 +26,13 @@ export const validate_user = async (req: Request, res: Response) => {
     res.status(validationResult.status).json({ error: validationResult.error })
     return
   }
+
   try {
-    const user = await db.any('SELECT username FROM govno_db.users WHERE tg_user_id = $1', [user_id])
-    if (user.length > 0) {
-      res.status(201).json({ message: 'User alredy exist' })
-      console.log(user[0].username)
+    const result = await db.oneOrNone('UPDATE govno_db.users SET last_login = NOW() WHERE tg_user_id = $1 RETURNING tg_user_id', [user_id])
+
+    if (result) {
+      console.log('Пользователь найден: ', result.tg_user_id)
+      res.status(201).json({ message: 'User already exist' })
       return
     } else {
       res.sendStatus(200)
@@ -48,15 +51,14 @@ export const user_reg = async (req: Request, res: Response) => {
 
   if (weight && age && height && toilet_visits) {
     try {
-      const user = await db.any('SELECT username FROM govno_db.users WHERE tg_user_id = $1', [user_id])
-      if (user.length > 0) {
-        res.status(502).json({ message: 'User alredy exist', user })
-        console.log('Юзер существует: ', user)
-        return
-      } else {
-        await db.none('INSERT INTO govno_db.users(tg_user_id, username, user_age, user_height, user_weight, user_sex, user_eat, user_toilet_visits) VALUES($1,$2,$3,$4,$5,$6,$7,$8)', [user_id, username, age, height, weight, gender, eater, toilet_visits])
-        console.log('Пользователь добавлен')
-      }
+      await db.none(
+        `INSERT INTO govno_db.users (tg_user_id, username, user_age, user_height, user_weight, user_sex, user_eat, user_toilet_visits, last_login)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+         ON CONFLICT (tg_user_id) DO NOTHING;`,
+        [user_id, username, age, height, weight, gender, eater, toilet_visits]
+      )
+      console.log('Пользователь добавлен')
+      res.sendStatus(200)
     } catch (error) {
       console.error(error)
       res.status(501).json({ error: 'Database error' })
@@ -82,8 +84,6 @@ export const validateInitData = (initData: string) => {
     .map(([key, value]) => `${key}=${value}`)
     .sort()
     .join('\n')
-
-  const secretKey = crypto.createHmac('sha256', Buffer.from('WebAppData', 'utf-8')).update(BOT_TOKEN).digest()
 
   const generatedHash = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex')
 
