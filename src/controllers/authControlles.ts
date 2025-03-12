@@ -52,10 +52,10 @@ export const user_reg = async (req: Request, res: Response) => {
   if (weight && age && height && toilet_visits) {
     try {
       await db.none(
-        `INSERT INTO govno_db.users (tg_user_id, username, user_age, user_height, user_weight, user_sex, user_eat, user_toilet_visits, last_login)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+        `INSERT INTO govno_db.users (tg_user_id, username, user_age, user_height, user_weight, user_sex, user_toilet_visits, last_login)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
          ON CONFLICT (tg_user_id) DO NOTHING;`,
-        [user_id, username, age, height, weight, gender, eater, toilet_visits]
+        [user_id, username, age, height, weight, gender, toilet_visits]
       )
       console.log('Пользователь добавлен')
       res.sendStatus(200)

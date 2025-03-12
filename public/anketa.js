@@ -35,7 +35,6 @@ window.submitForm = function () {
   const age = document.getElementById('age').value
   const height = document.getElementById('height').value
   const toiletVisits = document.getElementById('toilet_visits').value
-  const eater = 1
   console.log('Анкета отправлена:')
   console.log('Вес:', weight)
   console.log('Возраст:', age)
@@ -48,7 +47,7 @@ window.submitForm = function () {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ eater, weight, age, height, toilet_visits: toiletVisits, gender: selectedGender, initDataUnsafe }),
+    body: JSON.stringify({ weight, age, height, toilet_visits: toiletVisits, gender: selectedGender, initDataUnsafe }),
   })
     .then((res) => {
       if (res.status === 200) {
