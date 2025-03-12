@@ -10,12 +10,9 @@ const MAX_TIME_DIFF = 300 // 5 минут
 
 export const validate_user = async (req: Request, res: Response) => {
   const { initData, initDataUnsafe } = req.body
-  const user_id = initDataUnsafe.user.id
+  const user_id = initDataUnsafe?.user?.id
 
-  if (!initDataUnsafe || !initDataUnsafe.user || !initDataUnsafe.user.id) {
-    res.status(400).json({ error: 'Invalid initDataUnsafe' })
-  }
-  console.log(user_id)
+  console.log('🔍 Проверка пользователя:', user_id)
 
   if (!initData) {
     res.status(403).json({ error: 'initData is required' })
@@ -28,8 +25,19 @@ export const validate_user = async (req: Request, res: Response) => {
     res.status(validationResult.status).json({ error: validationResult.error })
     return
   }
-
-  res.json({ success: true, message: 'User validated' })
+  try {
+    const user = await db.any('SELECT username FROM govno_db.users WHERE tg_user_id = $1', [user_id])
+    if (user.length > 0) {
+      res.status(201).json({ message: 'User alredy exist' })
+      console.log(user[0].username)
+      return
+    } else {
+      res.sendStatus(200)
+    }
+  } catch (error) {
+    console.error(error)
+    res.status(501).json({ error: 'Database error' })
+  }
 }
 
 export const user_reg = async (req: Request, res: Response) => {
