@@ -11,7 +11,10 @@ const MAX_TIME_DIFF = 300 // 5 минут
 export const validate_user = async (req: Request, res: Response) => {
   const { initData, initDataUnsafe } = req.body
   const user_id = initDataUnsafe.user.id
-  console.log(initData)
+
+  if (!initDataUnsafe || !initDataUnsafe.user || !initDataUnsafe.user.id) {
+    res.status(400).json({ error: 'Invalid initDataUnsafe' })
+  }
   console.log(user_id)
 
   if (!initData) {
@@ -23,9 +26,9 @@ export const validate_user = async (req: Request, res: Response) => {
 
   if (validationResult.error) {
     res.status(validationResult.status).json({ error: validationResult.error })
+    return
   }
 
-  // Если данные прошли валидацию
   res.json({ success: true, message: 'User validated' })
 }
 
@@ -57,9 +60,13 @@ export const user_reg = async (req: Request, res: Response) => {
 export const validateInitData = (initData: string) => {
   const params = new URLSearchParams(initData)
   const hash = params.get('hash')
+
   if (!hash) {
+    console.error('❌ Ошибка: hash не найден')
     return { error: 'No hash provided', status: 400 }
   }
+
+  console.log('✅ Hash найден:', hash)
 
   params.delete('hash')
 
@@ -68,11 +75,14 @@ export const validateInitData = (initData: string) => {
     .sort()
     .join('\n')
 
-  const secretKey = crypto.createHmac('sha256', 'WebAppData').update(BOT_TOKEN).digest()
+  const secretKey = crypto.createHmac('sha256', Buffer.from('WebAppData', 'utf-8')).update(BOT_TOKEN).digest()
 
   const generatedHash = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex')
 
+  console.log('🔍 Сгенерированный hash:', generatedHash)
+
   if (generatedHash !== hash) {
+    console.error('❌ Ошибка: hash не совпадает!')
     return { error: 'Invalid hash, data might be forged', status: 403 }
   }
 
@@ -80,7 +90,9 @@ export const validateInitData = (initData: string) => {
   const currentTime = Math.floor(Date.now() / 1000)
 
   if (currentTime - authDate > MAX_TIME_DIFF) {
+    console.error('❌ Ошибка: данные слишком старые!')
     return { error: 'Data is too old', status: 403 }
   }
+
   return { success: true }
 }

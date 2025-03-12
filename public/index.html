@@ -10,7 +10,6 @@
     <p id="status">Validating user...</p>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
 
     <script>
       function isTelegramWebApp() {
@@ -24,29 +23,24 @@
       if (isTelegramWebApp()) {
         const initData = window.Telegram.WebApp.initData
         const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe
+
         fetch('https://orchidshop.shop/auth/validate_user', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ initData, initDataUnsafe }), // Send initData as JSON
+          body: JSON.stringify({ initData, initDataUnsafe }),
         })
           .then((response) => {
-            if (!response.ok) {
-              throw new Error(`Server responded with status ${response.status}`)
-            }
-            return response.json()
-          })
-          .then((data) => {
-            if (data.success) {
+            if (response.status === 200) {
               window.location.href = 'anketa.html'
             } else {
-              document.getElementById('status').innerText = 'Validation failed ❌'
+              throw new Error(`Server responded with status ${response.status}`)
             }
           })
           .catch((err) => {
             console.error('Error:', err)
-            document.getElementById('status').innerText = `Error: ${err.message}`
+            document.getElementById('status').innerText = `Validation failed ❌ (${err.message})`
           })
       } else {
         document.getElementById('status').innerText = 'This app can only be opened in Telegram'
