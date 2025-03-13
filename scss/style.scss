@@ -1,0 +1,406 @@
+@use 'default-style.scss';
+
+$input-size: 0.8vw;
+$alt-size: 0.9vw;
+$width-st: 25vw;
+$height-st: 3vw;
+$border-radius-st: 0.4vw;
+
+
+.registrationContainer {
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  background-color: #111111;
+
+  .registrationContainer-title {
+    font-size: 2.4vw;
+    margin-top: 2.2vw;
+    margin-bottom: 2.5vw;
+    font-weight: 600;
+  }
+
+  .registrationContainer-parametrs {
+    display: flex;
+    flex-direction: column;
+    gap: 2.6vw;
+    max-width: $width-st;
+
+    .registrationContainer-parametrs-input-box {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .registrationContainer-parametrs-input-span {
+      position: absolute;
+      right: 0.8vw;
+      color: #b8b8b8;
+      font-size: $input-size;
+      font-weight: 300;
+    }
+
+    .registrationContainer-parametrs-input {
+      width: $width-st;
+      height: $height-st;
+      border: none;
+      background-color: #2f2f2f;
+      border-radius: $border-radius-st;
+      font-size: $alt-size;
+      padding-left: 0.8vw;
+      font-weight: 300;
+
+      &::placeholder {
+        color: #b8b8b8;
+        font-size: $input-size;
+      }
+    }
+
+    .registrationContainer-parametrs-gender {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+
+      button {
+        width: 11vw;
+        height: $height-st;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #2f2f2f;
+        border-radius: $border-radius-st;
+        font-size: 0.75vw;
+      }
+    }
+  }
+
+  .registrationContainer-continue {
+    width: $width-st;
+    height: $height-st;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #2f2f2f;
+    border-radius: $border-radius-st;
+    margin-top: 2.6vw;
+    font-size: $alt-size;
+  }
+}
+
+@media (max-width: 1440px) {
+
+    $input-size: 1vw;
+    $alt-size: 1.1vw;
+    $width-st: 29vw;
+    $height-st: 3.5vw;
+    $border-radius-st: 0.4vw;
+    
+    .registrationContainer {
+    
+      .registrationContainer-title {
+        font-size: 2.8vw;
+        margin-top: 2.2vw;
+        margin-bottom: 3vw;
+      }
+    
+      .registrationContainer-parametrs {
+        gap: 2.6vw;
+        max-width: $width-st;
+    
+        .registrationContainer-parametrs-input-box {
+        }
+    
+        .registrationContainer-parametrs-input-span {
+          right: 0.8vw;
+          font-size: $input-size;
+        }
+    
+        .registrationContainer-parametrs-input {
+          width: $width-st;
+          height: $height-st;
+          border-radius: $border-radius-st;
+          font-size: $alt-size;
+          padding-left: 0.8vw;
+    
+          &::placeholder {
+            font-size: $input-size;
+          }
+        }
+    
+        .registrationContainer-parametrs-gender {
+          width: 100%;
+    
+          button {
+            width: 13vw;
+            height: $height-st;
+            border-radius: $border-radius-st;
+            font-size: 1vw;
+          }
+        }
+      }
+    
+      .registrationContainer-continue {
+        width: $width-st;
+        height: $height-st;
+        border-radius: $border-radius-st;
+        margin-top: 2.6vw;
+        font-size: $alt-size;
+      }
+    }
+    
+}
+
+@media (max-width: 1024px) {
+
+    $input-size: 1.8vw;
+    $alt-size: 2vw;
+    $width-st: 50vw;
+    $height-st: 5.8vw;
+    $border-radius-st: 0.5vw;
+    
+    .registrationContainer {
+    
+      .registrationContainer-title {
+        font-size: 4.6vw;
+        margin-top: 2.2vw;
+        margin-bottom: 4.8vw;
+      }
+    
+      .registrationContainer-parametrs {
+        gap: 4vw;
+        max-width: $width-st;
+    
+        .registrationContainer-parametrs-input-box {
+        }
+    
+        .registrationContainer-parametrs-input-span {
+          right: 1vw;
+          font-size: $input-size;
+        }
+    
+        .registrationContainer-parametrs-input {
+          width: $width-st;
+          height: $height-st;
+          border-radius: $border-radius-st;
+          font-size: $alt-size;
+          padding-left: 1vw;
+    
+          &::placeholder {
+            font-size: $input-size;
+          }
+        }
+    
+        .registrationContainer-parametrs-gender {
+          width: 100%;
+    
+          button {
+            width: 22.5vw;
+            height: $height-st;
+            border-radius: $border-radius-st;
+            font-size: 1.7vw;
+          }
+        }
+      }
+    
+      .registrationContainer-continue {
+        width: $width-st;
+        height: $height-st;
+        border-radius: $border-radius-st;
+        margin-top: 4vw;
+        font-size: $alt-size;
+      }
+    }
+
+}
+
+@media (max-width: 768px) {
+
+    $input-size: 2.5vw;
+    $alt-size: 2.7vw;
+    $width-st: 65vw;
+    $height-st: 8vw;
+    $border-radius-st: 0.8vw;
+    
+    .registrationContainer {
+    
+      .registrationContainer-title {
+        font-size: 5.8vw;
+        margin-top: 2.2vw;
+        margin-bottom: 4.8vw;
+      }
+    
+      .registrationContainer-parametrs {
+        gap: 5.2vw;
+        max-width: $width-st;
+    
+        .registrationContainer-parametrs-input-box {
+        }
+    
+        .registrationContainer-parametrs-input-span {
+          right: 1.6vw;
+          font-size: $input-size;
+        }
+    
+        .registrationContainer-parametrs-input {
+          width: $width-st;
+          height: $height-st;
+          border-radius: $border-radius-st;
+          font-size: $alt-size;
+          padding-left: 1.6vw;
+    
+          &::placeholder {
+            font-size: $input-size;
+          }
+        }
+    
+        .registrationContainer-parametrs-gender {
+          width: 100%;
+    
+          button {
+            width: 30vw;
+            height: $height-st;
+            border-radius: $border-radius-st;
+            font-size: 2.6vw;
+          }
+        }
+      }
+    
+      .registrationContainer-continue {
+        width: $width-st;
+        height: $height-st;
+        border-radius: $border-radius-st;
+        margin-top: 5.2vw;
+        font-size: $alt-size;
+      }
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    $input-size: 2.9vw;
+    $alt-size: 3vw;
+    $width-st: 72vw;
+    $height-st: 10vw;
+    $border-radius-st: 1.1vw;
+    
+    .registrationContainer {
+    
+      .registrationContainer-title {
+        font-size: 6.5vw;
+        margin-top: 2.2vw;
+        margin-bottom: 5.5vw;
+      }
+    
+      .registrationContainer-parametrs {
+        gap: 6vw;
+        max-width: $width-st;
+    
+        .registrationContainer-parametrs-input-box {
+        }
+    
+        .registrationContainer-parametrs-input-span {
+          right: 2vw;
+          font-size: $input-size;
+        }
+    
+        .registrationContainer-parametrs-input {
+          width: $width-st;
+          height: $height-st;
+          border-radius: $border-radius-st;
+          font-size: $alt-size;
+          padding-left: 2vw;
+    
+          &::placeholder {
+            font-size: $input-size;
+          }
+        }
+    
+        .registrationContainer-parametrs-gender {
+          width: 100%;
+    
+          button {
+            width: 32vw;
+            height: $height-st;
+            border-radius: $border-radius-st;
+            font-size: 2.8vw;
+          }
+        }
+      }
+    
+      .registrationContainer-continue {
+        width: $width-st;
+        height: $height-st;
+        border-radius: $border-radius-st;
+        margin-top: 6vw;
+        font-size: $alt-size;
+      }
+    }
+
+}
+
+@media (max-width: 480px) {
+
+    $input-size: 3.2vw;
+    $alt-size: 3.3vw;
+    $width-st: 80vw;
+    $height-st: 10.8vw;
+    $border-radius-st: 2vw;
+    
+    .registrationContainer {
+    
+      .registrationContainer-title {
+        font-size: 6.6vw;
+        margin-top: 2.2vw;
+        margin-bottom: 5.5vw;
+      }
+    
+      .registrationContainer-parametrs {
+        gap: 7.2vw;
+        max-width: $width-st;
+    
+        .registrationContainer-parametrs-input-box {
+        }
+    
+        .registrationContainer-parametrs-input-span {
+          right: 2vw;
+          font-size: $input-size;
+        }
+    
+        .registrationContainer-parametrs-input {
+          width: $width-st;
+          height: $height-st;
+          border-radius: $border-radius-st;
+          font-size: $alt-size;
+          padding-left: 2vw;
+    
+          &::placeholder {
+            font-size: $input-size;
+          }
+        }
+    
+        .registrationContainer-parametrs-gender {
+          width: 100%;
+    
+          button {
+            width: 36vw;
+            height: $height-st;
+            border-radius: $border-radius-st;
+            font-size: 3.1vw;
+          }
+        }
+      }
+    
+      .registrationContainer-continue {
+        width: $width-st;
+        height: $height-st;
+        border-radius: $border-radius-st;
+        margin-top: 6vw;
+        font-size: $alt-size;
+      }
+    }
+    
+}

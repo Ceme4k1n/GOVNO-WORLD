@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "nodemon --watch ./src --exec ts-node ./src/app.ts",
     "build": "tsc",
-    "start": "node dist/app.js"
+    "start": "node dist/app.js",
+    "build-sass": "sass --no-source-map scss:css",
+    "watch-sass": "sass --watch scss:css"
   },
   "repository": {
     "type": "git",
@@ -29,6 +31,7 @@
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.10",
     "nodemon": "^3.1.9",
+    "sass": "^1.85.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   }
