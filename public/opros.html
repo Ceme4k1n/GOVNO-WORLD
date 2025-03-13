@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>💩 Викторина</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 50px;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+        padding: 20px;
+        border: 2px solid #333;
+        border-radius: 10px;
+        background-color: #f9f9f9;
+      }
+      input {
+        width: 80%;
+        padding: 10px;
+        margin-top: 10px;
+        font-size: 16px;
+      }
+      button {
+        padding: 10px 20px;
+        margin-top: 10px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2 id="question"></h2>
+      <input type="text" id="answer" placeholder="Введите ответ..." maxlength="200" />
+      <p id="response" class="hidden"></p>
+      <button id="submit">Отправить ответ</button>
+      <button id="next" class="hidden">Продолжить</button>
+    </div>
+
+    <script>
+      const questions = [
+        { q: 'Сколько в день срет человек?', a: 'Средний человек производит 150-250 грамм 💩 в день, но если ты фанат фастфуда – считай на 30% больше!', type: 'number' },
+        { q: 'Сколько в день срет курица?', a: 'Одна курица 💩 до 15 раз в день, оставляя около 50 грамм говна. Представь, у тебя 100 кур – это уже 5 кг в день!', type: 'number' },
+        { q: 'Сколько 💩 выходит за жизнь у обычного человека?', a: 'В среднем человек срет около 6 тонн за жизнь. Можно засыпать бассейн!', type: 'number' },
+        { q: 'Сколько 💩 производит корова за день?', a: 'Коровье говно – это золото для фермеров! В день одна корова выдаёт 30-50 кг навоза. Если у тебя стадо – твои поля удобрены навсегда!', type: 'number' },
+        { q: 'Какой животный чемпион по количеству 💩?', a: 'Синий кит! Он может насрать до 3 тонн за раз. Если хочешь повторить – придется очень постараться!', type: 'text' },
+        { q: 'Что будет, если не срать неделю?', a: 'Ты станешь ходячей бомбой! Запор – это реальная угроза, а если забить на него, можно попасть на операционный стол!', type: 'text' },
+        { q: 'Сколько 💩 производит весь мир за день?', a: 'Если взять всех людей на планете, они вместе срут примерно 1 500 000 тонн 💩 в день. Если это превратить в удобрение, то хватит, чтобы засеять всю Африку!', type: 'number' },
+        { q: 'Как 💩 влияет на вес?', a: 'Если ты весишь 80 кг, в тебе в среднем около 1 кг 💩, который ждет своего часа!', type: 'text' },
+        { q: 'Как долго 💩 разлагается в природе?', a: 'Обычное человеческое 💩 разлагается за 1-3 года, а если ты фанат пластика и химии – то добро пожаловать в вечность! Вода и солнце ускоряют процесс, но в герметичном месте 💩 может сохраниться десятилетиями!', type: 'text' },
+        { q: 'Какое 💩 самое опасное в мире?', a: 'Говно ленивца – настоящий биохазард! Оно настолько токсичное, что если ленивец порежется при дефекации (а это бывает), то может умереть от инфекции. Так что его 💩 – смертельно опасный аксессуар в мире природы!', type: 'text' },
+      ]
+
+      let questionIndexes = [...questions.keys()].sort(() => Math.random() - 0.5)
+      let currentQuestionIndex = 0
+      let answers = []
+
+      const questionElement = document.getElementById('question')
+      const answerInput = document.getElementById('answer')
+      const responseElement = document.getElementById('response')
+      const submitButton = document.getElementById('submit')
+      const nextButton = document.getElementById('next')
+
+      function loadQuestion() {
+        const question = questions[questionIndexes[currentQuestionIndex]]
+        questionElement.textContent = question.q
+        answerInput.value = ''
+        answerInput.setAttribute('type', question.type === 'number' ? 'number' : 'text')
+        responseElement.classList.add('hidden')
+        nextButton.classList.add('hidden')
+        submitButton.classList.remove('hidden')
+      }
+
+      submitButton.addEventListener('click', () => {
+        const userAnswer = answerInput.value.trim()
+        const questionIndex = questionIndexes[currentQuestionIndex]
+        const question = questions[questionIndex]
+
+        if (!userAnswer || (question.type === 'number' && isNaN(userAnswer))) {
+          alert('Пожалуйста, введите корректный ответ!')
+          return
+        }
+
+        answers.push({ questionNumber: questionIndex + 1, answer: userAnswer })
+
+        responseElement.textContent = question.a
+        responseElement.classList.remove('hidden')
+        submitButton.classList.add('hidden')
+        nextButton.classList.remove('hidden')
+      })
+
+      nextButton.addEventListener('click', () => {
+        currentQuestionIndex++
+        if (currentQuestionIndex < questions.length) {
+          loadQuestion()
+        } else {
+          fetch('http://localhost:443/quiz/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answers }),
+          })
+            .then((response) => {
+              if (response.status === 200) {
+                answerInput.style.display = 'none'
+                responseElement.style.display = 'none'
+                nextButton.style.display = 'none'
+                submitButton.style.display = 'none'
+                return response.json()
+              }
+            })
+            .then((data) => {
+              if (data) {
+                console.log(data.score)
+                questionElement.textContent = data.score
+              } else {
+                console.log('Даты нет')
+              }
+            })
+            .catch((err) => console.error('Ошибка при отправке ответа:', err))
+        }
+      })
+
+      loadQuestion()
+    </script>
+  </body>
+</html>

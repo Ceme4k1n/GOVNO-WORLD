@@ -2,6 +2,7 @@ import express from 'express'
 import fs from 'fs'
 import https from 'https'
 import authRouter from './routes/auth'
+import quizRouter from './routes/quiz'
 import path from 'path'
 
 const app = express()
@@ -10,11 +11,12 @@ const PORT = process.env.PORT || '4000'
 app.use(express.json())
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/anketa.html'))
+  res.sendFile(path.join(__dirname, '../public/opros.html'))
 })
 app.use(express.static(path.join(__dirname, '../public')))
 
 app.use('/auth', authRouter)
+app.use('/quiz', quizRouter)
 
 // const SSL_CERT_PATH = '/web/serf/certificate.crt'
 // const SSL_KEY_PATH = '/web/serf/certificate.key'
