@@ -144,8 +144,11 @@
             body: JSON.stringify({ initDataUnsafe, user_age, user_height, user_weight, user_sex, user_toilet_visits }),
           })
             .then((response) => {
+              if (!response.ok) {
+                return Promise.reject('Request failed with status ' + response.status)
+              }
               if (response.status === 200) {
-                window.location.href = 'test.html'
+                window.location.replace('test.html')
               }
               return response.json()
             })
