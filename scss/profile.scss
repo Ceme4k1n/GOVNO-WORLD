@@ -1,0 +1,130 @@
+.button-homepage{
+    position: absolute;
+    top: 5.3vw;
+    left: 5vw;
+
+    img{
+        width: 3.5vw;
+        height: auto;
+
+    }
+}
+
+.profile{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2.2vw;
+    margin-top: 1vw;
+
+    .profile_user-box{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 1.2vw;
+
+        .profile_user-title{
+            font-weight: 300;
+            font-size: 1.8vw;
+        }
+
+        .profile_user-img{
+            width: 8vw;
+            height: 8vw;
+            border-radius: 50%;
+
+        }
+    }
+
+    .profile-characteristics-box{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: start;
+        gap: 0.8vw;
+        background-color: #222222;
+        padding: 0.9vw;
+        width: 23vw;
+        border-radius: 0.5vw;
+        position: relative;
+
+        .profile-characteristics-buttonChange{
+            position: absolute;
+            right: 1vw;
+            top: 1vw;
+        }
+
+        .profile-characteristics-title{
+            font-size: 1.4vw;
+            font-weight: 300;
+        }
+
+        .profile-characteristics-point{
+            font-weight: 300;
+            font-size: 1vw;
+        }
+
+    }
+
+    .profile-foodPreferences-box{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: start;
+        width: 23vw;
+        gap: 1vw;
+
+
+        .profile-foodPreferences-title{
+            font-weight: 300;
+            font-size: 1.5vw;
+        }
+
+        .profile-foodPreferences-choice{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: start;
+            gap: 0.7vw;
+
+            .profile-foodPreferences-choice-buttons{
+                position: relative;
+                width: 1.3vw;
+                height: 1.3vw;
+                border-radius: 50%;
+                background-color: #ffffff;
+                border: none;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                position: relative;
+    
+
+                p{
+                    position: absolute;
+                    left: 2.3vw;
+                    bottom: 50%;
+                    transform: translateY(50%);
+                    font-weight: 300;
+                    font-size: 1vw;
+                    white-space: nowrap;
+                }
+            }
+    
+            .indicator {
+                position: absolute;
+                bottom: 50%;
+                left: 50%;
+                transform: translate(-50%, 50%);
+                width: 0.8vw;
+                height: 0.8vw;
+                border-radius: 50%;
+                background-color: #000000;
+            }
+
+        }
+    }
+
+}

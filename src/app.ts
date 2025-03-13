@@ -11,10 +11,15 @@ const PORT = process.env.PORT || '4000'
 app.use(express.json())
 
 app.use(express.static(path.join(__dirname, '../public')))
+app.use('/scss', express.static(path.join(__dirname, '../scss')))
+app.use('/css', express.static(path.join(__dirname, '../css')))
+app.use('/img', express.static(path.join(__dirname, '../img')))
+
+
 
 app.use('/auth', authRouter)
 app.use('/quiz', quizRouter)
-
+/*
 const SSL_CERT_PATH = '/web/serf/certificate.crt'
 const SSL_KEY_PATH = '/web/serf/certificate.key'
 const SSL_CA_PATH = '/web/serf/certificate_ca.crt'
@@ -29,7 +34,7 @@ const credentials = { key: privateKey, cert: certificate, ca: ca }
 https.createServer(credentials, app).listen(PORT, () => {
   console.log(`Server is running on https://orchidshop.shop`)
 })
-
-// app.listen(PORT, () => {
-//   console.log(`⚡ Server is running at http://localhost:${PORT}`)
-// })
+*/
+ app.listen(PORT, () => {
+   console.log(`⚡ Server is running at http://localhost:${PORT}`)
+ })
