@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    
+    <div class="registrationContainer">
+        <h1 class="registrationContainer-title">Создание 💩 профиля</h1>
+        <div class="registrationContainer-parametrs">
+            <div class="registrationContainer-parametrs-input-box"><input class="registrationContainer-parametrs-input" id="weight-parameter" type="number" placeholder="Вес"><span class="registrationContainer-parametrs-input-span">кг</span></div>
+            <div class="registrationContainer-parametrs-input-box"><input class="registrationContainer-parametrs-input" id="age-parameter" type="number" placeholder="Возраст"><span class="registrationContainer-parametrs-input-span">лет</span></div>
+            <div class="registrationContainer-parametrs-input-box"><input class="registrationContainer-parametrs-input" id="growth-parameter" type="number" placeholder="Рост"><span class="registrationContainer-parametrs-input-span">см</span></div>
+            <div class="registrationContainer-parametrs-input-box"><input class="registrationContainer-parametrs-input" id="quantity-parameter" type="number" placeholder="Сколько раз в день ходишь в туалет?"><span class="registrationContainer-parametrs-input-span">раз</span></div>
+            <div class="registrationContainer-parametrs-gender">
+                <button class="registrationContainer-parametrs-gender_male" id="gender_male">Мужчина</button>
+                <button class="registrationContainer-parametrs-gender_famale" id="gender_famale">Женщина</button>
+            </div>
+        </div>
+        <button class="registrationContainer-continue" id="button_continue">Продолжить</button>
+    </div>
+
+    <script>
+        let maleButton = document.getElementById('gender_male');
+        let femaleButton = document.getElementById('gender_famale');
+
+        let genderActive = false;
+
+        function handleGenderSelection(selectedButton, otherButton) {
+            selectedButton.style.backgroundColor = "white";
+            selectedButton.style.color = "black";
+
+            otherButton.style.backgroundColor = "#2F2F2F";
+            otherButton.style.color = "white";
+
+            genderActive = true;
+            allVerification()
+        }
+
+        maleButton.addEventListener('click', () => {
+            handleGenderSelection(maleButton, femaleButton);
+        });
+
+        femaleButton.addEventListener('click', () => {
+            handleGenderSelection(femaleButton, maleButton);
+        });
+
+        document.body.onload = () => {
+            genderActive = false;
+        };
+
+        //
+        let weight_parameter = document.getElementById("weight-parameter")
+        let age_parameter = document.getElementById("age-parameter")
+        let growth_parameter = document.getElementById("growth-parameter")
+        let quantity_parameter = document.getElementById("quantity-parameter")
+
+        let weight_parameter_limit = false
+        let age_parameter_limit = false
+        let growth_parameter_limit = false
+        let quantity_parameter_limit = false
+
+        weight_parameter.addEventListener("input", () => {
+            let value = Number(weight_parameter.value)
+            if (Number.isNaN(value) || value < 30 || value > 300) {
+                weight_parameter_limit = false
+            } else {
+                weight_parameter_limit = true
+            }
+            allVerification()
+        })
+
+        age_parameter.addEventListener("input", () => {
+            let value = Number(age_parameter.value)
+            if (Number.isNaN(value) || value < 5 || value > 100) {
+                age_parameter_limit = false
+            } else {
+                age_parameter_limit = true
+            }
+            allVerification()
+        })
+
+        growth_parameter.addEventListener("input", () => {
+            let value = Number(growth_parameter.value)
+            if (Number.isNaN(value) || value < 80 || value > 250) {
+                growth_parameter_limit = false
+            } else {
+                growth_parameter_limit = true
+            }
+            allVerification()
+        })
+
+        quantity_parameter.addEventListener("input", () => {
+            let value = Number(quantity_parameter.value)
+            if (Number.isNaN(value) || value < 1 || value > 10) {
+                quantity_parameter_limit = false
+            } else {
+                quantity_parameter_limit = true
+            }
+            allVerification()
+        })
+
+        function allVerification() {
+            let all = weight_parameter_limit && age_parameter_limit && growth_parameter_limit && quantity_parameter_limit && genderActive;
+            console.log("будет ли семечкин сегодня жоскам какать?", all)
+
+            let button_continue = document.getElementById("button_continue")
+
+            if (all) {
+              button_continue.style.backgroundColor = "white"
+              button_continue.style.color = "black"
+            } else {
+            button_continue.style.backgroundColor = "#2f2f2f"
+              button_continue.style.color = "white"
+            }
+        }
+    </script>
+
+</body>
+</html> 
