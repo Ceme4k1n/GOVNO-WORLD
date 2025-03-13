@@ -13,9 +13,12 @@ app.use(express.json())
 app.use(express.static(path.join(__dirname, '../public')))
 app.use('/scss', express.static(path.join(__dirname, '../scss')))
 app.use('/css', express.static(path.join(__dirname, '../css')))
+<<<<<<< HEAD
 app.use('/img', express.static(path.join(__dirname, '../img')))
 
 
+=======
+>>>>>>> 04dd37937e53298f42755f8341ed8b049df0983f
 
 app.use('/auth', authRouter)
 app.use('/quiz', quizRouter)
