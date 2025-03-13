@@ -44,24 +44,29 @@ export const validate_user = async (req: Request, res: Response) => {
 }
 
 export const user_reg = async (req: Request, res: Response) => {
-  const { eater, weight, age, height, toilet_visits, gender, initDataUnsafe } = req.body
+  const { initDataUnsafe, user_age, user_height, user_weight, user_sex, user_toilet_visits } = req.body
 
+  if (!initDataUnsafe) {
+    console.log('Нет даты')
+    return
+  }
   const user_id = initDataUnsafe.user.id
   const username = initDataUnsafe.user.username
 
-  if (weight && age && height && toilet_visits) {
+  if (user_age && user_height && user_weight && user_toilet_visits) {
     try {
       await db.none(
         `INSERT INTO govno_db.users (tg_user_id, username, user_age, user_height, user_weight, user_sex, user_toilet_visits, last_login)
          VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
          ON CONFLICT (tg_user_id) DO NOTHING;`,
-        [user_id, username, age, height, weight, gender, toilet_visits]
+        [user_id, username, user_age, user_height, user_weight, user_sex, user_toilet_visits]
       )
       console.log('Пользователь добавлен')
       res.sendStatus(200)
     } catch (error) {
       console.error(error)
       res.status(501).json({ error: 'Database error' })
+      return
     }
   }
 }
