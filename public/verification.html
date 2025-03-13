@@ -27,6 +27,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <script>
+      let user_gender = null
       let maleButton = document.getElementById('gender_male')
       let femaleButton = document.getElementById('gender_famale')
 
@@ -45,10 +46,12 @@
 
       maleButton.addEventListener('click', () => {
         handleGenderSelection(maleButton, femaleButton)
+        user_gender = true
       })
 
       femaleButton.addEventListener('click', () => {
         handleGenderSelection(femaleButton, maleButton)
+        user_gender = false
       })
 
       document.body.onload = () => {
@@ -129,7 +132,7 @@
         const user_age = age_parameter.value
         const user_height = growth_parameter.value
         const user_weight = weight_parameter.value
-        const user_sex = genderActive
+        const user_sex = user_gender
         const user_toilet_visits = quantity_parameter.value
 
         try {
