@@ -2,7 +2,7 @@ import pgPromise from 'pg-promise'
 import dotenv from 'dotenv'
 
 dotenv.config()
-
+//1
 const pgp = pgPromise({
   // Логирование подключения
   connect() {

@@ -16,7 +16,7 @@ export const quiz_answers = (req: Request, res: Response) => {
   const results: Result[] = []
 
   if (!Array.isArray(answers)) {
-    res.status(400).json({ error: 'Неверный формат данных' })
+    res.status(400).json({ error: 'Неверный формат данных ' })
     return
   }
 

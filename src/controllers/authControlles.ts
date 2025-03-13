@@ -16,7 +16,7 @@ export const validate_user = async (req: Request, res: Response) => {
   console.log('🔍 Проверка пользователя:', user_id)
 
   if (!initData) {
-    res.status(403).json({ error: 'initData is required' })
+    res.status(403).json({ error: 'initData is required ' })
     return
   }
 

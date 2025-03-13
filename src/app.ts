@@ -14,7 +14,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/opros.html'))
 })
 app.use(express.static(path.join(__dirname, '../public')))
-
+//1
 app.use('/auth', authRouter)
 app.use('/quiz', quizRouter)
 
