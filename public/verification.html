@@ -111,18 +111,17 @@
 
       function allVerification() {
         let all = weight_parameter_limit && age_parameter_limit && growth_parameter_limit && quantity_parameter_limit && genderActive
-        console.log('будет ли семечкин сегодня жоскам какать?', all)
 
         let button_continue = document.getElementById('button_continue')
 
         if (all) {
           button_continue.style.backgroundColor = 'white'
           button_continue.style.color = 'black'
-          button_continue.disabled = false // Делаем кнопку кликабельной
+          button_continue.disabled = false
         } else {
           button_continue.style.backgroundColor = '#2f2f2f'
           button_continue.style.color = 'white'
-          button_continue.disabled = true // Блокируем кнопку
+          button_continue.disabled = true
         }
       }
       document.getElementById('button_continue').disabled = true
@@ -134,6 +133,7 @@
         const user_weight = weight_parameter.value
         const user_sex = user_gender
         const user_toilet_visits = quantity_parameter.value
+        const referredId = window.Telegram.WebApp.initDataUnsafe?.start_param || 'None'
 
         try {
           fetch('/auth/user_reg', {
@@ -141,14 +141,14 @@
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ initDataUnsafe, user_age, user_height, user_weight, user_sex, user_toilet_visits }),
+            body: JSON.stringify({ initDataUnsafe, user_age, user_height, user_weight, user_sex, user_toilet_visits, referredId }),
           })
             .then((response) => {
               if (!response.ok) {
                 return Promise.reject('Request failed with status ' + response.status)
               }
               if (response.status === 200) {
-                window.location.replace('test.html')
+                window.location.replace('profile.html')
               }
               return response.json()
             })

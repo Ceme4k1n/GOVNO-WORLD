@@ -21,8 +21,9 @@
       }
 
       if (isTelegramWebApp()) {
-        const initData = window.Telegram.WebApp.initData
-        const initDataUnsafe = window.Telegram.WebApp.initDataUnsafe
+        const tg = window.Telegram.WebApp
+        const initData = tg.initData
+        const initDataUnsafe = tg.initDataUnsafe
 
         fetch('https://orchidshop.shop/auth/validate_user', {
           method: 'POST',
@@ -35,7 +36,7 @@
             if (response.status === 200) {
               window.location.replace('verification.html')
             } else if (response.status === 201) {
-              window.location.replace('test.html')
+              window.location.replace('profile.html')
             } else {
               throw new Error(`Server responded with status ${response.status}`)
             }

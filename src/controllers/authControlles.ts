@@ -45,23 +45,34 @@ export const validate_user = async (req: Request, res: Response) => {
 
 export const user_reg = async (req: Request, res: Response) => {
   const { initDataUnsafe, user_age, user_height, user_weight, user_sex, user_toilet_visits } = req.body
-
+  let { referredId } = req.body
   if (!initDataUnsafe) {
     console.log('Нет даты')
     return
   }
   const user_id = initDataUnsafe.user.id
   const username = initDataUnsafe.user.username
+  if (referredId == user_id) {
+    referredId = 'None'
+  }
 
   if (user_age && user_height && user_weight && user_toilet_visits) {
     try {
-      await db.none(
-        `INSERT INTO govno_db.users (tg_user_id, username, user_age, user_height, user_weight, user_sex, user_toilet_visits, last_login)
+      await db.tx(async (t) => {
+        await t.none(
+          `INSERT INTO govno_db.users (tg_user_id, username, user_age, user_height, user_weight, user_sex, user_toilet_visits, last_login)
          VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
          ON CONFLICT (tg_user_id) DO NOTHING;`,
-        [user_id, username, user_age, user_height, user_weight, user_sex, user_toilet_visits]
-      )
-      console.log('Пользователь добавлен')
+          [user_id, username, user_age, user_height, user_weight, user_sex, user_toilet_visits]
+        )
+
+        if (referredId !== 'None') {
+          await t.none(`INSERT INTO govno_db.referrals(referral_id, friend_id, created_at) VALUES ($1, $2, NOW());`, [referredId, user_id])
+          console.log('Пользователь добавлен с рефералом')
+        } else {
+          console.log('Пользователь добавлен без реферала')
+        }
+      })
       res.sendStatus(200)
     } catch (error) {
       console.error(error)
