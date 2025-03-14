@@ -59,25 +59,38 @@ export const user_reg = async (req: Request, res: Response) => {
   if (user_age && user_height && user_weight && user_toilet_visits) {
     try {
       await db.tx(async (t) => {
+        // Вставка нового пользователя в таблицу users
         await t.none(
           `INSERT INTO govno_db.users (tg_user_id, username, user_age, user_height, user_weight, user_sex, user_toilet_visits, last_login)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-         ON CONFLICT (tg_user_id) DO NOTHING;`,
+          VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+          ON CONFLICT (tg_user_id) DO NOTHING;`,
           [user_id, username, user_age, user_height, user_weight, user_sex, user_toilet_visits]
         )
 
+        // Проверка, что реферал существует в таблице users
         if (referredId !== 'None') {
-          await t.none(`INSERT INTO govno_db.referrals(referral_id, friend_id, created_at) VALUES ($1, $2, NOW());`, [referredId, user_id])
-          console.log('Пользователь добавлен с рефералом')
+          const referredUserExists = await t.oneOrNone(`SELECT 1 FROM govno_db.users WHERE tg_user_id = $1`, [referredId])
+
+          if (referredUserExists) {
+            // Если реферал существует, вставляем запись в таблицу referrals
+            await t.none(
+              `INSERT INTO govno_db.referrals (referral_id, friend_id, created_at)
+              VALUES ($1, $2, NOW())`,
+              [referredId, user_id]
+            )
+            console.log('Пользователь добавлен с рефералом')
+          } else {
+            console.log('Реферал не найден, добавлен без реферала')
+          }
         } else {
           console.log('Пользователь добавлен без реферала')
         }
       })
+
       res.sendStatus(200)
     } catch (error) {
       console.error(error)
       res.status(501).json({ error: 'Database error' })
-      return
     }
   }
 }

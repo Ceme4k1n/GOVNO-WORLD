@@ -1,60 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
-</head>
-<body>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <a class="button-homepage" href=""><img src="/img/arrow.svg" alt="" /></a>
 
-    <a class="button-homepage" href=""><img src="/img/arrow.svg" alt=""></a>
-    
     <div class="profile">
-        <div class="profile_user-box">
-            <h1 class="profile_user-title">Govnochist777</h1>
-            <img class="profile_user-img" src="/img/qwe.jpg" alt="">
+      <div class="profile_user-box">
+        <h1 class="profile_user-title">Govnochist777</h1>
+        <img class="profile_user-img" src="/img/qwe.jpg" alt="" />
+      </div>
+      <div class="profile-characteristics-box">
+        <button class="profile-characteristics-buttonChange"><img src="/img/redact.svg" alt="" /></button>
+        <h2 class="profile-characteristics-title">Характеристики:</h2>
+        <p class="profile-characteristics-point">Рост: 157 см.<span></span></p>
+        <p class="profile-characteristics-point">Вес: 120 кг.<span></span></p>
+        <p class="profile-characteristics-point">Возраст: 37 лет<span></span></p>
+        <p class="profile-characteristics-point">Пол: мужской<span></span></p>
+      </div>
+      <div class="profile-foodPreferences-box">
+        <h2 class="profile-foodPreferences-title">Предпочтения:</h2>
+        <div class="profile-foodPreferences-choice">
+          <button class="profile-foodPreferences-choice-buttons"><p>Сбалансированный</p></button>
+          <button class="profile-foodPreferences-choice-buttons"><p>Мясоед</p></button>
+          <button class="profile-foodPreferences-choice-buttons"><p>Веган</p></button>
+          <button class="profile-foodPreferences-choice-buttons"><p>Любитель фастфуда</p></button>
         </div>
-        <div class="profile-characteristics-box">
-            <button class="profile-characteristics-buttonChange"><img src="/img/redact.svg" alt=""></button>
-            <h2 class="profile-characteristics-title">Характеристики:</h2>
-            <p class="profile-characteristics-point">Рост: 157 см.<span></span></p>
-            <p class="profile-characteristics-point">Вес: 120 кг.<span></span></p>
-            <p class="profile-characteristics-point">Возраст: 37 лет<span></span></p>
-            <p class="profile-characteristics-point">Пол: мужской<span></span></p>
-        </div>
-        <div class="profile-foodPreferences-box">
-            <h2 class="profile-foodPreferences-title">Предпочтения:</h2>
-            <div class="profile-foodPreferences-choice">
-                <button class="profile-foodPreferences-choice-buttons"><p>Сбалансированный</p></button>
-                <button class="profile-foodPreferences-choice-buttons"><p>Мясоед</p></button>
-                <button class="profile-foodPreferences-choice-buttons"><p>Веган</p></button>
-                <button class="profile-foodPreferences-choice-buttons"><p>Любитель фастфуда</p></button>
-            </div>
-        </div>
+      </div>
     </div>
 
-
+    <button class="registrationContainer-continue" id="button_continue">Продолжить</button>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <script>
-        const buttons = document.querySelectorAll('.profile-foodPreferences-choice-buttons');
+      document.getElementById('button_continue').addEventListener('click', () => {
+        const user_id = window.Telegram.WebApp.initDataUnsafe.user.id
 
-        buttons.forEach(button => {
-            button.addEventListener('click', () => {
-                buttons.forEach(btn => {
-                    const child = btn.querySelector('.indicator');
-                    if (child) btn.removeChild(child);
-                });
+        try {
+          fetch('/referral/get_ref', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_id }),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                return Promise.reject('Request failed with status ' + response.status)
+              }
+              if (response.status === 200) {
+                return response.json()
+              } else if (response.status === 201) {
+                console.log('У вас нет друзей-какашечек')
+              }
+            })
+            .then((data) => {
+              if (data) {
+                console.log(data)
+              }
+            })
+            .catch((error) => {
+              console.log('Error:', error)
+            })
+        } catch (error) {
+          console.log('Ошибка:', error)
+        }
+      })
 
-                const indicator = document.createElement('div');
-                indicator.className = 'indicator';
-                button.appendChild(indicator);
-            });
-        });
+      const buttons = document.querySelectorAll('.profile-foodPreferences-choice-buttons')
+
+      buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+          buttons.forEach((btn) => {
+            const child = btn.querySelector('.indicator')
+            if (child) btn.removeChild(child)
+          })
+
+          const indicator = document.createElement('div')
+          indicator.className = 'indicator'
+          button.appendChild(indicator)
+        })
+      })
     </script>
-
-</body>
+  </body>
 </html>
