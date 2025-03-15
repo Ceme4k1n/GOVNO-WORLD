@@ -40,40 +40,6 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <script>
-      document.getElementById('button_continue').addEventListener('click', () => {
-        const user_id = window.Telegram.WebApp.initDataUnsafe.user.id
-
-        try {
-          fetch('/referral/get_ref', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ user_id }),
-          })
-            .then((response) => {
-              if (!response.ok) {
-                return Promise.reject('Request failed with status ' + response.status)
-              }
-              if (response.status === 200) {
-                return response.json()
-              } else if (response.status === 201) {
-                console.log('У вас нет друзей-какашечек')
-              }
-            })
-            .then((data) => {
-              if (data) {
-                console.log(data)
-              }
-            })
-            .catch((error) => {
-              console.log('Error:', error)
-            })
-        } catch (error) {
-          console.log('Ошибка:', error)
-        }
-      })
-
       const buttons = document.querySelectorAll('.profile-foodPreferences-choice-buttons')
 
       buttons.forEach((button) => {
