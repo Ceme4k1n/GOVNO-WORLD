@@ -1,13 +1,12 @@
 import express from 'express'
-var cron = require('node-cron')
 
+import './cronJobs'
 import fs from 'fs'
 import https from 'https'
 import authRouter from './routes/auth'
 import quizRouter from './routes/quiz'
 import referralRouter from './routes/referral'
 import newsRouter from './routes/news'
-import { generate_news } from './controllers/newsController'
 
 import path from 'path'
 
@@ -26,16 +25,10 @@ app.use('/quiz', quizRouter)
 app.use('/referral', referralRouter)
 app.use('/news', newsRouter)
 
-cron.schedule('0 0 * * *', async () => {
-  console.log('Запуск генерации новостей')
-  await generate_news()
-})
-
 const SSL_CERT_PATH = '/web/serf/certificate.crt'
 const SSL_KEY_PATH = '/web/serf/certificate.key'
 const SSL_CA_PATH = '/web/serf/certificate_ca.crt'
 
-// Читаем сертификаты
 const privateKey = fs.readFileSync(SSL_KEY_PATH, 'utf8')
 const certificate = fs.readFileSync(SSL_CERT_PATH, 'utf8')
 const ca = fs.readFileSync(SSL_CA_PATH, 'utf8')
