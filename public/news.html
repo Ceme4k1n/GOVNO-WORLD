@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Фейк-Новости про $GOVNO</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 20px;
+      }
+      #news-container {
+        margin-top: 20px;
+      }
+      .news-item {
+        margin: 10px 0;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      button {
+        padding: 10px 15px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Фейк-Новости про $GOVNO</h1>
+    <button onclick="fetchNews(true)">🔄 Обновить новости</button>
+    <div id="news-container"></div>
+
+    <script>
+      async function fetchNews(forceUpdate = false) {
+        try {
+          const savedNews = JSON.parse(localStorage.getItem('news') || 'null')
+          const lastUpdate = localStorage.getItem('news_update_date')
+          const today = new Date().toISOString().split('T')[0]
+
+          console.log(`Время на клиенте: `, today)
+
+          // Если новости есть в кэше и дата совпадает, загружаем их из localStorage
+          if (!forceUpdate && savedNews && lastUpdate === today) {
+            console.log('✅ Новости взяты из кэша!')
+            return renderNews(savedNews)
+          }
+
+          console.log('📡 Загружаем свежие новости...')
+          const response = await fetch('http://localhost:443/news/get_news')
+          const data = await response.json()
+
+          console.log('Время на сервере: ', data.data)
+
+          // Сохраняем новости в кэш
+          localStorage.setItem('news', JSON.stringify(data.news))
+          localStorage.setItem('news_update_date', data.data)
+
+          renderNews(data.news)
+        } catch (error) {
+          console.error('Ошибка при загрузке новостей:', error)
+          document.getElementById('news-container').innerHTML = '<p>Ошибка загрузки новостей</p>'
+        }
+      }
+
+      function renderNews(newsArray) {
+        const container = document.getElementById('news-container')
+        container.innerHTML = ''
+
+        newsArray.forEach((news) => {
+          const div = document.createElement('div')
+          div.className = 'news-item'
+          div.textContent = news.content
+          container.appendChild(div)
+        })
+      }
+      fetchNews()
+    </script>
+  </body>
+</html>

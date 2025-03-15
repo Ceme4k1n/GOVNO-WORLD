@@ -1,9 +1,13 @@
 import express from 'express'
+var cron = require('node-cron')
+
 import fs from 'fs'
 import https from 'https'
 import authRouter from './routes/auth'
 import quizRouter from './routes/quiz'
 import referralRouter from './routes/referral'
+import newsRouter from './routes/news'
+import { generate_news } from './controllers/newsController'
 
 import path from 'path'
 
@@ -15,12 +19,17 @@ app.use(express.json())
 app.use(express.static(path.join(__dirname, '../public')))
 app.use('/scss', express.static(path.join(__dirname, '../scss')))
 app.use('/css', express.static(path.join(__dirname, '../css')))
-
 app.use('/img', express.static(path.join(__dirname, '../img')))
 
 app.use('/auth', authRouter)
 app.use('/quiz', quizRouter)
 app.use('/referral', referralRouter)
+app.use('/news', newsRouter)
+
+cron.schedule('0 0 * * *', async () => {
+  console.log('Запуск генерации новостей')
+  await generate_news()
+})
 
 const SSL_CERT_PATH = '/web/serf/certificate.crt'
 const SSL_KEY_PATH = '/web/serf/certificate.key'
