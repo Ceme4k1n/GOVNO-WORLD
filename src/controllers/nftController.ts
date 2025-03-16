@@ -11,15 +11,12 @@ export const checkInactiveUsers = async () => {
 
     const oneDayAgo = new Date(now)
     oneDayAgo.setDate(oneDayAgo.getDate() - 1)
-    console.log(oneDayAgo)
 
     const oneWeekAgo = new Date(now)
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
-    console.log(oneWeekAgo)
 
     const oneMonthAgo = new Date(now)
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
-    console.log(oneMonthAgo)
 
     const users = await db.any(
       `SELECT u.tg_user_id, u.last_login
