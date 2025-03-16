@@ -31,7 +31,9 @@ export const validate_user = async (req: Request, res: Response) => {
     const result = await db.oneOrNone('UPDATE govno_db.users SET last_login = NOW() WHERE tg_user_id = $1 RETURNING tg_user_id', [user_id])
 
     if (result) {
-      console.log('Пользователь найден: ', result.tg_user_id)
+      console.log('✅ Пользователь найден:', result.tg_user_id)
+      await db.none('UPDATE govno_db.reminder_logs SET reminder_type = NULL WHERE user_id = $1', [user_id])
+
       res.status(201).json({ message: 'User already exist' })
       return
     } else {
@@ -59,7 +61,6 @@ export const user_reg = async (req: Request, res: Response) => {
   if (user_age && user_height && user_weight && user_toilet_visits) {
     try {
       await db.tx(async (t) => {
-        // Вставка нового пользователя в таблицу users
         await t.none(
           `INSERT INTO govno_db.users (tg_user_id, username, user_age, user_height, user_weight, user_sex, user_toilet_visits, last_login)
           VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
@@ -72,7 +73,6 @@ export const user_reg = async (req: Request, res: Response) => {
           const referredUserExists = await t.oneOrNone(`SELECT 1 FROM govno_db.users WHERE tg_user_id = $1`, [referredId])
 
           if (referredUserExists) {
-            // Если реферал существует, вставляем запись в таблицу referrals
             await t.none(
               `INSERT INTO govno_db.referrals (referral_id, friend_id, created_at)
               VALUES ($1, $2, NOW())`,
