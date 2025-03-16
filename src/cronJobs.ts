@@ -7,7 +7,7 @@ cron.schedule('0 0 * * *', async () => {
   await generate_news()
 })
 
-cron.schedule('53 12 * * *', async () => {
+cron.schedule('1 13 * * *', async () => {
   console.log('Запуск рассылки о не заходе')
   await checkInactiveUsers()
 })
