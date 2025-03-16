@@ -28,19 +28,22 @@ export const validate_user = async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await db.oneOrNone('UPDATE govno_db.users SET last_login = NOW() WHERE tg_user_id = $1 RETURNING tg_user_id', [user_id])
+    await db.none(
+      `
+      WITH updated_user AS (
+        UPDATE govno_db.users SET last_login = NOW() WHERE tg_user_id = $1 RETURNING tg_user_id
+      )
+      UPDATE govno_db.reminder_logs SET reminder_type = NULL
+      WHERE user_id = (SELECT tg_user_id FROM updated_user);
+    `,
+      [user_id]
+    )
 
-    if (result) {
-      console.log('✅ Пользователь найден:', result.tg_user_id)
-      await db.none('UPDATE govno_db.reminder_logs SET reminder_type = NULL WHERE user_id = $1', [user_id])
-
-      res.status(201).json({ message: 'User already exist' })
-      return
-    } else {
-      res.sendStatus(200)
-    }
+    console.log('✅ Пользователь найден и напоминания обновлены:', user_id)
+    res.status(201).json({ message: 'User already exist' })
+    return
   } catch (error) {
-    console.error(error)
+    console.error('Ошибка при обновлении данных:', error)
     res.status(501).json({ error: 'Database error' })
   }
 }
