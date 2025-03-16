@@ -6,15 +6,56 @@ dotenv.config()
 
 export const checkInactiveUsers = async () => {
   try {
-    const lastLogin = new Date('2025-03-15 22:54:20.861') // Симуляция данных из БД
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
 
-    const now = new Date() // Текущее время
-    const tenSecondsAgo = new Date(now.getTime() - 10 * 1000) // Отнимаем 10 секунд
+    const oneDayAgo = new Date(now)
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1)
+    console.log(oneDayAgo)
 
-    if (lastLogin < tenSecondsAgo) {
-      console.log('Пользователь не заходил более 10 секунд')
-    } else {
-      console.log('Пользователь заходил недавно')
+    const oneWeekAgo = new Date(now)
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+    console.log(oneWeekAgo)
+
+    const oneMonthAgo = new Date(now)
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
+    console.log(oneMonthAgo)
+
+    const users = await db.any(
+      `SELECT u.tg_user_id, u.last_login
+       FROM govno_db.users u
+       LEFT JOIN govno_db.reminder_logs r ON u.tg_user_id = r.user_id
+       WHERE (u.last_login <= $1 AND r.reminder_type IS DISTINCT FROM 'day')
+          OR (u.last_login <= $2 AND r.reminder_type IS DISTINCT FROM 'week')
+          OR (u.last_login <= $3 AND r.reminder_type IS DISTINCT FROM 'month')`,
+      [oneDayAgo, oneWeekAgo, oneMonthAgo]
+    )
+
+    for (const user of users) {
+      let message = ''
+      let reminderType = ''
+
+      if (user.last_login <= oneMonthAgo) {
+        message = 'Мы вас давно не видели, кажется у вас запор! Открывайте приложение. Месяц'
+        reminderType = 'month'
+      } else if (user.last_login <= oneWeekAgo) {
+        message = 'Мы вас давно не видели, кажется у вас запор! Открывайте приложение. Неделя'
+        reminderType = 'week'
+      } else if (user.last_login <= oneDayAgo) {
+        message = 'Мы вас давно не видели, кажется у вас запор! Открывайте приложение. День'
+        reminderType = 'day'
+      }
+
+      if (message) {
+        await sendMessage(user.tg_user_id, message)
+        await db.none(
+          `INSERT INTO govno_db.reminder_logs (user_id, reminder_type) 
+           VALUES ($1, $2) 
+           ON CONFLICT (user_id) DO UPDATE 
+           SET reminder_type = EXCLUDED.reminder_type`,
+          [user.tg_user_id, reminderType]
+        )
+      }
     }
   } catch (error) {
     console.error('❌ Ошибка при проверке неактивных пользователей:', error)
