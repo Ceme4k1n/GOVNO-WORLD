@@ -1,0 +1,34 @@
+#chart {
+  width: 60vw;
+  height: fit-content;
+  background-color: #222222;
+  border-radius: 0.5vw;
+}
+
+.line {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.x-axis path,
+.y-axis path {
+  stroke: #ffffff;
+}
+
+.x-axis line,
+.y-axis line {
+  stroke: #ffffff;
+}
+
+.grid line {
+  stroke: #424242;
+  stroke-opacity: 0.75;
+  shape-rendering: crispEdges;
+}
+
+.grid path {
+  stroke-width: 0;
+}
+
+/*# sourceMappingURL=graph.css.map */

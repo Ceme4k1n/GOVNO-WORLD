@@ -9,6 +9,55 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
   </head>
+  <style>
+    :root {
+    --margin-top: 30vw;
+    --margin-right: 30vw;
+    --margin-bottom: 30vw;
+    --margin-left: 80vw;
+    --chart-width: 800x;
+    --chart-height: 400px;
+}
+
+#chart {
+    width: 40vw;
+    height: auto;
+    background-color: #222222;
+    border-radius: 0.5vw;
+}
+
+.line {
+    fill: none;
+    stroke: #ffffff;
+    stroke-width: 2;
+}
+
+.x-axis path,
+.y-axis path {
+    stroke: #ffffff;
+}
+
+.x-axis line,
+.y-axis line {
+    stroke: #ffffff;
+}
+
+.grid line {
+    stroke: #424242;
+    stroke-opacity: 0.75;
+    shape-rendering: crispEdges;
+}
+
+.grid path {
+    stroke-width: 0;
+}
+
+.axis-text {
+    font-size: 16px;
+    fill: #ffffff;
+    font-family: Arial, sans-serif;
+}
+  </style>
   <body>
     <a class="button-homepage" href=""><img src="/img/arrow.svg" alt="" /></a>
 
@@ -18,42 +67,233 @@
         <img class="profile_user-img" src="/img/qwe.jpg" alt="" />
       </div>
       <div class="profile-characteristics-box">
-        <button class="profile-characteristics-buttonChange"><img src="/img/redact.svg" alt="" /></button>
+        <button class="profile-characteristics-buttonChange" id="profile-edit-button"><img src="/img/redact.svg" alt="" /></button>
         <h2 class="profile-characteristics-title">Характеристики:</h2>
-        <p class="profile-characteristics-point">Рост: 157 см.<span></span></p>
-        <p class="profile-characteristics-point">Вес: 120 кг.<span></span></p>
-        <p class="profile-characteristics-point">Возраст: 37 лет<span></span></p>
-        <p class="profile-characteristics-point">Пол: мужской<span></span></p>
+        <p class="profile-characteristics-point">Рост: <span id="profile-characteristics-height"></span></p>
+        <p class="profile-characteristics-point">Вес: <span id="profile-characteristics-weight"></span></p>
+        <p class="profile-characteristics-point">Возраст: <span id="profile-characteristics-age"></span></p>
+        <p class="profile-characteristics-point">Пол: <span id="profile-characteristics-gender"></span></p>
+        <p class="profile-characteristics-point">Среднее кол-во посещений туалета в день: <span id="profile-characteristics-quantity"></span></p>
+        <p class="profile-characteristics-point">Тип питания: <span id="profile-characteristics-diet"></span></p>
       </div>
-      <div class="profile-foodPreferences-box">
-        <h2 class="profile-foodPreferences-title">Предпочтения:</h2>
-        <div class="profile-foodPreferences-choice">
-          <button class="profile-foodPreferences-choice-buttons"><p>Сбалансированный</p></button>
-          <button class="profile-foodPreferences-choice-buttons"><p>Мясоед</p></button>
-          <button class="profile-foodPreferences-choice-buttons"><p>Веган</p></button>
-          <button class="profile-foodPreferences-choice-buttons"><p>Любитель фастфуда</p></button>
-        </div>
-      </div>
+      <div id="chart"></div>
     </div>
 
-    <button class="registrationContainer-continue" id="button_continue">Продолжить</button>
+    <div class="profile-edit-modal" id="profile-edit-modal">
+        <button class="profile-edit-modal-close" id="profile-edit-modal-close"><img src="/img/close.svg" alt=""></button>
+        <h1 class="profile-edit-modal-title">Характеристики:</h1>
+        <div class="profile-edit-modal-point">
+            <p class="profile-edit-modal-point-title">Рост:</p>
+            <input id="profile_height_input" type="number" class="profile-edit-modal-point-subtitle"></input>
+        </div>
+        <div class="profile-edit-modal-point">
+            <p class="profile-edit-modal-point-title">Возраст:</p>
+            <input id="profile_age_input" type="number" class="profile-edit-modal-point-subtitle"></input>
+        </div>
+        <div class="profile-edit-modal-point">
+          <p class="profile-edit-modal-point-title">Пол:</p>
+          <select id="profile_edit_gender" type="number" class="profile-edit-modal-point-subtitle profile-edit-modal-point-subtitle-select">
+            <option value="male">Мужской</option>
+            <option value="female">Женский</option>
+          </select>
+        </div>
+        <div class="profile-edit-modal-point">
+            <p class="profile-edit-modal-point-title">Кол-во посещений туалета в день:</p>
+            <input id="profile_quantity_input" type="number" class="profile-edit-modal-point-subtitle"></input>
+        </div>
+        <div class="profile-edit-modal-point">
+          <p class="profile-edit-modal-point-title">Тип питания:</p>
+          <select id="profile_edit_diet" type="number" class="profile-edit-modal-point-subtitle profile-edit-modal-point-subtitle-select">
+            <option value="balanced">Сбалансированный</option>
+            <option value="carnivore">Мясоед</option>
+            <option value="vegan">Веган</option>
+            <option value="omnivore">Любитель</option>
+          </select>
+        </div>
+        <button class="profile-edit-modal-save">Сохранить</button>
+    </div>
+
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
 
+   
     <script>
-      const buttons = document.querySelectorAll('.profile-foodPreferences-choice-buttons')
 
-      buttons.forEach((button) => {
-        button.addEventListener('click', () => {
-          buttons.forEach((btn) => {
-            const child = btn.querySelector('.indicator')
-            if (child) btn.removeChild(child)
-          })
+        let profileEditButton = document.getElementById("profile-edit-button");
+        let profileEditModal = document.getElementById("profile-edit-modal");
+        let profileEditModalClose = document.getElementById("profile-edit-modal-close");
+        let body = document.body
 
-          const indicator = document.createElement('div')
-          indicator.className = 'indicator'
-          button.appendChild(indicator)
-        })
-      })
+        profileEditButton.addEventListener("click", () => {
+            profileEditModal.style.display = "flex";
+            body.classList.add('modal-active');
+        });
+
+        profileEditModalClose.addEventListener("click", () => {
+            profileEditModal.style.display = "none";
+            body.classList.remove('modal-active');
+        });
+
+        let data = {
+          profile_age: "20",
+          profile_weight: "100",
+          profile_gender: "male",
+          profile_height: "190",
+          profile_quantity: "3",
+          profile_diet: "balanced",
+        }
+        
+        document.getElementById("profile_height_input").value = data.profile_height
+        document.getElementById("profile_age_input").value = data.profile_age
+        document.getElementById("profile_quantity_input").value = data.profile_quantity
+        document.getElementById("profile_edit_gender").value = data.profile_gender
+        document.getElementById("profile_edit_diet").value = data.profile_diet
+
+
+        document.getElementById("profile-characteristics-height").innerText = `${data.profile_height} см.`
+        document.getElementById("profile-characteristics-weight").innerText = `${data.profile_weight} кг.`
+        document.getElementById("profile-characteristics-age").innerText = `${data.profile_age} лет`
+        document.getElementById("profile-characteristics-gender").innerText = `${data.profile_gender}`
+        document.getElementById("profile-characteristics-diet").innerText = `${data.profile_diet}`
+        document.getElementById("profile-characteristics-quantity").innerText = `${data.profile_quantity} раз(а)`
+
+        switch (data.profile_gender) {
+          case "male": 
+            document.getElementById("profile-characteristics-gender").innerText = `Мужчина`
+          break;
+          case "female": 
+            document.getElementById("profile-characteristics-gender").innerText = `Женщина`
+          break;
+          default:
+            document.getElementById("profile-characteristics-gender").innerText = `Не указан`
+        }
+
+        switch (data.profile_diet) {
+          case "balanced": 
+            document.getElementById("profile-characteristics-diet").innerText = `Сбалансированный`
+          break;
+          case "carnivore": 
+            document.getElementById("profile-characteristics-diet").innerText = `Мясоед`
+          break;
+          case "vegan": 
+            document.getElementById("profile-characteristics-diet").innerText = `Веган`
+          break;
+          case "omnivore": 
+            document.getElementById("profile-characteristics-diet").innerText = `Любитель`
+          break;
+          default:
+            document.getElementById("profile-characteristics-diet").innerText = `Не указан`
+        }
+
     </script>
+
+
+<script>
+  // Считываем CSS-переменные
+  const rootStyles = getComputedStyle(document.documentElement);
+  const margin = {
+      top: parseInt(rootStyles.getPropertyValue('--margin-top')),
+      right: parseInt(rootStyles.getPropertyValue('--margin-right')),
+      bottom: parseInt(rootStyles.getPropertyValue('--margin-bottom')),
+      left: parseInt(rootStyles.getPropertyValue('--margin-left'))
+  };
+
+  const width = parseInt(rootStyles.getPropertyValue('--chart-width')) - margin.left - margin.right;
+  const heightSvg = parseInt(rootStyles.getPropertyValue('--chart-height')) - margin.top - margin.bottom;
+
+  const age = 25;
+  const lifeExpectancy = 75;
+  const toiletVisits = 2;
+
+  const diet = "мясоед";
+
+  let averageWeight;
+  switch (diet) {
+      case "мясоед":
+          averageWeight = 250;
+          break;
+      case "веган":
+          averageWeight = 300;
+          break;
+      case "фастфуд":
+          averageWeight = 200;
+          break;
+      default:
+          averageWeight = 250;
+  }
+
+  const calculateData = (averageWeight, toiletVisits, age, lifeExpectancy) => {
+      const dailyProduction = averageWeight * toiletVisits;
+      const monthlyProduction = dailyProduction * 30;
+      const yearlyProduction = dailyProduction * 365;
+      const totalLifeProduction = dailyProduction * 365 * (lifeExpectancy - age);
+
+      return [
+          { time: "0 день", amount: 0 },
+          { time: "1 день", amount: dailyProduction / 1000 },
+          { time: "1 месяц", amount: monthlyProduction / 1000 },
+          { time: "1 год", amount: yearlyProduction / 1000 },
+          { time: "50 лет", amount: totalLifeProduction / 1000 }
+      ];
+  };
+
+  const chartData = calculateData(averageWeight, toiletVisits, age, lifeExpectancy);
+
+  const svg = d3.select("#chart")
+      .append("svg")
+      .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${heightSvg + margin.top + margin.bottom}`)
+      .attr("preserveAspectRatio", "xMidYMid meet")
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const x = d3.scalePoint()
+      .domain(chartData.map(d => d.time))
+      .range([0, width]);
+
+  const maxY = d3.max(chartData, d => d.amount) * 1.1;
+
+  const y = d3.scaleLinear()
+      .domain([0, maxY])
+      .range([heightSvg, 0]);
+
+  const makeYGridlines = () => d3.axisLeft(y).ticks(5);
+
+  svg.append("g")
+      .attr("class", "grid")
+      .call(makeYGridlines()
+          .tickSize(-width)
+          .tickFormat("")
+      );
+
+  const xAxis = d3.axisBottom(x);
+  const yAxis = d3.axisLeft(y)
+      .tickFormat(d => `${d} кг`);
+
+  svg.append("g")
+      .attr("class", "x-axis")
+      .attr("transform", `translate(0,${heightSvg})`)
+      .call(xAxis)
+      .selectAll("text")
+      .attr("class", "axis-text");
+
+  svg.append("g")
+      .attr("class", "y-axis")
+      .call(yAxis)
+      .selectAll("text")
+      .attr("class", "axis-text");
+
+  const line = d3.line()
+      .curve(d3.curveCatmullRom.alpha(1.5))
+      .x(d => x(d.time))
+      .y(d => y(d.amount));
+
+  svg.append("path")
+      .datum(chartData)
+      .attr("class", "line")
+      .attr("d", line);
+</script>
+
+
+
   </body>
 </html>

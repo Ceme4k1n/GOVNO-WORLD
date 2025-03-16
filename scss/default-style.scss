@@ -4,8 +4,11 @@ body{
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
     font-family: "Inter", sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 * {

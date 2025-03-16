@@ -1,130 +1,225 @@
-.button-homepage{
+.button-homepage {
     position: absolute;
     top: 5.3vw;
     left: 5vw;
 
-    img{
+    img {
         width: 3.5vw;
         height: auto;
-
     }
 }
 
-.profile{
+.profile {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 2.2vw;
     margin-top: 1vw;
-
-    .profile_user-box{
+    width: 40vw;
+    margin-top: 5vw;
+    margin-bottom: 3vw;
+    
+    .profile_user-box {
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         gap: 1.2vw;
 
-        .profile_user-title{
+        .profile_user-title {
             font-weight: 300;
             font-size: 1.8vw;
         }
 
-        .profile_user-img{
+        .profile_user-img {
             width: 8vw;
             height: 8vw;
             border-radius: 50%;
-
+            object-fit: cover;
         }
     }
 
-    .profile-characteristics-box{
+    .profile-characteristics-box {
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: start;
-        gap: 0.8vw;
+        gap: 1.2vw;
         background-color: #222222;
-        padding: 0.9vw;
-        width: 23vw;
+        padding: 1.3vw;
+        width: 100%;
+        box-sizing: border-box;
+
         border-radius: 0.5vw;
         position: relative;
 
-        .profile-characteristics-buttonChange{
+        .profile-characteristics-buttonChange {
             position: absolute;
             right: 1vw;
             top: 1vw;
         }
 
-        .profile-characteristics-title{
+        .profile-characteristics-title {
             font-size: 1.4vw;
             font-weight: 300;
+            margin-bottom: 0.9vw;
         }
 
-        .profile-characteristics-point{
+        .profile-characteristics-point {
             font-weight: 300;
             font-size: 1vw;
-        }
 
+            span{
+                color: #B8B8B8;
+                font-weight: 400;
+            }
+        }
+    }
+}
+
+// МОДАЛКА МОДАЛКА МОДАЛКА
+// МОДАЛКА МОДАЛКА МОДАЛКА
+// МОДАЛКА МОДАЛКА МОДАЛКА
+
+.profile-edit-modal {
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    display: none;
+    width: 25.5vw;
+    height: fit-content;
+    background-color: #222222;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1vw;
+    border-radius: 0.5vw;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+
+    .profile-edit-modal-close {
+        position: absolute;
+        right: 1.1vw;
+        top: 1.1vw;
+
+        img{
+            width: 1vw;
+            height: auto;
+            box-sizing: border-box;
+        }
     }
 
-    .profile-foodPreferences-box{
+    .profile-edit-modal-title {
+        font-size: 1.5vw;
+        font-weight: 300;
+        width: 92%;
+        display: flex;
+        justify-content: start;
+        margin-top: 1vw;
+        margin-bottom: 1vw;
+        letter-spacing: 0.08vw;
+    }
+
+    .profile-edit-modal-point {
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: space-between;
         align-items: start;
-        width: 23vw;
-        gap: 1vw;
+        background-color: #292929;
+        border-radius: 0.1vw;
+        width: 92%;
+        height: 3.6vw;
+        box-sizing: border-box;
+        border: solid 0.12vw #424242;
 
 
-        .profile-foodPreferences-title{
+        .profile-edit-modal-point-title {
+            color: #B8B8B8;
+            font-size: 0.6vw;
+            margin-left: 0.6vw;
+            margin-top: 0.4vw;
+        }
+
+        .profile-edit-modal-point-subtitle {
+            font-size: 1.2vw;
             font-weight: 300;
-            font-size: 1.5vw;
+            color: #ffffff;
+            margin-left: 0.6vw;
+            margin-bottom: 0.4vw;
         }
 
-        .profile-foodPreferences-choice{
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: start;
-            gap: 0.7vw;
+        .profile-edit-modal-point-subtitle-select {
+            appearance: none;
+            width: 98%;
+            height: fit-content;
+            border-radius: 0.2vw;
+            cursor: pointer;
+            background: none;
+            border: none;
+          }
 
-            .profile-foodPreferences-choice-buttons{
-                position: relative;
-                width: 1.3vw;
-                height: 1.3vw;
-                border-radius: 50%;
-                background-color: #ffffff;
-                border: none;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                position: relative;
-    
+          .profile-edit-modal-point-subtitle-select:focus {
+            outline: none;
+          }
 
-                p{
-                    position: absolute;
-                    left: 2.3vw;
-                    bottom: 50%;
-                    transform: translateY(50%);
-                    font-weight: 300;
-                    font-size: 1vw;
-                    white-space: nowrap;
-                }
-            }
-    
-            .indicator {
-                position: absolute;
-                bottom: 50%;
-                left: 50%;
-                transform: translate(-50%, 50%);
-                width: 0.8vw;
-                height: 0.8vw;
-                border-radius: 50%;
-                background-color: #000000;
-            }
-
-        }
+          .profile-edit-modal-point-subtitle-select option{
+            background-color: #292929;
+          }
     }
 
+    .profile-edit-modal-save {
+        background-color: #ffffff;
+        color: #000000;
+        width: 92%;
+        height: 3.5vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 0.5vw;
+        margin-bottom: 1vw;
+        font-size: 1.2vw;
+        font-weight: 700;
+    }
 }
+
+
+
+
+
+
+
+
+
+
+.registrationContainer-continue {
+    position: absolute;
+}
+
+body.modal-active {
+    overflow: hidden;
+    background-color: #050505;
+    transition: background-color 0.3s;
+}
+
+body.modal-active::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(2px);
+    z-index: 1;
+    transition: all 0.3s;
+}
+
+
+
+
+
+
+
+
+
