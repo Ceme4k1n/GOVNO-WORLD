@@ -230,16 +230,48 @@
     const STORAGE_KEY = "userProfileData";
     const saveButton = document.querySelector(".profile-edit-modal-save");
 
+    if (initDataUnsafe?.user?.first_name) {
+      document.querySelector(".profile_user-title").textContent = initDataUnsafe?.user?.first_name;
+    }
+
+    if (initDataUnsafe?.user?.photo_url) {
+        document.querySelector(".profile_user-img").src = initDataUnsafe.user.photo_url;
+    }
+
     function validateNumber(value, min, max) {
         const num = Number(value);
         return !isNaN(num) && num >= min && num <= max;
     }
+
+    const userProfileData = JSON.parse(localStorage.getItem("userProfileData")) || {};
+    const userToiletVisits = userProfileData.profile_quantity  ? parseInt(userProfileData.profile_quantity ) : 1; 
+    const userDiet = userProfileData.profile_diet  || "omnivore";
     
+    const dietWeights = {
+        balanced: 250,
+        carnivore: 250,
+        vegan: 300,
+        omnivore: 270
+    };
+    console.log(dietWeights[userDiet]);
+
+
+
+    // Вычисляем вес за день, месяц, год
+    const weightPerVisit = dietWeights[userDiet] || 250; // Если вдруг нет в списке — берем 250
+    const dailyProduction = weightPerVisit * userToiletVisits; // В граммах
+    const monthlyProduction = dailyProduction * 30 / 1000; // В кг
+    const yearlyProduction = dailyProduction * 365 / 1000; // В кг
+    const lifetimeProduction = yearlyProduction * 75 / 1000; // В тоннах (при средней продолжительности жизни)
+
+    // Записываем в HTML
+    document.querySelector(".profile-statistics-box .profile-statistics-subbox:nth-child(1) span").textContent = `${dailyProduction} г`;
+    document.querySelector(".profile-statistics-box .profile-statistics-subbox:nth-child(2) span").textContent = `${monthlyProduction.toFixed(1)} кг`;
+    document.querySelector(".profile-statistics-box .profile-statistics-subbox:nth-child(3) span").textContent = `${lifetimeProduction.toFixed(1)} т`;
+
     document.addEventListener("DOMContentLoaded", async () => {
 
     const savedData = localStorage.getItem(STORAGE_KEY);
-    console.log(savedData);
-    
 
     if (savedData) {
         console.log("Данные загружены из LocalStorage");
@@ -416,7 +448,7 @@ profileEditModalClose.addEventListener("click", () => {
     body.classList.remove('modal-active');
 });
 
-  </script>
+</script>
   
 
 
@@ -432,9 +464,9 @@ profileEditModalClose.addEventListener("click", () => {
   const width = parseInt(rootStyles.getPropertyValue('--chart-width')) - margin.left - margin.right;
   const heightSvg = parseInt(rootStyles.getPropertyValue('--chart-height')) - margin.top - margin.bottom;
 
-  const age = 25;
-  const lifeExpectancy = 75;
-  const toiletVisits = 2;
+  const age = userProfileData.profile_age ? parseInt(userProfileData.profile_age) : 25;
+  const lifeExpectancy = userProfileData.lifeExpectancy ? parseInt(userProfileData.lifeExpectancy) : 25;
+  const toiletVisits = userProfileData.profile_quantity  ? parseInt(userProfileData.profile_quantity ) : 1;  
 
   const diet = "мясоед";
 
