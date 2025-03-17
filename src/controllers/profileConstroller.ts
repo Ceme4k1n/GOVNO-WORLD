@@ -29,10 +29,16 @@ export const get_data = async (req: Request, res: Response) => {
 export const update_user_data = async (req: Request, res: Response) => {
   try {
     const { updatedData, initDataUnsafe } = req.body
-    if (!updatedData || !initDataUnsafe) return res.sendStatus(402)
+    if (!updatedData || !initDataUnsafe) {
+      res.sendStatus(402)
+      return
+    }
 
     const user_id = initDataUnsafe?.user?.id
-    if (!user_id) return res.sendStatus(400)
+    if (!user_id) {
+      res.sendStatus(400)
+      return
+    }
 
     const dietMap = {
       balanced: 0,
@@ -53,7 +59,8 @@ export const update_user_data = async (req: Request, res: Response) => {
     for (const { value, min, max, field } of validationRules) {
       if (value < min || value > max) {
         console.warn(`Invalid ${field}: ${value}`)
-        return res.sendStatus(400)
+        res.sendStatus(400)
+        return
       }
     }
 
