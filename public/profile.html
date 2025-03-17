@@ -52,10 +52,97 @@
     stroke-width: 0;
 }
 
-.axis-text {
-    font-size: 16px;
-    fill: #ffffff;
-    font-family: Arial, sans-serif;
+@media (max-width: 1440px) {
+
+  :root {
+    --margin-top: 25vw;
+    --margin-right: 25vw;
+    --margin-bottom: 35vw;
+    --margin-left: 70vw;
+    --chart-width: 800x;
+    --chart-height: 400px;
+}
+
+  #chart {
+    width: 55vw;
+    border-radius: 0.5vw;
+}
+
+}
+
+@media (max-width: 1024px) {
+
+  :root {
+    --margin-top: 25vw;
+    --margin-right: 25vw;
+    --margin-bottom: 35vw;
+    --margin-left: 80vw;
+    --chart-width: 800x;
+    --chart-height: 400px;
+}
+
+  #chart {
+    width: 80vw;
+    border-radius: 0.5vw;
+}
+
+@media (max-width: 768px) {
+
+  :root {
+    --margin-top: 35vw;
+    --margin-right: 25vw;
+    --margin-bottom: 45vw;
+    --margin-left: 90vw;
+    --chart-width: 800x;
+    --chart-height: 400px;
+}
+
+  #chart {
+    width: 70vw;
+    border-radius: 0.5vw;
+}
+
+}
+
+@media (max-width: 600px) {
+
+  :root {
+    --margin-top: 35vw;
+    --margin-right: 30vw;
+    --margin-bottom: 35vw;
+    --margin-left: 95vw;
+    --chart-width: 800x;
+    --chart-height: 400px;
+}
+
+  #chart {
+    width: 80vw;
+    border-radius: 0.5vw;
+}
+
+
+}
+
+
+@media (max-width: 480px) {
+
+  :root {
+    --margin-top: 30vw;
+    --margin-right: 40vw;
+    --margin-bottom: 40vw;
+    --margin-left: 115vw;
+    --chart-width: 800x;
+    --chart-height: 400px;
+}
+
+  #chart {
+    width: 85vw;
+    border-radius: 0.5vw;
+}
+
+
+}
+
 }
   </style>
   <body>
@@ -77,14 +164,34 @@
         <p class="profile-characteristics-point">Тип питания: <span id="profile-characteristics-diet"></span></p>
       </div>
       <div id="chart"></div>
+      <div class="profile-statistics-box">
+        <div class="profile-statistics-subbox">
+          <p>За день</p>
+          <hr>
+          <span>500 грамм</span>
+        </div>
+        <div class="profile-statistics-subbox">
+          <p>За месяц</p>
+          <hr>
+          <span>10 кг</span>
+        </div>
+        <div class="profile-statistics-subbox">
+          <p>За всю жизнь</p>
+          <hr>
+          <span>200 тонн</span>
+        </div>
+      </div>
     </div>
 
     <div class="profile-edit-modal" id="profile-edit-modal">
         <button class="profile-edit-modal-close" id="profile-edit-modal-close"><img src="/img/close.svg" alt=""></button>
-        <h1 class="profile-edit-modal-title">Характеристики:</h1>
         <div class="profile-edit-modal-point">
             <p class="profile-edit-modal-point-title">Рост:</p>
             <input id="profile_height_input" type="number" class="profile-edit-modal-point-subtitle"></input>
+        </div>
+        <div class="profile-edit-modal-point">
+          <p class="profile-edit-modal-point-title">Вес:</p>
+          <input id="profile_weight_input" type="number" class="profile-edit-modal-point-subtitle"></input>
         </div>
         <div class="profile-edit-modal-point">
             <p class="profile-edit-modal-point-title">Возраст:</p>
@@ -144,11 +251,11 @@
         }
         
         document.getElementById("profile_height_input").value = data.profile_height
+        document.getElementById("profile_weight_input").value = data.profile_height
         document.getElementById("profile_age_input").value = data.profile_age
         document.getElementById("profile_quantity_input").value = data.profile_quantity
         document.getElementById("profile_edit_gender").value = data.profile_gender
         document.getElementById("profile_edit_diet").value = data.profile_diet
-
 
         document.getElementById("profile-characteristics-height").innerText = `${data.profile_height} см.`
         document.getElementById("profile-characteristics-weight").innerText = `${data.profile_weight} кг.`
@@ -189,7 +296,6 @@
 
 
 <script>
-  // Считываем CSS-переменные
   const rootStyles = getComputedStyle(document.documentElement);
   const margin = {
       top: parseInt(rootStyles.getPropertyValue('--margin-top')),
@@ -224,16 +330,15 @@
 
   const calculateData = (averageWeight, toiletVisits, age, lifeExpectancy) => {
       const dailyProduction = averageWeight * toiletVisits;
+      const weeklyProduction = dailyProduction * 7;
       const monthlyProduction = dailyProduction * 30;
       const yearlyProduction = dailyProduction * 365;
-      const totalLifeProduction = dailyProduction * 365 * (lifeExpectancy - age);
 
       return [
-          { time: "0 день", amount: 0 },
-          { time: "1 день", amount: dailyProduction / 1000 },
-          { time: "1 месяц", amount: monthlyProduction / 1000 },
-          { time: "1 год", amount: yearlyProduction / 1000 },
-          { time: "50 лет", amount: totalLifeProduction / 1000 }
+          { time: "день", amount: dailyProduction / 1000 },
+          { time: "неделя", amount: weeklyProduction / 1000 },
+          { time: "месяц", amount: monthlyProduction / 1000 },
+          { time: "год", amount: yearlyProduction / 1000 }
       ];
   };
 
@@ -283,7 +388,6 @@
       .attr("class", "axis-text");
 
   const line = d3.line()
-      .curve(d3.curveCatmullRom.alpha(1.5))
       .x(d => x(d.time))
       .y(d => y(d.amount));
 
@@ -292,6 +396,8 @@
       .attr("class", "line")
       .attr("d", line);
 </script>
+
+
 
 
 

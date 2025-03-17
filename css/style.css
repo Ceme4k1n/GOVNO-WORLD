@@ -112,7 +112,7 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
   flex-direction: column;
   justify-content: center;
   align-items: start;
-  gap: 1.2vw;
+  gap: 1vw;
   background-color: #222222;
   padding: 1.3vw;
   width: 100%;
@@ -128,7 +128,6 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
 .profile .profile-characteristics-box .profile-characteristics-title {
   font-size: 1.4vw;
   font-weight: 300;
-  margin-bottom: 0.9vw;
 }
 .profile .profile-characteristics-box .profile-characteristics-point {
   font-weight: 300;
@@ -137,6 +136,42 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
 .profile .profile-characteristics-box .profile-characteristics-point span {
   color: #B8B8B8;
   font-weight: 400;
+}
+.profile .profile-statistics-box {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1.2vw;
+}
+.profile .profile-statistics-box .profile-statistics-subbox {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0.5vw;
+  width: 100%;
+  background-color: #222222;
+  font-weight: 300;
+}
+.profile .profile-statistics-box .profile-statistics-subbox p {
+  font-size: 0.8vw;
+  height: 2.5vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.profile .profile-statistics-box .profile-statistics-subbox span {
+  font-size: 1.1vw;
+  height: 3.5vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.profile .profile-statistics-box .profile-statistics-subbox hr {
+  width: 100%;
+  height: 0.1vw;
+  border: none;
+  background-color: #424242;
 }
 
 .profile-edit-modal {
@@ -155,11 +190,13 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
   border-radius: 0.5vw;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 100;
+  padding-top: 2.2vw;
 }
 .profile-edit-modal .profile-edit-modal-close {
   position: absolute;
-  right: 1.1vw;
-  top: 1.1vw;
+  right: 0.7vw;
+  top: 0.7vw;
+  z-index: 999;
 }
 .profile-edit-modal .profile-edit-modal-close img {
   width: 1vw;
@@ -181,7 +218,6 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
   flex-direction: column;
   justify-content: space-between;
   align-items: start;
-  background-color: #292929;
   border-radius: 0.1vw;
   width: 92%;
   height: 3.6vw;
@@ -190,12 +226,12 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
 }
 .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-title {
   color: #B8B8B8;
-  font-size: 0.6vw;
+  font-size: 0.7vw;
   margin-left: 0.6vw;
   margin-top: 0.4vw;
 }
 .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-subtitle {
-  font-size: 1.2vw;
+  font-size: 1.05vw;
   font-weight: 300;
   color: #ffffff;
   margin-left: 0.6vw;
@@ -217,8 +253,8 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
   background-color: #292929;
 }
 .profile-edit-modal .profile-edit-modal-save {
-  background-color: #ffffff;
-  color: #000000;
+  background-color: #424242;
+  color: #ffffff;
   width: 92%;
   height: 3.5vw;
   display: flex;
@@ -226,8 +262,7 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
   align-items: center;
   border-radius: 0.5vw;
   margin-bottom: 1vw;
-  font-size: 1.2vw;
-  font-weight: 700;
+  font-size: 1vw;
 }
 
 .registrationContainer-continue {
@@ -252,6 +287,652 @@ body.modal-active::before {
   transition: all 0.3s;
 }
 
+.axis-text {
+  font-size: 0.8vw;
+  fill: #ffffff;
+  font-family: Arial, sans-serif;
+}
+
+@media (max-width: 1440px) {
+  .button-homepage {
+    top: 5.3vw;
+    left: 5vw;
+  }
+  .button-homepage img {
+    width: 3.5vw;
+  }
+  .profile {
+    gap: 3vw;
+    margin-top: 1vw;
+    width: 55vw;
+    margin-top: 5vw;
+    margin-bottom: 3vw;
+  }
+  .profile .profile_user-box {
+    gap: 1.2vw;
+  }
+  .profile .profile_user-box .profile_user-title {
+    font-weight: 300;
+    font-size: 2.8vw;
+  }
+  .profile .profile_user-box .profile_user-img {
+    width: 13vw;
+    height: 13vw;
+  }
+  .profile .profile-characteristics-box {
+    gap: 1.5vw;
+    padding: 1.3vw;
+    width: 100%;
+    border-radius: 0.5vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-buttonChange {
+    right: 1vw;
+    top: 1vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-title {
+    font-size: 1.8vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-point {
+    font-size: 1.4vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-point span {
+    font-weight: 400;
+  }
+  .profile .axis-text {
+    font-size: 1.3vw;
+  }
+  .profile .profile-statistics-box {
+    width: 100%;
+    gap: 2.1vw;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox {
+    border-radius: 0.5vw;
+    width: 100%;
+    font-weight: 300;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox p {
+    font-size: 1.2vw;
+    height: 3.5vw;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox span {
+    font-size: 1.4vw;
+    height: 4.5vw;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox hr {
+    width: 100%;
+    height: 0.1vw;
+  }
+  .profile-edit-modal {
+    width: 35vw;
+    gap: 1vw;
+    border-radius: 0.5vw;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    padding-top: 2.9vw;
+  }
+  .profile-edit-modal .profile-edit-modal-close {
+    right: 0.8vw;
+    top: 0.8vw;
+    z-index: 999;
+  }
+  .profile-edit-modal .profile-edit-modal-close img {
+    width: 1.4vw;
+  }
+  .profile-edit-modal .profile-edit-modal-title {
+    font-size: 1.5vw;
+    font-weight: 300;
+    width: 92%;
+    margin-top: 1vw;
+    margin-bottom: 1vw;
+    letter-spacing: 0.08vw;
+  }
+  .profile-edit-modal .profile-edit-modal-point {
+    border-radius: 0.2vw;
+    width: 92%;
+    height: 4.5vw;
+    border: solid 0.12vw #424242;
+  }
+  .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-title {
+    font-size: 1vw;
+    margin-left: 0.7vw;
+    margin-top: 0.5vw;
+  }
+  .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-subtitle {
+    font-size: 1.4vw;
+    margin-left: 0.7vw;
+    margin-bottom: 0.6vw;
+  }
+  .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-subtitle-select {
+    width: 98%;
+    border-radius: 0.2vw;
+  }
+  .profile-edit-modal .profile-edit-modal-save {
+    width: 92%;
+    height: 4.5vw;
+    border-radius: 0.5vw;
+    margin-bottom: 1vw;
+    font-size: 1.3vw;
+  }
+  body.modal-active {
+    transition: background-color 0.3s;
+  }
+  body.modal-active::before {
+    backdrop-filter: blur(2px);
+    transition: all 0.3s;
+  }
+}
+@media (max-width: 1024px) {
+  .button-homepage {
+    top: 5.3vw;
+    left: 5vw;
+  }
+  .button-homepage img {
+    width: 5vw;
+  }
+  .profile {
+    gap: 3vw;
+    margin-top: 1vw;
+    width: 65vw;
+    margin-top: 5vw;
+    margin-bottom: 3vw;
+  }
+  .profile .profile_user-box {
+    gap: 1.2vw;
+  }
+  .profile .profile_user-box .profile_user-title {
+    font-weight: 300;
+    font-size: 3.6vw;
+  }
+  .profile .profile_user-box .profile_user-img {
+    width: 16vw;
+    height: 16vw;
+  }
+  .profile .profile-characteristics-box {
+    gap: 1.8vw;
+    padding: 1.8vw;
+    width: 100%;
+    border-radius: 0.5vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-buttonChange {
+    right: 1.6vw;
+    top: 1.6vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-title {
+    font-size: 2.2vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-point {
+    font-size: 1.8vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-point span {
+    font-weight: 400;
+  }
+  .profile .axis-text {
+    font-size: 2.4vw;
+  }
+  .profile .profile-statistics-box {
+    width: 100%;
+    gap: 2.1vw;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox {
+    border-radius: 0.5vw;
+    width: 100%;
+    font-weight: 300;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox p {
+    font-size: 1.6vw;
+    height: 4.5vw;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox span {
+    font-size: 1.8vw;
+    height: 6vw;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox hr {
+    width: 100%;
+    height: 0.1vw;
+  }
+  .profile-edit-modal {
+    width: 50vw;
+    gap: 1.8vw;
+    border-radius: 0.5vw;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    padding-top: 3.5vw;
+  }
+  .profile-edit-modal .profile-edit-modal-close {
+    right: 0.8vw;
+    top: 0.8vw;
+    z-index: 999;
+  }
+  .profile-edit-modal .profile-edit-modal-close img {
+    width: 1.8vw;
+  }
+  .profile-edit-modal .profile-edit-modal-title {
+    font-size: 1.5vw;
+    font-weight: 300;
+    width: 92%;
+    margin-top: 1vw;
+    margin-bottom: 1vw;
+    letter-spacing: 0.08vw;
+  }
+  .profile-edit-modal .profile-edit-modal-point {
+    border-radius: 0.3vw;
+    width: 92%;
+    height: 6.5vw;
+    border: solid 0.25vw #424242;
+  }
+  .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-title {
+    font-size: 1.5vw;
+    margin-left: 0.9vw;
+    margin-top: 0.7vw;
+  }
+  .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-subtitle {
+    font-size: 2vw;
+    margin-left: 0.9vw;
+    margin-bottom: 0.8vw;
+  }
+  .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-subtitle-select {
+    width: 98%;
+    border-radius: 0.2vw;
+  }
+  .profile-edit-modal .profile-edit-modal-save {
+    width: 92%;
+    height: 6.5vw;
+    border-radius: 0.5vw;
+    margin-bottom: 1vw;
+    font-size: 1.7vw;
+  }
+  body.modal-active {
+    transition: background-color 0.3s;
+  }
+  body.modal-active::before {
+    backdrop-filter: blur(2px);
+    transition: all 0.3s;
+  }
+}
+@media (max-width: 768px) {
+  .button-homepage {
+    top: 5.3vw;
+    left: 5vw;
+  }
+  .button-homepage img {
+    width: 5vw;
+  }
+  .profile {
+    gap: 3.5vw;
+    margin-top: 1vw;
+    width: 70vw;
+    margin-top: 5vw;
+    margin-bottom: 3vw;
+  }
+  .profile .profile_user-box {
+    gap: 1.3vw;
+  }
+  .profile .profile_user-box .profile_user-title {
+    font-weight: 300;
+    font-size: 3.8vw;
+  }
+  .profile .profile_user-box .profile_user-img {
+    width: 18vw;
+    height: 18vw;
+  }
+  .profile .profile-characteristics-box {
+    gap: 2vw;
+    padding: 2.1vw;
+    width: 100%;
+    border-radius: 0.5vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-buttonChange {
+    right: 1.8vw;
+    top: 1.8vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-title {
+    font-size: 2.8vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-point {
+    font-size: 2.3vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-point span {
+    font-weight: 400;
+  }
+  .profile .axis-text {
+    font-size: 3.6vw;
+  }
+  .profile .profile-statistics-box {
+    width: 100%;
+    gap: 2.1vw;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox {
+    border-radius: 0.5vw;
+    width: 100%;
+    font-weight: 300;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox p {
+    font-size: 2vw;
+    height: 6vw;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox span {
+    font-size: 2.3vw;
+    height: 7vw;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox hr {
+    width: 100%;
+    height: 0.1vw;
+  }
+  .profile-edit-modal {
+    width: 60vw;
+    gap: 2.3vw;
+    border-radius: 0.5vw;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    padding-top: 4.5vw;
+  }
+  .profile-edit-modal .profile-edit-modal-close {
+    right: 1vw;
+    top: 1vw;
+    z-index: 999;
+  }
+  .profile-edit-modal .profile-edit-modal-close img {
+    width: 2.5vw;
+  }
+  .profile-edit-modal .profile-edit-modal-title {
+    font-size: 1.5vw;
+    font-weight: 300;
+    width: 92%;
+    margin-top: 1vw;
+    margin-bottom: 1vw;
+    letter-spacing: 0.08vw;
+  }
+  .profile-edit-modal .profile-edit-modal-point {
+    border-radius: 0.3vw;
+    width: 92%;
+    height: 8vw;
+    border: solid 0.3vw #424242;
+  }
+  .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-title {
+    font-size: 2vw;
+    margin-left: 1.1vw;
+    margin-top: 0.8vw;
+  }
+  .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-subtitle {
+    font-size: 2.5vw;
+    margin-left: 1.1vw;
+    margin-bottom: 0.9vw;
+  }
+  .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-subtitle-select {
+    width: 98%;
+    border-radius: 0.2vw;
+  }
+  .profile-edit-modal .profile-edit-modal-save {
+    width: 92%;
+    height: 7.5vw;
+    border-radius: 0.5vw;
+    margin-bottom: 1.8vw;
+    font-size: 2.3vw;
+  }
+  body.modal-active {
+    transition: background-color 0.3s;
+  }
+  body.modal-active::before {
+    backdrop-filter: blur(2px);
+    transition: all 0.3s;
+  }
+}
+@media (max-width: 600px) {
+  .button-homepage {
+    top: 5.3vw;
+    left: 5vw;
+  }
+  .button-homepage img {
+    width: 8vw;
+  }
+  .profile {
+    gap: 4.2vw;
+    margin-top: 1vw;
+    width: 80vw;
+    margin-top: 5vw;
+    margin-bottom: 3vw;
+  }
+  .profile .profile_user-box {
+    gap: 1.3vw;
+  }
+  .profile .profile_user-box .profile_user-title {
+    font-weight: 300;
+    font-size: 5vw;
+  }
+  .profile .profile_user-box .profile_user-img {
+    width: 22vw;
+    height: 22vw;
+  }
+  .profile .profile-characteristics-box {
+    gap: 2.5vw;
+    padding: 2.1vw;
+    width: 100%;
+    border-radius: 0.5vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-buttonChange {
+    right: 1.8vw;
+    top: 1.8vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-title {
+    font-size: 3.5vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-point {
+    font-size: 3vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-point span {
+    font-weight: 400;
+  }
+  .profile .axis-text {
+    font-size: 5vw;
+  }
+  .profile .profile-statistics-box {
+    width: 100%;
+    gap: 2.1vw;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox {
+    border-radius: 0.5vw;
+    width: 100%;
+    font-weight: 300;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox p {
+    font-size: 2.9vw;
+    height: 8vw;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox span {
+    font-size: 3.2vw;
+    height: 10vw;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox hr {
+    width: 100%;
+    height: 0.3vw;
+  }
+  .profile-edit-modal {
+    width: 75vw;
+    gap: 3.3vw;
+    border-radius: 0.5vw;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    padding-top: 6.5vw;
+  }
+  .profile-edit-modal .profile-edit-modal-close {
+    right: 1.5vw;
+    top: 1.5vw;
+    z-index: 999;
+  }
+  .profile-edit-modal .profile-edit-modal-close img {
+    width: 3.3vw;
+  }
+  .profile-edit-modal .profile-edit-modal-title {
+    font-size: 1.5vw;
+    font-weight: 300;
+    width: 92%;
+    margin-top: 1vw;
+    margin-bottom: 1vw;
+    letter-spacing: 0.08vw;
+  }
+  .profile-edit-modal .profile-edit-modal-point {
+    border-radius: 0.2vw;
+    width: 92%;
+    height: 11vw;
+    border: solid 0.35vw #424242;
+  }
+  .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-title {
+    font-size: 2.8vw;
+    margin-left: 1.4vw;
+    margin-top: 1vw;
+  }
+  .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-subtitle {
+    font-size: 3.2vw;
+    margin-left: 1.4vw;
+    margin-bottom: 1.2vw;
+  }
+  .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-subtitle-select {
+    width: 98%;
+    border-radius: 0.2vw;
+  }
+  .profile-edit-modal .profile-edit-modal-save {
+    width: 92%;
+    height: 11vw;
+    border-radius: 0.5vw;
+    margin-bottom: 1.8vw;
+    font-size: 3.3vw;
+  }
+  body.modal-active {
+    transition: background-color 0.3s;
+  }
+  body.modal-active::before {
+    backdrop-filter: blur(2px);
+    transition: all 0.3s;
+  }
+}
+@media (max-width: 480px) {
+  .button-homepage {
+    top: 5.3vw;
+    left: 5vw;
+  }
+  .button-homepage img {
+    width: 8vw;
+  }
+  .profile {
+    gap: 5.5vw;
+    margin-top: 2vw;
+    width: 85vw;
+    margin-top: 5vw;
+    margin-bottom: 3vw;
+  }
+  .profile .profile_user-box {
+    gap: 1.6vw;
+  }
+  .profile .profile_user-box .profile_user-title {
+    font-weight: 300;
+    font-size: 7vw;
+  }
+  .profile .profile_user-box .profile_user-img {
+    width: 30vw;
+    height: 30vw;
+  }
+  .profile .profile-characteristics-box {
+    gap: 3.5vw;
+    padding: 3vw;
+    width: 100%;
+    border-radius: 0.5vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-buttonChange {
+    right: 2.8vw;
+    top: 2.8vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-title {
+    font-size: 4.8vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-point {
+    font-size: 4vw;
+  }
+  .profile .profile-characteristics-box .profile-characteristics-point span {
+    font-weight: 400;
+  }
+  .profile .axis-text {
+    font-size: 8.5vw;
+  }
+  .profile .profile-statistics-box {
+    width: 100%;
+    gap: 2.8vw;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox {
+    border-radius: 0.8vw;
+    width: 100%;
+    font-weight: 300;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox p {
+    font-size: 3.5vw;
+    height: 12vw;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox span {
+    font-size: 3.8vw;
+    height: 14vw;
+  }
+  .profile .profile-statistics-box .profile-statistics-subbox hr {
+    width: 100%;
+    height: 0.4vw;
+  }
+  .profile-edit-modal {
+    width: 75vw;
+    gap: 4vw;
+    border-radius: 1vw;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    padding-top: 7.5vw;
+  }
+  .profile-edit-modal .profile-edit-modal-close {
+    right: 1.5vw;
+    top: 1.5vw;
+    z-index: 999;
+  }
+  .profile-edit-modal .profile-edit-modal-close img {
+    width: 3.8vw;
+  }
+  .profile-edit-modal .profile-edit-modal-title {
+    font-size: 1.5vw;
+    font-weight: 300;
+    width: 90%;
+    margin-top: 1vw;
+    margin-bottom: 1vw;
+    letter-spacing: 0.08vw;
+  }
+  .profile-edit-modal .profile-edit-modal-point {
+    border-radius: 0.3vw;
+    width: 90%;
+    height: 13vw;
+    border: solid 0.35vw #424242;
+  }
+  .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-title {
+    font-size: 3.3vw;
+    margin-left: 1.9vw;
+    margin-top: 1.3vw;
+  }
+  .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-subtitle {
+    font-size: 4vw;
+    margin-left: 1.9vw;
+    margin-bottom: 1.2vw;
+  }
+  .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-subtitle-select {
+    width: 98%;
+    border-radius: 0.2vw;
+  }
+  .profile-edit-modal .profile-edit-modal-save {
+    width: 90%;
+    height: 13vw;
+    border-radius: 0.7vw;
+    margin-bottom: 2.7vw;
+    font-size: 4vw;
+  }
+  body.modal-active {
+    transition: background-color 0.3s;
+  }
+  body.modal-active::before {
+    backdrop-filter: blur(2px);
+    transition: all 0.3s;
+  }
+}
 #chart {
   width: 60vw;
   height: fit-content;
