@@ -1,8 +1,8 @@
 import express from 'express'
-import {} from '../controllers/mapController'
+import { update_shit } from '../controllers/mapController'
 
 const router = express.Router()
 
-router.post('/validate_user')
+router.post('/update_shit', update_shit)
 
 export default router
