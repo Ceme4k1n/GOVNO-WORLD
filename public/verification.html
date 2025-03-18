@@ -148,6 +148,16 @@
                 return Promise.reject('Request failed with status ' + response.status)
               }
               if (response.status === 200) {
+                const data = {
+                  profile_age: user_age,
+                  profile_weight: user_weight,
+                  profile_gender: user_sex ? 'male' : 'female',
+                  profile_height: user_height,
+                  profile_quantity: user_toilet_visits,
+                }
+
+                localStorage.setItem('userProfileData', JSON.stringify(data))
+                console.log('Данные сохранены в LocalStorage:', data)
                 window.location.replace('profile.html')
               }
               return response.json()

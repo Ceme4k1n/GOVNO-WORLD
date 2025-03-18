@@ -28,23 +28,36 @@ export const validate_user = async (req: Request, res: Response) => {
   }
 
   try {
-    await db.none(
+    // Обновляем last_login + обнуляем reminder_type в одном запросе
+    const updatedUser = await db.oneOrNone(
       `
       WITH updated_user AS (
-        UPDATE govno_db.users SET last_login = NOW() WHERE tg_user_id = $1 RETURNING tg_user_id
+        UPDATE govno_db.users 
+        SET last_login = NOW() 
+        WHERE tg_user_id = $1 
+        RETURNING tg_user_id
+      ), updated_reminders AS (
+        UPDATE govno_db.reminder_logs 
+        SET reminder_type = NULL 
+        WHERE user_id = $1
+        RETURNING user_id
       )
-      UPDATE govno_db.reminder_logs SET reminder_type = NULL
-      WHERE user_id = (SELECT tg_user_id FROM updated_user);
-    `,
+      SELECT COALESCE((SELECT tg_user_id FROM updated_user), (SELECT tg_user_id FROM govno_db.users WHERE tg_user_id = $1)) AS user_id;
+      `,
       [user_id]
     )
 
-    console.log('✅ Пользователь найден и напоминания обновлены:', user_id)
-    res.status(201).json({ message: 'User already exist' })
-    return
+    if (!updatedUser || !updatedUser.user_id) {
+      console.log('⚠️ Пользователь не найден:', user_id)
+      res.status(200).json({ message: 'User not found' })
+      return
+    }
+
+    console.log('✅ Пользователь найден и обновлён:', user_id)
+    res.status(201).json({ message: 'User already exists' })
   } catch (error) {
-    console.error('Ошибка при обновлении данных:', error)
-    res.status(501).json({ error: 'Database error' })
+    console.error('❌ Ошибка при обработке запроса:', error)
+    res.status(500).json({ error: 'Database error' })
   }
 }
 

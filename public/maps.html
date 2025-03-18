@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Карта в Telegram Mini App</title>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+      button {
+        padding: 10px 20px;
+        margin: 5px;
+        font-size: 16px;
+        z-index: 1000;
+        position: relative;
+      }
+      #log {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 10px;
+        border-radius: 5px;
+        max-width: 300px;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        z-index: 1000;
+      }
+      #map {
+        width: 100vw;
+        height: 90vh;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <button id="findMeBtn">Найти меня</button>
+    <button id="bigWalkBtn">Сходить по большому</button>
+
+    <div id="log"></div>
+
+    <script>
+      // Подключаем Mapbox
+      mapboxgl.accessToken = 'pk.eyJ1IjoiYTAxMTBlYSIsImEiOiJjbThlamkxZHYwMmZvMnFzZDJzeGdyNzkwIn0.VmDWKxhwtle7wl6hu1O3lA' // Вставь свой токен Mapbox
+      let map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [37.64, 55.76], // Москва по умолчанию
+        zoom: 10,
+      })
+
+      const locationManager = window.Telegram.WebApp.LocationManager
+      locationManager.init(() => {
+        console.log('LocationManager инициализирован')
+      })
+
+      function getTelegramLocation() {
+        return new Promise((resolve, reject) => {
+          if (!locationManager.isInited) {
+            return reject('LocationManager не инициализирован')
+          }
+          if (!locationManager.isAccessGranted) {
+            return reject('Доступ к геолокации не предоставлен')
+          }
+          locationManager.getLocation((location) => {
+            if (location) {
+              resolve(location)
+            } else {
+              reject('Не удалось получить геолокацию через Telegram API')
+            }
+          })
+        })
+      }
+      let userMarker = null // Переменная для маркера пользователя
+
+      // addEventListener('DOMContentLoaded', (event) => {
+      //   getTelegramLocation()
+      //     .then((location) => {
+      //       const lat = location.latitude
+      //       const lon = location.longitude
+
+      //       // Вывод координат в лог
+      //       const log = document.getElementById('log')
+      //       log.innerHTML = `Координаты (TG API): Широта: ${lat}, Долгота: ${lon}`
+
+      //       // Перемещение карты
+      //       map.flyTo({
+      //         center: [lon, lat],
+      //         essential: true,
+      //         zoom: 14,
+      //       })
+      //     })
+      //     .catch((error) => {
+      //       console.error(error)
+      //     })
+      // })
+
+      document.getElementById('findMeBtn').addEventListener('click', function () {
+        getTelegramLocation()
+          .then((location) => {
+            const lat = location.latitude
+            const lon = location.longitude
+
+            // Вывод координат в лог
+            const log = document.getElementById('log')
+            log.innerHTML = `Координаты (TG API): Широта: ${lat}, Долгота: ${lon}`
+
+            // Перемещение карты
+            map.flyTo({
+              center: [lon, lat],
+              essential: true,
+              zoom: 14,
+            })
+
+            // Если метка уже есть, обновляем её положение
+            if (userMarker) {
+              userMarker.setLngLat([lon, lat])
+            } else {
+              // Создаем новую метку
+              userMarker = new mapboxgl.Marker({ color: 'red' }).setLngLat([lon, lat]).addTo(map)
+            }
+          })
+          .catch((error) => {
+            console.error(error)
+          })
+      })
+    </script>
+  </body>
+</html>
