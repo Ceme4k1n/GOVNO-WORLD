@@ -17,14 +17,9 @@ export const update_shit = async (req: Request, res: Response) => {
   try {
     const countResult = await db.query(`SELECT COUNT(*) FROM govno_db.govno_map WHERE user_id = $1 AND date = CURRENT_DATE`, [user_id])
 
-    const visitCount = parseInt(countResult.rows[0].count)
+    console.log(countResult[0].count)
 
-    if (visitCount < 5) {
-      await db.query('INSERT INTO govno_db.govno_map (user_id, visit_lat, visit_lon, visit_count, date) ' + 'VALUES ($1, $2, $3, $4, CURRENT_DATE)', [user_id, lat, lon, visitCount + 1])
-      res.sendStatus(200)
-    } else {
-      res.status(401).send('Max pokakov')
-    }
+    const visitCount = parseInt(countResult[0].count)
   } catch (error) {
     console.error(error)
     res.status(500).send('Server error')
