@@ -72,39 +72,16 @@
           })
         })
       }
-      let userMarker = null // Переменная для маркера пользователя
 
-      // addEventListener('DOMContentLoaded', (event) => {
-      //   getTelegramLocation()
-      //     .then((location) => {
-      //       const lat = location.latitude
-      //       const lon = location.longitude
-
-      //       // Вывод координат в лог
-      //       const log = document.getElementById('log')
-      //       log.innerHTML = `Координаты (TG API): Широта: ${lat}, Долгота: ${lon}`
-
-      //       // Перемещение карты
-      //       map.flyTo({
-      //         center: [lon, lat],
-      //         essential: true,
-      //         zoom: 14,
-      //       })
-      //     })
-      //     .catch((error) => {
-      //       console.error(error)
-      //     })
-      // })
-
-      document.getElementById('findMeBtn').addEventListener('click', function () {
+      // Функция DOMLOADER
+      function DOMLoader() {
         getTelegramLocation()
           .then((location) => {
             const lat = location.latitude
             const lon = location.longitude
 
             // Вывод координат в лог
-            const log = document.getElementById('log')
-            log.innerHTML = `Координаты (TG API): Широта: ${lat}, Долгота: ${lon}`
+            document.getElementById('log').innerHTML = `Координаты (TG API): Широта: ${lat}, Долгота: ${lon}`
 
             // Перемещение карты
             map.flyTo({
@@ -113,13 +90,70 @@
               zoom: 14,
             })
 
-            // Если метка уже есть, обновляем её положение
-            if (userMarker) {
-              userMarker.setLngLat([lon, lat])
-            } else {
-              // Создаем новую метку
-              userMarker = new mapboxgl.Marker({ color: 'red' }).setLngLat([lon, lat]).addTo(map)
-            }
+            // Создание кастомного маркера
+            const poopMarkerEl = document.createElement('div')
+            poopMarkerEl.style.backgroundImage = "url('https://cdn-icons-png.flaticon.com/128/8326/8326492.png')"
+            poopMarkerEl.style.width = '40px'
+            poopMarkerEl.style.height = '40px'
+            poopMarkerEl.style.backgroundSize = 'cover'
+
+            // Добавление кастомного маркера
+            new mapboxgl.Marker({ element: poopMarkerEl }).setLngLat([lon, lat]).addTo(map)
+          })
+          .catch((error) => {
+            console.error(error)
+          })
+      }
+
+      // Вызываем DOMLoader сразу после загрузки страницы
+      document.addEventListener('DOMContentLoaded', DOMLoader)
+
+      // При нажатии на кнопку "Найти меня", просто перемещаем карту
+      document.getElementById('findMeBtn').addEventListener('click', function () {
+        getTelegramLocation()
+          .then((location) => {
+            const lat = location.latitude
+            const lon = location.longitude
+
+            // Вывод координат в лог
+            document.getElementById('log').innerHTML = `Координаты: Широта: ${lat}, Долгота: ${lon}`
+
+            // Перемещение карты
+            map.flyTo({
+              center: [lon, lat],
+              essential: true,
+              zoom: 14,
+            })
+          })
+          .catch((error) => {
+            console.error(error)
+          })
+      })
+
+      // При нажатии на кнопку "Сходить по большому", добавляем маркер
+      document.getElementById('bigWalkBtn').addEventListener('click', function () {
+        getTelegramLocation()
+          .then((location) => {
+            const lat = location.latitude
+            const lon = location.longitude
+
+            document.getElementById('log').innerHTML = `Координаты: Широта: ${lat}, Долгота: ${lon}`
+
+            map.flyTo({
+              center: [lon, lat],
+              essential: true,
+              zoom: 14,
+            })
+
+            // Создание кастомного маркера вместо стандартного
+            const poopMarkerEl = document.createElement('div')
+            poopMarkerEl.style.backgroundImage = "url('https://cdn-icons-png.flaticon.com/128/8277/8277628.png')"
+            poopMarkerEl.style.width = '40px'
+            poopMarkerEl.style.height = '40px'
+            poopMarkerEl.style.backgroundSize = 'cover'
+
+            // Добавление кастомного маркера
+            new mapboxgl.Marker({ element: poopMarkerEl }).setLngLat([lon, lat]).addTo(map)
           })
           .catch((error) => {
             console.error(error)
