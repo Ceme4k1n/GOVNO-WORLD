@@ -9,6 +9,7 @@ import quizRouter from './routes/quiz'
 import referralRouter from './routes/referral'
 import newsRouter from './routes/news'
 import profileRouter from './routes/profile'
+import mapRouter from './routes/map'
 
 import path from 'path'
 
@@ -27,6 +28,7 @@ app.use('/quiz', quizRouter)
 app.use('/referral', referralRouter)
 app.use('/news', newsRouter)
 app.use('/profile', profileRouter)
+app.use('/map', mapRouter)
 
 const SSL_CERT_PATH = '/web/serf/certificate.crt'
 const SSL_KEY_PATH = '/web/serf/certificate.key'

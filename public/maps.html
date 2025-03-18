@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Карта в Telegram Mini App</title>
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css" rel="stylesheet" />
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
       button {
@@ -41,14 +41,13 @@
     <div id="log"></div>
 
     <script>
-      // Подключаем Mapbox
-      mapboxgl.accessToken = 'pk.eyJ1IjoiYTAxMTBlYSIsImEiOiJjbThlamkxZHYwMmZvMnFzZDJzeGdyNzkwIn0.VmDWKxhwtle7wl6hu1O3lA' // Вставь свой токен Mapbox
-      let map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v11',
-        center: [37.64, 55.76], // Москва по умолчанию
-        zoom: 10,
-      })
+      // Инициализация карты с использованием OpenStreetMap и Leaflet
+      let map = L.map('map').setView([55.76, 37.64], 10) // Москва по умолчанию
+
+      // Добавляем OSM слой карты
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map)
 
       const locationManager = window.Telegram.WebApp.LocationManager
       locationManager.init(() => {
@@ -75,8 +74,19 @@
 
       // Функция DOMLOADER
       function DOMLoader() {
+        console.log('DOMLoader вызван')
+
+        // Ждем, пока Telegram API будет готов
+        if (!locationManager.isInited) {
+          console.error('LocationManager еще не инициализирован, ждем...')
+          setTimeout(DOMLoader, 1000) // Пробуем снова через секунду
+          return
+        }
+
         getTelegramLocation()
           .then((location) => {
+            console.log('Геолокация получена:', location)
+
             const lat = location.latitude
             const lon = location.longitude
 
@@ -84,24 +94,20 @@
             document.getElementById('log').innerHTML = `Координаты (TG API): Широта: ${lat}, Долгота: ${lon}`
 
             // Перемещение карты
-            map.flyTo({
-              center: [lon, lat],
-              essential: true,
-              zoom: 14,
-            })
+            map.setView([lat, lon], 14)
 
             // Создание кастомного маркера
-            const poopMarkerEl = document.createElement('div')
-            poopMarkerEl.style.backgroundImage = "url('https://cdn-icons-png.flaticon.com/128/8326/8326492.png')"
-            poopMarkerEl.style.width = '40px'
-            poopMarkerEl.style.height = '40px'
-            poopMarkerEl.style.backgroundSize = 'cover'
+            const markerIcon = L.icon({
+              iconUrl: '/img/marker_icon.png',
+              iconSize: [40, 40], // Размер
+              iconAnchor: [20, 40], // Смещение
+            })
 
             // Добавление кастомного маркера
-            new mapboxgl.Marker({ element: poopMarkerEl }).setLngLat([lon, lat]).addTo(map)
+            L.marker([lat, lon], { icon: markerIcon }).addTo(map)
           })
           .catch((error) => {
-            console.error(error)
+            console.error('Ошибка получения геолокации:', error)
           })
       }
 
@@ -119,11 +125,7 @@
             document.getElementById('log').innerHTML = `Координаты: Широта: ${lat}, Долгота: ${lon}`
 
             // Перемещение карты
-            map.flyTo({
-              center: [lon, lat],
-              essential: true,
-              zoom: 14,
-            })
+            map.setView([lat, lon], 14)
           })
           .catch((error) => {
             console.error(error)
@@ -139,21 +141,16 @@
 
             document.getElementById('log').innerHTML = `Координаты: Широта: ${lat}, Долгота: ${lon}`
 
-            map.flyTo({
-              center: [lon, lat],
-              essential: true,
-              zoom: 14,
-            })
+            map.setView([lat, lon], 14)
 
             // Создание кастомного маркера вместо стандартного
-            const poopMarkerEl = document.createElement('div')
-            poopMarkerEl.style.backgroundImage = "url('https://cdn-icons-png.flaticon.com/128/8277/8277628.png')"
-            poopMarkerEl.style.width = '40px'
-            poopMarkerEl.style.height = '40px'
-            poopMarkerEl.style.backgroundSize = 'cover'
+            const poopIcon = L.divIcon({
+              className: 'poop-icon',
+              html: `<img src="https://cdn-icons-png.flaticon.com/128/8277/8277628.png" style="width: 40px; height: 40px;"/>`,
+            })
 
             // Добавление кастомного маркера
-            new mapboxgl.Marker({ element: poopMarkerEl }).setLngLat([lon, lat]).addTo(map)
+            L.marker([lat, lon], { icon: poopIcon }).addTo(map)
           })
           .catch((error) => {
             console.error(error)
