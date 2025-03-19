@@ -43,6 +43,8 @@
     <script>
       const tg = window.Telegram.WebApp
       const initDataUnsafe = tg.initDataUnsafe
+      const locationManager = window.Telegram.WebApp.LocationManager
+
       // Инициализация карты с использованием OpenStreetMap и Leaflet
       let map = L.map('map').setView([55.76, 37.64], 10) // Москва по умолчанию
 
@@ -51,167 +53,178 @@
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(map)
 
-      const locationManager = window.Telegram.WebApp.LocationManager
-      locationManager.init(() => {
-        alert('LocationManager инициализирован')
-      })
+      // Добавляем переменную для хранения логов
+      let logHistory = []
 
+      // Функция для добавления логов
+      function addLog(message) {
+        logHistory.push(message)
+        updateLogDisplay()
+      }
+
+      // Функция для обновления отображения логов
+      function updateLogDisplay() {
+        const logElement = document.getElementById('log')
+        logElement.innerHTML = logHistory.join('<br>')
+        // Автоматическая прокрутка к последнему сообщению
+        logElement.scrollTop = logElement.scrollHeight
+      }
+
+      // Функция для получения геолокации через Telegram
       function getTelegramLocation() {
         return new Promise((resolve, reject) => {
-          if (!locationManager.isInited) {
-            return alert('LocationManager не инициализирован')
-          }
-          if (!locationManager.isAccessGranted) {
-            return alert('Доступ к геолокации не предоставлен')
-          }
+          addLog('Проверка LocationManager:')
+          addLog(`- Инициализирован: ${locationManager.isInited}`)
+          addLog(`- Доступ разрешен: ${locationManager.isAccessGranted}`)
+          addLog(`- Платформа: ${tg.platform}`)
+
           locationManager.getLocation((location) => {
             if (location) {
               resolve(location)
             } else {
-              reject('Не удалось получить геолокацию через Telegram API')
+              reject('Не удалось получить геолокацию через Telegram')
             }
           })
         })
       }
 
-      function DOMLoader() {
-        console.log('DOMLoader вызван')
-
-        if (!locationManager.isInited) {
-          console.error('LocationManager еще не инициализирован, ждем...')
-          setTimeout(DOMLoader, 1000) // Пробуем снова через секунду
-          return
-        }
-
-        getTelegramLocation()
-          .then((location) => {
-            console.log('Геолокация получена:', location)
-
-            const lat = location.latitude
-            const lon = location.longitude
-
-            document.getElementById('log').innerHTML = `Координаты (TG API): Широта: ${lat}, Долгота: ${lon}`
-
-            map.setView([lat, lon], 14)
-
-            const markerIcon = L.icon({
-              iconUrl: '/img/marker_icon.png',
-              iconSize: [40, 40], // Размер
-              iconAnchor: [20, 40], // Смещение
-            })
-
-            L.marker([lat, lon], { icon: markerIcon }).addTo(map)
-          })
-          .catch((error) => {
-            console.error('Ошибка получения геолокации:', error)
-          })
-      }
-
-      document.addEventListener('DOMContentLoaded', DOMLoader)
-      document.addEventListener('DOMContentLoaded', loadShits)
-
-      document.getElementById('findMeBtn').addEventListener('click', function () {
-        getTelegramLocation()
-          .then((location) => {
-            const lat = location.latitude
-            const lon = location.longitude
-
-            document.getElementById('log').innerHTML = `Координаты: Широта: ${lat}, Долгота: ${lon}`
-
-            map.setView([lat, lon], 14)
-          })
-          .catch((error) => {
-            console.error(error)
-          })
-      })
-
-      document.getElementById('bigWalkBtn').addEventListener('click', function () {
-        const lastShitTime = localStorage.getItem('lastShitTime')
-        const now = Date.now()
-
-        if (lastShitTime) {
-          const timeDiff = (now - parseInt(lastShitTime)) / 60000 // разница в минутах
-          if (timeDiff < 60) {
-            alert(`Следующий поход в туалет доступен через ${Math.ceil(60 - timeDiff)} минут`)
+      // Функция для получения геолокации через браузер
+      function getBrowserLocation() {
+        return new Promise((resolve, reject) => {
+          if (!navigator.geolocation) {
+            reject('Геолокация не поддерживается браузером')
             return
           }
-        }
-        getTelegramLocation()
-          .then((location) => {
-            const lat = location.latitude + Math.random() / 10000
-            const lon = location.longitude - Math.random() / 10000
 
-            fetch('/map/update_shit', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ initDataUnsafe, lat, lon }),
-            })
-              .then(async (response) => {
-                if (response.status === 401) {
-                  document.getElementById('log').innerHTML = `Слишком много покаков`
-                  return Promise.reject('401 Unauthorized')
-                }
-                if (response.status === 429) {
-                  const data = await response.json()
-                  document.getElementById('log').innerHTML = data.message
-                  return Promise.reject('429 Too Many Requests')
-                }
-                if (!response.ok) {
-                  return Promise.reject('Request failed with status ' + response.status)
-                }
-                if (response.status === 200) {
-                  localStorage.setItem('lastShitTime', Date.now())
+          addLog('Запрос геолокации через браузер...')
 
-                  const poopIcon = L.divIcon({
-                    className: 'poop-icon',
-                    html: `<img src="https://cdn-icons-png.flaticon.com/128/8277/8277628.png" style="width: 40px; height: 40px;"/>`,
-                  })
-                  L.marker([lat, lon], { icon: poopIcon }).addTo(map)
-                  map.setView([lat, lon], 20)
-                }
-                return response.json()
-              })
-              .catch((error) => {
-                console.error('Ошибка запроса:', error)
-              })
-          })
-          .catch((error) => {
-            console.error(error)
-          })
-      })
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              const location = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+              }
 
-      function loadShits() {
-        let storedShit = localStorage.getItem('shitMarks')
+              addLog('Геолокация получена через браузер')
 
-        if (storedShit) {
-          alert('Загружаем данные о посере')
-          storedShits = JSON.parse(storedShits)
-          storedShits.forEach(addMarker)
-        } else {
-          alert('Запрашиваем данные с сервера')
-          fetch('/map/get_shits', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ initDataUnsafe }),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              localStorage.setItem('shitMarks', JSON.stringify(data.shits)) // Кешируем
-              data.shits.forEach(addMarker)
-            })
-            .catch((error) => console.error('Ошибка при загрузке отметок:', error))
-        }
-      }
+              try {
+                await updateTelegramPermissions()
+                addLog('Разрешения в Telegram обновлены')
+              } catch (error) {
+                addLog('Не удалось обновить разрешения в Telegram')
+              }
 
-      function addMarker({ lat, lon, date }) {
-        const poopIcon = L.divIcon({
-          className: 'poop-icon',
-          html: `<img src="https://cdn-icons-png.flaticon.com/128/8277/8277628.png" style="width: 40px; height: 40px;"/>`,
+              resolve(location)
+            },
+            (error) => {
+              let errorMessage = 'Ошибка получения геолокации: '
+              switch (error.code) {
+                case error.PERMISSION_DENIED:
+                  errorMessage += 'Необходимо разрешить доступ к геолокации'
+                  break
+                case error.POSITION_UNAVAILABLE:
+                  errorMessage += 'Геолокация недоступна'
+                  break
+                case error.TIMEOUT:
+                  errorMessage += 'Превышено время ожидания'
+                  break
+                default:
+                  errorMessage += 'Неизвестная ошибка'
+              }
+              addLog(errorMessage)
+              reject(errorMessage)
+            }
+          )
         })
-        L.marker([lat, lon], { icon: poopIcon }).addTo(map).bindPopup(`Дата: ${date}`)
       }
+
+      // Функция для обновления разрешений в Telegram
+      function updateTelegramPermissions() {
+        return new Promise((resolve) => {
+          if (!locationManager.isInited) {
+            locationManager.init(() => {
+              addLog('LocationManager инициализирован')
+              locationManager.requestAccess()
+              resolve()
+            })
+          } else {
+            locationManager.requestAccess()
+            resolve()
+          }
+        })
+      }
+
+      // Функция для обновления позиции на карте
+      function updateMapPosition(location, source = '') {
+        const { latitude, longitude } = location
+        map.setView([latitude, longitude], 15)
+
+        const userIcon = L.icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+        })
+
+        L.marker([latitude, longitude], { icon: userIcon }).addTo(map)
+
+        // Добавляем координаты в начало списка логов
+        logHistory.unshift(`--------------------`)
+        logHistory.unshift(`Получено через: ${source}`)
+        logHistory.unshift(`Ваши координаты: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
+        updateLogDisplay()
+      }
+
+      // Основная функция инициализации геолокации
+      async function initializeLocation() {
+        try {
+          logHistory = [] // Очищаем историю логов при каждой инициализации
+          addLog(`Инициализация...`)
+          addLog(`Платформа: ${tg.platform}`)
+
+          await new Promise((resolve) => {
+            if (locationManager.isInited) {
+              addLog('LocationManager уже инициализирован')
+              resolve()
+              return
+            }
+            locationManager.init(() => {
+              addLog('LocationManager инициализирован')
+              resolve()
+            })
+          })
+
+          if (!locationManager.isAccessGranted) {
+            addLog('Нет доступа к геолокации в Telegram')
+            try {
+              await updateTelegramPermissions()
+              const telegramLocation = await getTelegramLocation()
+              updateMapPosition(telegramLocation, 'Telegram API')
+              return
+            } catch (error) {
+              addLog('Переключаемся на браузерную геолокацию')
+              const browserLocation = await getBrowserLocation()
+              updateMapPosition(browserLocation, 'Браузер')
+            }
+            return
+          }
+
+          addLog('Доступ к геолокации в Telegram разрешен')
+          const telegramLocation = await getTelegramLocation()
+          updateMapPosition(telegramLocation, 'Telegram API')
+        } catch (error) {
+          addLog('Ошибка получения геолокации через Telegram')
+
+          try {
+            const browserLocation = await getBrowserLocation()
+            updateMapPosition(browserLocation, 'Браузер')
+          } catch (browserError) {
+            addLog('Не удалось получить геолокацию. Проверьте настройки устройства.')
+          }
+        }
+      }
+
+      // Запускаем инициализацию при загрузке страницы
+      document.addEventListener('DOMContentLoaded', initializeLocation)
     </script>
   </body>
 </html>
