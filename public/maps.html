@@ -225,6 +225,66 @@
 
       // Запускаем инициализацию при загрузке страницы
       document.addEventListener('DOMContentLoaded', initializeLocation)
+
+      document.getElementById('bigWalkBtn').addEventListener('click', async function () {})
+
+      document.getElementById('bigWalkBtn').addEventListener('click', async function () {
+        const lastShitTime = localStorage.getItem('lastShitTime')
+        const now = Date.now()
+
+        if (lastShitTime) {
+          const timeDiff = (now - parseInt(lastShitTime)) / 60000 // разница в минутах
+          if (timeDiff < 60) {
+            alert(`Следующий поход в туалет доступен через ${Math.ceil(60 - timeDiff)} минут`)
+            return // Выход из функции, чтобы не продолжать выполнение кода
+          }
+        }
+
+        try {
+          if (!locationManager.isAccessGranted) {
+            addLog('Нет доступа к геолокации в Telegram')
+            await updateTelegramPermissions()
+          }
+
+          const location = await getTelegramLocation()
+          const lat = location.latitude + Math.random() / 10000
+          const lon = location.longitude - Math.random() / 10000
+
+          const response = await fetch('/map/update_shit', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ initDataUnsafe, lat, lon }),
+          })
+
+          if (response.status === 401) {
+            document.getElementById('log').innerHTML = `Слишком много покаков`
+            throw new Error('401 Unauthorized')
+          }
+          if (response.status === 429) {
+            const data = await response.json()
+            document.getElementById('log').innerHTML = data.message
+            throw new Error('429 Too Many Requests')
+          }
+          if (!response.ok) {
+            throw new Error('Request failed with status ' + response.status)
+          }
+
+          if (response.status === 200) {
+            localStorage.setItem('lastShitTime', Date.now())
+
+            const poopIcon = L.divIcon({
+              className: 'poop-icon',
+              html: `<img src="https://cdn-icons-png.flaticon.com/128/8277/8277628.png" style="width: 40px; height: 40px;"/>`,
+            })
+            L.marker([lat, lon], { icon: poopIcon }).addTo(map)
+            map.setView([lat, lon], 20)
+          }
+        } catch (error) {
+          console.error('Ошибка запроса:', error)
+        }
+      })
     </script>
   </body>
 </html>
