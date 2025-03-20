@@ -226,7 +226,60 @@
       // Запускаем инициализацию при загрузке страницы
       document.addEventListener('DOMContentLoaded', initializeLocation)
 
-      document.getElementById('bigWalkBtn').addEventListener('click', async function () {})
+      document.getElementById('findMeBtn').addEventListener('click', async function () {
+        try {
+          addLog('Запуск поиска местоположения...')
+
+          // Инициализируем LocationManager, если еще не инициализирован
+          if (!locationManager.isInited) {
+            addLog('Инициализируем LocationManager...')
+            await new Promise((resolve) => locationManager.init(resolve))
+          }
+
+          // Проверяем, был ли запрошен доступ к геолокации
+          if (!locationManager.isAccessGranted) {
+            addLog('Доступ к геолокации не запрашивался. Запрашиваем доступ...')
+            locationManager.getLocation()
+
+            // Даем немного времени на обновление статуса доступа
+            await new Promise((resolve) => setTimeout(resolve, 2000))
+          }
+
+          // Проверяем еще раз после запроса доступа
+          if (locationManager.isAccessGranted) {
+            addLog('Геолокация Telegram разрешена, получаем координаты...')
+            const location = await getTelegramLocation()
+            updateMapPosition(location, 'Telegram API')
+            return
+          }
+
+          // Если Telegram не дал доступ, отправляем пользователя в настройки
+          addLog('Доступ к Telegram геолокации запрещен. Открываем настройки Telegram...')
+          locationManager.openSettings()
+
+          // Ждем 3 секунды, чтобы дать пользователю время разрешить доступ
+          await new Promise((resolve) => setTimeout(resolve, 3000))
+
+          // Проверяем снова после открытия настроек
+          if (locationManager.isAccessGranted) {
+            addLog('Повторная проверка Telegram геолокации... Разрешение получено!')
+            const location = await getTelegramLocation()
+            updateMapPosition(location, 'Telegram API')
+            return
+          }
+
+          // Если после настроек доступ не дали, пробуем браузерную геолокацию
+          addLog('Геолокация Telegram все еще недоступна. Пробуем через браузер...')
+          try {
+            const browserLocation = await getBrowserLocation()
+            updateMapPosition(browserLocation, 'Браузер')
+          } catch (error) {
+            addLog('Ошибка: Геолокация через браузер тоже недоступна.')
+          }
+        } catch (error) {
+          addLog('Ошибка при поиске местоположения: ' + error)
+        }
+      })
 
       document.getElementById('bigWalkBtn').addEventListener('click', async function () {
         const lastShitTime = localStorage.getItem('lastShitTime')
