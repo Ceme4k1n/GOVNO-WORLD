@@ -36,126 +36,76 @@
   <body>
     <div id="map"></div>
     <button id="findMeBtn">Найти меня</button>
-    <button id="bigWalkBtn">Сходить по большому</button>
-
     <div id="log"></div>
 
     <script>
       const tg = window.Telegram.WebApp
-      const initDataUnsafe = tg.initDataUnsafe
-      const locationManager = window.Telegram.WebApp.LocationManager
+      const locationManager = tg.LocationManager
 
-      // Инициализация карты с использованием OpenStreetMap и Leaflet
+      document.addEventListener('DOMContentLoaded', initializeLocation)
+
       let map = L.map('map').setView([55.76, 37.64], 10) // Москва по умолчанию
 
-      // Добавляем OSM слой карты
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        attribution: '&copy; OpenStreetMap contributors',
       }).addTo(map)
 
-      // Добавляем переменную для хранения логов
       let logHistory = []
 
-      // Функция для добавления логов
       function addLog(message) {
         logHistory.push(message)
         updateLogDisplay()
       }
 
-      // Функция для обновления отображения логов
       function updateLogDisplay() {
         const logElement = document.getElementById('log')
         logElement.innerHTML = logHistory.join('<br>')
-        // Автоматическая прокрутка к последнему сообщению
         logElement.scrollTop = logElement.scrollHeight
       }
 
-      // Функция для получения геолокации через Telegram
       function getTelegramLocation() {
         return new Promise((resolve, reject) => {
-          addLog('Проверка LocationManager:')
-          addLog(`- Инициализирован: ${locationManager.isInited}`)
-          addLog(`- Доступ разрешен: ${locationManager.isAccessGranted}`)
-          addLog(`- Платформа: ${tg.platform}`)
+          if (!locationManager.isAccessGranted) {
+            addLog('❌ Нет доступа к геолокации. Открываем настройки...')
+            locationManager.openSettings()
+
+            let attempts = 0
+            let interval = setInterval(() => {
+              locationManager.init(() => {
+                if (locationManager.isAccessGranted) {
+                  clearInterval(interval)
+                  addLog('✅ Доступ к геолокации получен!')
+                  resolve(getTelegramLocation()) // Повторный вызов
+                }
+              })
+              attempts++
+              if (attempts > 10) {
+                clearInterval(interval)
+                reject('Доступ так и не был предоставлен.')
+              }
+            }, 1000)
+            return
+          }
+
+          addLog('📍 Запрос геопозиции через Telegram...')
+
+          let timeout = setTimeout(() => {
+            reject('⏳ Telegram завис при получении местоположения.')
+          }, 10000)
 
           locationManager.getLocation((location) => {
+            clearTimeout(timeout)
             if (location) {
+              addLog(`📌 Координаты: ${JSON.stringify(location)}`)
               resolve(location)
             } else {
-              reject('Не удалось получить геолокацию через Telegram')
+              reject('❌ Ошибка получения геолокации через Telegram.')
             }
           })
         })
       }
 
-      // Функция для получения геолокации через браузер
-      function getBrowserLocation() {
-        return new Promise((resolve, reject) => {
-          if (!navigator.geolocation) {
-            reject('Геолокация не поддерживается браузером')
-            return
-          }
-
-          addLog('Запрос геолокации через браузер...')
-
-          navigator.geolocation.getCurrentPosition(
-            async (position) => {
-              const location = {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-              }
-
-              addLog('Геолокация получена через браузер')
-
-              try {
-                await updateTelegramPermissions()
-                addLog('Разрешения в Telegram обновлены')
-              } catch (error) {
-                addLog('Не удалось обновить разрешения в Telegram')
-              }
-
-              resolve(location)
-            },
-            (error) => {
-              let errorMessage = 'Ошибка получения геолокации: '
-              switch (error.code) {
-                case error.PERMISSION_DENIED:
-                  errorMessage += 'Необходимо разрешить доступ к геолокации'
-                  break
-                case error.POSITION_UNAVAILABLE:
-                  errorMessage += 'Геолокация недоступна'
-                  break
-                case error.TIMEOUT:
-                  errorMessage += 'Превышено время ожидания'
-                  break
-                default:
-                  errorMessage += 'Неизвестная ошибка'
-              }
-              addLog(errorMessage)
-              reject(errorMessage)
-            }
-          )
-        })
-      }
-
-      // Функция для обновления разрешений в Telegram
-      function updateTelegramPermissions() {
-        return new Promise((resolve) => {
-          if (!locationManager.isInited) {
-            locationManager.init(() => {
-              addLog('LocationManager инициализирован')
-              locationManager.requestAccess()
-              resolve()
-            })
-          } else {
-            locationManager.requestAccess()
-            resolve()
-          }
-        })
-      }
-
-      // Функция для обновления позиции на карте
-      function updateMapPosition(location, source = '') {
+      function updateMapPosition(location) {
         const { latitude, longitude } = location
         map.setView([latitude, longitude], 15)
 
@@ -167,175 +117,88 @@
 
         L.marker([latitude, longitude], { icon: userIcon }).addTo(map)
 
-        // Добавляем координаты в начало списка логов
-        logHistory.unshift(`--------------------`)
-        logHistory.unshift(`Получено через: ${source}`)
         logHistory.unshift(`Ваши координаты: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
         updateLogDisplay()
       }
 
-      // Основная функция инициализации геолокации
       async function initializeLocation() {
         try {
-          logHistory = [] // Очищаем историю логов при каждой инициализации
-          addLog(`Инициализация...`)
-          addLog(`Платформа: ${tg.platform}`)
+          logHistory = []
+          addLog('Инициализация...')
 
+          // Явно ждем инициализации
           await new Promise((resolve) => {
-            if (locationManager.isInited) {
-              addLog('LocationManager уже инициализирован')
-              resolve()
-              return
-            }
             locationManager.init(() => {
-              addLog('LocationManager инициализирован')
+              addLog('✅ LocationManager инициализирован')
               resolve()
             })
           })
 
-          if (!locationManager.isAccessGranted) {
-            addLog('Нет доступа к геолокации в Telegram')
-            try {
-              await updateTelegramPermissions()
-              const telegramLocation = await getTelegramLocation()
-              updateMapPosition(telegramLocation, 'Telegram API')
-              return
-            } catch (error) {
-              addLog('Переключаемся на браузерную геолокацию')
-              const browserLocation = await getBrowserLocation()
-              updateMapPosition(browserLocation, 'Браузер')
-            }
+          addLog('🔍 Проверяем доступ к геолокации...')
+
+          if (!locationManager.isAccessRequested) {
+            addLog('📌 Запрашиваем доступ к геолокации...')
+            locationManager.getLocation((location) => {
+              if (location) {
+                updateMapPosition(location)
+              } else {
+                addLog('❌ Доступ не был предоставлен пользователем.')
+              }
+            })
             return
           }
 
-          addLog('Доступ к геолокации в Telegram разрешен')
-          const telegramLocation = await getTelegramLocation()
-          updateMapPosition(telegramLocation, 'Telegram API')
-        } catch (error) {
-          addLog('Ошибка получения геолокации через Telegram')
-
-          try {
-            const browserLocation = await getBrowserLocation()
-            updateMapPosition(browserLocation, 'Браузер')
-          } catch (browserError) {
-            addLog('Не удалось получить геолокацию. Проверьте настройки устройства.')
+          if (!locationManager.isAccessGranted) {
+            addLog('🚫 Геолокация запрещена. Открываем настройки...')
+            locationManager.openSettings()
+            return
           }
+
+          addLog('📍 Получаем местоположение...')
+          const telegramLocation = await getTelegramLocation()
+          updateMapPosition(telegramLocation)
+        } catch (error) {
+          addLog('❌ Ошибка: ' + error)
         }
       }
-
-      // Запускаем инициализацию при загрузке страницы
-      document.addEventListener('DOMContentLoaded', initializeLocation)
 
       document.getElementById('findMeBtn').addEventListener('click', async function () {
         try {
           addLog('Запуск поиска местоположения...')
 
-          // Инициализируем LocationManager, если еще не инициализирован
-          if (!locationManager.isInited) {
-            addLog('Инициализируем LocationManager...')
-            await new Promise((resolve) => locationManager.init(resolve))
-          }
-
-          // Проверяем, был ли запрошен доступ к геолокации
-          if (!locationManager.isAccessGranted) {
-            addLog('Доступ к геолокации не запрашивался. Запрашиваем доступ...')
-            locationManager.getLocation()
-
-            // Даем немного времени на обновление статуса доступа
-            await new Promise((resolve) => setTimeout(resolve, 2000))
-          }
-
-          // Проверяем еще раз после запроса доступа
-          if (locationManager.isAccessGranted) {
-            addLog('Геолокация Telegram разрешена, получаем координаты...')
-            const location = await getTelegramLocation()
-            updateMapPosition(location, 'Telegram API')
-            return
-          }
-
-          // Если Telegram не дал доступ, отправляем пользователя в настройки
-          addLog('Доступ к Telegram геолокации запрещен. Открываем настройки Telegram...')
-          locationManager.openSettings()
-
-          // Ждем 3 секунды, чтобы дать пользователю время разрешить доступ
-          await new Promise((resolve) => setTimeout(resolve, 3000))
-
-          // Проверяем снова после открытия настроек
-          if (locationManager.isAccessGranted) {
-            addLog('Повторная проверка Telegram геолокации... Разрешение получено!')
-            const location = await getTelegramLocation()
-            updateMapPosition(location, 'Telegram API')
-            return
-          }
-
-          // Если после настроек доступ не дали, пробуем браузерную геолокацию
-          addLog('Геолокация Telegram все еще недоступна. Пробуем через браузер...')
-          try {
-            const browserLocation = await getBrowserLocation()
-            updateMapPosition(browserLocation, 'Браузер')
-          } catch (error) {
-            addLog('Ошибка: Геолокация через браузер тоже недоступна.')
-          }
-        } catch (error) {
-          addLog('Ошибка при поиске местоположения: ' + error)
-        }
-      })
-
-      document.getElementById('bigWalkBtn').addEventListener('click', async function () {
-        const lastShitTime = localStorage.getItem('lastShitTime')
-        const now = Date.now()
-
-        if (lastShitTime) {
-          const timeDiff = (now - parseInt(lastShitTime)) / 60000 // разница в минутах
-          if (timeDiff < 60) {
-            alert(`Следующий поход в туалет доступен через ${Math.ceil(60 - timeDiff)} минут`)
-            return // Выход из функции, чтобы не продолжать выполнение кода
-          }
-        }
-
-        try {
-          if (!locationManager.isAccessGranted) {
-            addLog('Нет доступа к геолокации в Telegram')
-            await updateTelegramPermissions()
-          }
-
-          const location = await getTelegramLocation()
-          const lat = location.latitude + Math.random() / 10000
-          const lon = location.longitude - Math.random() / 10000
-
-          const response = await fetch('/map/update_shit', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ initDataUnsafe, lat, lon }),
+          locationManager.init(() => {
+            addLog('LocationManager инициализирован')
           })
 
-          if (response.status === 401) {
-            document.getElementById('log').innerHTML = `Слишком много покаков`
-            throw new Error('401 Unauthorized')
-          }
-          if (response.status === 429) {
-            const data = await response.json()
-            document.getElementById('log').innerHTML = data.message
-            throw new Error('429 Too Many Requests')
-          }
-          if (!response.ok) {
-            throw new Error('Request failed with status ' + response.status)
+          addLog('Проверяем статус доступа к геолокации...')
+
+          if (!locationManager.isAccessGranted) {
+            addLog('Геолокация запрещена. Открываем настройки...')
+            locationManager.openSettings()
+
+            for (let i = 0; i < 10; i++) {
+              await new Promise((resolve) => setTimeout(resolve, 1000))
+              locationManager.init()
+              if (locationManager.isAccessGranted) {
+                addLog('Доступ к геолокации предоставлен!')
+                break
+              }
+            }
+
+            if (!locationManager.isAccessGranted) {
+              addLog('Доступ так и не был предоставлен.')
+              return
+            }
           }
 
-          if (response.status === 200) {
-            localStorage.setItem('lastShitTime', Date.now())
+          addLog('Доступ есть, получаем местоположение...')
 
-            const poopIcon = L.divIcon({
-              className: 'poop-icon',
-              html: `<img src="https://cdn-icons-png.flaticon.com/128/8277/8277628.png" style="width: 40px; height: 40px;"/>`,
-            })
-            L.marker([lat, lon], { icon: poopIcon }).addTo(map)
-            map.setView([lat, lon], 20)
-          }
+          const location = await getTelegramLocation()
+          addLog(`Координаты получены: ${JSON.stringify(location)}`)
+
+          updateMapPosition(location)
         } catch (error) {
-          console.error('Ошибка запроса:', error)
+          addLog('Ошибка при поиске местоположения: ' + error)
         }
       })
     </script>
