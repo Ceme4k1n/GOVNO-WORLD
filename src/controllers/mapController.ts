@@ -67,7 +67,7 @@ export const get_shits = async (req: Request, res: Response) => {
     const shitMarks = await db.any(`SELECT visit_lat as lat, visit_lon as lon, date FROM govno_db.govno_map WHERE user_id = $1 ORDER BY date DESC`, [user_id])
     console.log(shitMarks)
 
-    res.json({ shits: shitMarks })
+    res.status(200).json({ shits: shitMarks })
   } catch (error) {
     console.error(error)
     res.status(500).send('Server error')

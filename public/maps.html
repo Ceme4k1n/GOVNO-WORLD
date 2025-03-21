@@ -36,11 +36,14 @@
   <body>
     <div id="map"></div>
     <button id="findMeBtn">Найти меня</button>
+    <button id="bigWalkBtn">Сделать покак</button>
+
     <div id="log"></div>
 
     <script>
       const tg = window.Telegram.WebApp
       const locationManager = tg.LocationManager
+      const initDataUnsafe = tg.initDataUnsafe
 
       document.addEventListener('DOMContentLoaded', initializeLocation)
 
@@ -157,6 +160,7 @@
           addLog('📍 Получаем местоположение...')
           const telegramLocation = await getTelegramLocation()
           updateMapPosition(telegramLocation)
+          loadShits()
         } catch (error) {
           addLog('❌ Ошибка: ' + error)
         }
@@ -201,6 +205,119 @@
           addLog('Ошибка при поиске местоположения: ' + error)
         }
       })
+
+      document.getElementById('bigWalkBtn').addEventListener('click', async function () {
+        try {
+          const lastShitTime = localStorage.getItem('lastShitTime')
+          const now = Date.now()
+
+          console.log('📦 Данные в localStorage:', lastShitTime)
+
+          if (lastShitTime) {
+            const timeDiff = (now - parseInt(lastShitTime)) / 60000 // Разница в минутах
+            if (timeDiff < 60) {
+              alert(`Следующий поход в туалет доступен через ${Math.ceil(60 - timeDiff)} минут`)
+              //return
+            }
+          } else {
+            alert(`⏳ Нет данных, устанавливаем время!`)
+          }
+
+          addLog('🚀 Нажата кнопка "Добавить отметку"')
+
+          if (!locationManager.isAccessGranted) {
+            addLog('🚫 Нет доступа к геолокации в Telegram')
+            return
+          }
+
+          const location = await getTelegramLocation()
+          if (!location) {
+            addLog('❌ Ошибка получения местоположения')
+            return
+          }
+
+          addLog('📍 Отправляем данные на сервер...')
+
+          const lat = location.latitude + Math.random() / 10000
+          const lon = location.longitude - Math.random() / 10000
+
+          // Записываем в localStorage перед отправкой запроса
+
+          fetch('/map/update_shit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ initDataUnsafe, lat, lon }),
+          })
+            .then((response) => {
+              if (response.status === 200) {
+                localStorage.setItem('lastShitTime', now)
+                addLog('✅ Отметка успешно добавлена!')
+
+                const poopIcon = L.divIcon({
+                  className: 'poop-icon',
+                  html: `<img src="https://cdn-icons-png.flaticon.com/128/8277/8277628.png" style="width: 40px; height: 40px;"/>`,
+                })
+                L.marker([lat, lon], { icon: poopIcon }).addTo(map)
+                map.setView([lat, lon], 20)
+              } else if (response.status === 401) {
+                addLog('Ты покакал уже 5 раз, больше сегодня нельзя')
+                throw new Error('401 Unauthorized')
+              } else if (response.status === 429) {
+                addLog('🚫 Покакаешь через время')
+                throw new Error('429 Too Many Requests')
+              } else {
+                throw new Error(`Server responded with status ${response.status}`)
+              }
+            })
+            .catch((error) => {
+              console.error('❌ Ошибка запроса:', error)
+              addLog('❌ Ошибка: ' + error.message)
+            })
+        } catch (error) {
+          console.error('❌ Ошибка:', error)
+          addLog('❌ Ошибка: ' + error.message)
+        }
+      })
+
+      async function loadShits() {
+        try {
+          const response = await fetch('/map/get_shits', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ initDataUnsafe }),
+          })
+
+          if (!response.ok) {
+            throw new Error(`Ошибка при запросе: ${response.status}`)
+          }
+
+          const data = await response.json()
+
+          if (data && data.shits && Array.isArray(data.shits) && data.shits.length > 0) {
+            data.shits.forEach((shit) => {
+              const lat = parseFloat(shit.lat)
+              const lon = parseFloat(shit.lon)
+
+              if (isNaN(lat) || isNaN(lon)) {
+                console.error('Некорректные координаты:', shit)
+                return
+              }
+
+              const poopIcon = L.divIcon({
+                className: 'poop-icon',
+                html: `<img src="https://cdn-icons-png.flaticon.com/128/8277/8277628.png" style="width: 40px; height: 40px;"/>`,
+              })
+
+              L.marker([lat, lon], { icon: poopIcon }).addTo(map)
+            })
+          } else {
+            console.log('Нет шит-марок для отображения')
+          }
+        } catch (error) {
+          console.error('❌ Ошибка:', error)
+          addLog('❌ Ошибка: ' + error.message)
+        }
+      }
     </script>
   </body>
 </html>
