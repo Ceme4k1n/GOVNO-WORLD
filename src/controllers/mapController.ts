@@ -39,6 +39,19 @@ export const update_shit = async (req: Request, res: Response) => {
       }
     }
 
+    const city = await getCityFromCoords(lat, lon)
+
+    const cityData = await db.one(
+      `INSERT INTO govno_db.govno_cities(city_name, lat, lon, shit_count) 
+       VALUES($1, $2, $3, 1)
+       ON CONFLICT (city_name) 
+       DO UPDATE SET shit_count = govno_db.govno_cities.shit_count + 1 
+       RETURNING city_id`,
+      [city, lat, lon]
+    )
+
+    console.log(city)
+
     // Сохраняем запись в БД
     await db.none(
       `INSERT INTO govno_db.govno_map(user_id, visit_lat, visit_lon, visit_count, date, visit_time)
@@ -71,5 +84,27 @@ export const get_shits = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error)
     res.status(500).send('Server error')
+  }
+}
+
+async function getCityFromCoords(lat: number, lon: number) {
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+
+  try {
+    const response = await fetch(url)
+    const data = await response.json()
+
+    if (data.address && data.address.city) {
+      return data.address.city
+    } else if (data.address && data.address.town) {
+      return data.address.town
+    } else if (data.address && data.address.village) {
+      return data.address.village
+    } else {
+      return 'Неизвестный город'
+    }
+  } catch (error) {
+    console.error('Ошибка при получении города:', error)
+    return 'Ошибка'
   }
 }

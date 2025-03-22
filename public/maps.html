@@ -217,7 +217,7 @@
             const timeDiff = (now - parseInt(lastShitTime)) / 60000 // Разница в минутах
             if (timeDiff < 60) {
               alert(`Следующий поход в туалет доступен через ${Math.ceil(60 - timeDiff)} минут`)
-              //return
+              return
             }
           } else {
             alert(`⏳ Нет данных, устанавливаем время!`)
