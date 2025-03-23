@@ -1,0 +1,567 @@
+.referrals-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 27vw;
+  height: fit-content;
+  margin-top: 6vw;
+  gap: 1.8vw;
+}
+.referrals-box .referrals-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5vw;
+  font-weight: 400;
+  font-size: 1vw;
+}
+.referrals-box .referrals-share {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  background-color: #222222;
+  width: 100%;
+  height: fit-content;
+  padding: 1vw;
+  box-sizing: border-box;
+  border-radius: 0.5vw;
+  gap: 1vw;
+}
+.referrals-box .referrals-share .referrals-share-subtitle {
+  font-weight: 300;
+  font-size: 0.8vw;
+}
+.referrals-box .referrals-share .referrals-share-buttons {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.referrals-box .referrals-share .referrals-share-buttons button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 47.5%;
+  height: 2vw;
+  background-color: #424242;
+  border-radius: 0.5vw;
+  gap: 0.4vw;
+  font-size: 0.8vw;
+  transition: all 0.5s;
+}
+.referrals-box .referrals-share .referrals-share-buttons button:active {
+  transform: scale(0.93);
+}
+.referrals-box .referrals-share .referrals-share-buttons .button-copy-icon {
+  width: 0.7vw;
+  height: auto;
+}
+.referrals-box .referrals-share .referrals-share-buttons .button-share-icon {
+  width: 0.7vw;
+  height: auto;
+}
+.referrals-box .referrals-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+  background-color: #222222;
+  min-height: 30vw;
+  width: 100%;
+  height: fit-content;
+  padding: 1vw;
+  box-sizing: border-box;
+  border-radius: 0.5vw;
+  gap: 1.5vw;
+  position: relative;
+}
+.referrals-box .referrals-info .referrals-info-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5vw;
+  font-weight: 400;
+  font-size: 1vw;
+}
+.referrals-box .referrals-info .referrals-info-list {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  gap: 1vw;
+}
+.referrals-box .referrals-info .referrals-info-list .referrals-info-list-point {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: 0.5vw;
+}
+.referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-avatar {
+  width: 2.8vw;
+  height: 2.8vw;
+  border-radius: 36%;
+  background-color: #111111;
+}
+.referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  gap: 0.4vw;
+}
+.referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details .referrals-info-list-point-name {
+  font-size: 0.8vw;
+  font-weight: 600;
+}
+.referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details .referrals-info-list-point-time {
+  font-size: 0.8vw;
+  font-weight: 500;
+  color: #B8B8B8;
+}
+.referrals-box .referrals-info .referrals-info-listEmpty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: 1vw;
+  position: absolute;
+  bottom: 55%;
+  left: 50%;
+  transform: translate(-50%, 50%);
+}
+.referrals-box .referrals-title-share-img {
+  width: 1.25vw;
+  height: auto;
+}
+.referrals-box .referrals-title-info-img {
+  width: 1.4vw;
+  height: auto;
+}
+
+@media (max-width: 1440px) {
+  .referrals-box {
+    width: 43vw;
+    margin-top: 6vw;
+    gap: 1.8vw;
+  }
+  .referrals-box .referrals-title {
+    gap: 0.6vw;
+    font-size: 1.5vw;
+  }
+  .referrals-box .referrals-title .referrals-title-share-img {
+    width: 1.6vw;
+  }
+  .referrals-box .referrals-title .referrals-title-info-img {
+    width: 1.75vw;
+  }
+  .referrals-box .referrals-share {
+    width: 100%;
+    padding: 1.3vw;
+    border-radius: 0.5vw;
+    gap: 1.3vw;
+  }
+  .referrals-box .referrals-share .referrals-share-subtitle {
+    font-size: 1.2vw;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons {
+    width: 100%;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons button {
+    width: 47.5%;
+    height: 2.3vw;
+    border-radius: 0.5vw;
+    gap: 0.6vw;
+    font-size: 1.1vw;
+    transition: all 0.5s;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons .button-copy-icon {
+    width: 1.1vw;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons .button-share-icon {
+    width: 1.05vw;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons button:active {
+    transform: scale(0.93);
+  }
+  .referrals-box .referrals-info {
+    min-height: 30vw;
+    width: 100%;
+    padding: 1.3vw;
+    border-radius: 0.5vw;
+    gap: 1.6vw;
+  }
+  .referrals-box .referrals-info .referrals-info-title {
+    gap: 0.5vw;
+    font-size: 1vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list {
+    gap: 1.1vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point {
+    gap: 0.8vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-avatar {
+    width: 4.1vw;
+    height: 4.1vw;
+    border-radius: 40%;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details {
+    gap: 0.7vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details .referrals-info-list-point-name {
+    font-size: 1.1vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details .referrals-info-list-point-time {
+    font-size: 1.1vw;
+  }
+  .referrals-box .referrals-info .referrals-info-listEmpty {
+    width: 100%;
+    gap: 1vw;
+    bottom: 55%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+  }
+}
+@media (max-width: 1024px) {
+  .referrals-box {
+    width: 60vw;
+    margin-top: 6vw;
+    gap: 2.4vw;
+  }
+  .referrals-box .referrals-title {
+    gap: 0.8vw;
+    font-size: 1.9vw;
+  }
+  .referrals-box .referrals-title .referrals-title-share-img {
+    width: 2.2vw;
+  }
+  .referrals-box .referrals-title .referrals-title-info-img {
+    width: 2.5vw;
+  }
+  .referrals-box .referrals-share {
+    width: 100%;
+    padding: 1.6vw;
+    border-radius: 0.8vw;
+    gap: 1.7vw;
+  }
+  .referrals-box .referrals-share .referrals-share-subtitle {
+    font-size: 1.6vw;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons {
+    width: 100%;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons button {
+    width: 48.3%;
+    height: 3.5vw;
+    border-radius: 0.8vw;
+    gap: 0.8vw;
+    font-size: 1.6vw;
+    transition: all 0.5s;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons .button-copy-icon {
+    width: 1.5vw;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons .button-share-icon {
+    width: 1.4vw;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons button:active {
+    transform: scale(0.93);
+  }
+  .referrals-box .referrals-info {
+    min-height: 30vw;
+    width: 100%;
+    padding: 1.3vw;
+    border-radius: 0.8vw;
+    gap: 1.8vw;
+  }
+  .referrals-box .referrals-info .referrals-info-title {
+    gap: 0.5vw;
+    font-size: 1vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list {
+    gap: 1.5vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point {
+    gap: 1vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-avatar {
+    width: 5.6vw;
+    height: 5.6vw;
+    border-radius: 40%;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details {
+    gap: 1vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details .referrals-info-list-point-name {
+    font-size: 1.5vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details .referrals-info-list-point-time {
+    font-size: 1.5vw;
+  }
+  .referrals-box .referrals-info .referrals-info-listEmpty {
+    width: 100%;
+    gap: 1vw;
+    bottom: 55%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+  }
+}
+@media (max-width: 768px) {
+  .referrals-box {
+    width: 70vw;
+    margin-top: 6vw;
+    gap: 3.3vw;
+  }
+  .referrals-box .referrals-title {
+    gap: 1.1vw;
+    font-size: 2.8vw;
+  }
+  .referrals-box .referrals-title .referrals-title-share-img {
+    width: 3.25vw;
+  }
+  .referrals-box .referrals-title .referrals-title-info-img {
+    width: 3.7vw;
+  }
+  .referrals-box .referrals-share {
+    width: 100%;
+    padding: 2vw;
+    border-radius: 1vw;
+    gap: 2.1vw;
+  }
+  .referrals-box .referrals-share .referrals-share-subtitle {
+    font-size: 2.3vw;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons {
+    width: 100%;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons button {
+    width: 48.3%;
+    height: 4.6vw;
+    border-radius: 0.8vw;
+    gap: 1vw;
+    font-size: 2.2vw;
+    transition: all 0.5s;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons .button-copy-icon {
+    width: 2.2vw;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons .button-share-icon {
+    width: 2vw;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons button:active {
+    transform: scale(0.93);
+  }
+  .referrals-box .referrals-info {
+    min-height: 30vw;
+    width: 100%;
+    padding: 2vw;
+    border-radius: 0.8vw;
+    gap: 2.5vw;
+  }
+  .referrals-box .referrals-info .referrals-info-title {
+    gap: 0.5vw;
+    font-size: 1vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list {
+    gap: 1.8vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point {
+    gap: 1.2vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-avatar {
+    width: 7.5vw;
+    height: 7.5vw;
+    border-radius: 40%;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details {
+    gap: 1.1vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details .referrals-info-list-point-name {
+    font-size: 2.2vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details .referrals-info-list-point-time {
+    font-size: 2.2vw;
+  }
+  .referrals-box .referrals-info .referrals-info-listEmpty {
+    width: 100%;
+    gap: 1vw;
+    bottom: 55%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+  }
+}
+@media (max-width: 600px) {
+  .referrals-box {
+    width: 80vw;
+    margin-top: 6vw;
+    gap: 4.3vw;
+  }
+  .referrals-box .referrals-title {
+    gap: 1.3vw;
+    font-size: 4vw;
+  }
+  .referrals-box .referrals-title .referrals-title-share-img {
+    width: 4.4vw;
+  }
+  .referrals-box .referrals-title .referrals-title-info-img {
+    width: 5vw;
+  }
+  .referrals-box .referrals-share {
+    width: 100%;
+    padding: 3vw;
+    border-radius: 1vw;
+    gap: 3vw;
+  }
+  .referrals-box .referrals-share .referrals-share-subtitle {
+    font-size: 3.1vw;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons {
+    width: 100%;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons button {
+    width: 47.8%;
+    height: 6.5vw;
+    border-radius: 0.8vw;
+    gap: 1.3vw;
+    font-size: 3vw;
+    transition: all 0.5s;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons .button-copy-icon {
+    width: 2.8vw;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons .button-share-icon {
+    width: 2.6vw;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons button:active {
+    transform: scale(0.93);
+  }
+  .referrals-box .referrals-info {
+    min-height: 30vw;
+    width: 100%;
+    padding: 3vw;
+    border-radius: 1vw;
+    gap: 3.3vw;
+  }
+  .referrals-box .referrals-info .referrals-info-title {
+    gap: 0.5vw;
+    font-size: 1vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list {
+    gap: 2.4vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point {
+    gap: 1.8vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-avatar {
+    width: 10vw;
+    height: 10vw;
+    border-radius: 40%;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details {
+    gap: 1.3vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details .referrals-info-list-point-name {
+    font-size: 3vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details .referrals-info-list-point-time {
+    font-size: 3vw;
+  }
+  .referrals-box .referrals-info .referrals-info-listEmpty {
+    width: 100%;
+    gap: 1vw;
+    bottom: 55%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+  }
+}
+@media (max-width: 480px) {
+  .referrals-box {
+    width: 85vw;
+    margin-top: 6vw;
+    gap: 4.3vw;
+  }
+  .referrals-box .referrals-title {
+    gap: 2vw;
+    font-size: 5.5vw;
+  }
+  .referrals-box .referrals-title .referrals-title-share-img {
+    width: 6.5vw;
+  }
+  .referrals-box .referrals-title .referrals-title-info-img {
+    width: 7.5vw;
+  }
+  .referrals-box .referrals-share {
+    width: 100%;
+    padding: 3.6vw;
+    border-radius: 1.2vw;
+    gap: 4vw;
+  }
+  .referrals-box .referrals-share .referrals-share-subtitle {
+    font-size: 4.2vw;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons {
+    width: 100%;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons button {
+    width: 47.8%;
+    height: 9.5vw;
+    border-radius: 1.5vw;
+    gap: 1.6vw;
+    font-size: 4vw;
+    transition: all 0.5s;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons .button-copy-icon {
+    width: 3.7vw;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons .button-share-icon {
+    width: 3.5vw;
+  }
+  .referrals-box .referrals-share .referrals-share-buttons button:active {
+    transform: scale(0.93);
+  }
+  .referrals-box .referrals-info {
+    min-height: 30vw;
+    width: 100%;
+    padding: 3.6vw;
+    border-radius: 1.2vw;
+    gap: 5vw;
+  }
+  .referrals-box .referrals-info .referrals-info-title {
+    gap: 0.5vw;
+    font-size: 1vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list {
+    gap: 3vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point {
+    gap: 2vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-avatar {
+    width: 15vw;
+    height: 15vw;
+    border-radius: 40%;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details {
+    gap: 2.3vw;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details .referrals-info-list-point-name {
+    font-size: 4.2vw;
+    font-weight: 500;
+  }
+  .referrals-box .referrals-info .referrals-info-list .referrals-info-list-point .referrals-info-list-point-details .referrals-info-list-point-time {
+    font-size: 4.2vw;
+    font-weight: 300;
+  }
+  .referrals-box .referrals-info .referrals-info-listEmpty {
+    width: 100%;
+    gap: 1vw;
+    bottom: 55%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+  }
+}
+
+/*# sourceMappingURL=referrals.css.map */

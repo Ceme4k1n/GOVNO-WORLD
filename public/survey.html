@@ -3,17 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Опрос</title>
     <link rel="stylesheet" href="/css/style.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+    <style>
+        .disabled-button {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+    </style>
 </head>
 <body>
-    
+    <div class="survey-box">
+        <h1 class="survey-title">Опрос</h1>
+        <div class="survey-asking">
+            <h3 class="survey-asking-text"></h3>
+            <div class="survey-asking-input-box">
+                <input class="survey-asking-input" type="number" placeholder="1488">
+                <span class="survey-asking-span">г.</span>
+            </div>
+            <button class="survey-asking-buttonSave" disabled>Сохранить ответ</button>
+        </div>
+        <div class="survey-answer">
+            <p class="survey-answer-title">Правильный ответ:</p>
+            <p class="survey-answer-content"></p>
+        </div>
+        <button class="survey-next-asking" style="display: none;" disabled>Продолжить</button>
+    </div>
 
+    <script>
+        const jsonString = `{
+            "questions": [
+                {
+                    "question": "Сколько грамм 💩 в день производит человек?",
+                    "correctAnswer": [
+                        "Средний человек производит 150-250 грамм 💩 в день, но если ты фанат фастфуда – считай на 30% больше!"
+                    ],
+                    "valueCorrectAnswer": { "min": 200, "max": 400 }
+                },
+                {
+                    "question": "Сколько грамм 💩 в день производит одна курица?",
+                    "correctAnswer": [
+                        "Одна курица производит около 40-60 граммов 💩 в день."
+                    ],
+                    "valueCorrectAnswer": { "min": 40, "max": 60 }
+                },
+                {
+                    "question": "Сколько тонн 💩 производит человек за свою жизнь?",
+                    "correctAnswer": [
+                        "За свою жизнь человек производит около 5-10 тонн 💩."
+                    ],
+                    "valueCorrectAnswer": { "min": 5, "max": 10 }
+                }
+            ]
+        }`;
 
+        const jsonObject = JSON.parse(jsonString);
+        const questionsArray = jsonObject.questions;
 
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
 
+        shuffle(questionsArray);
+        let currentQuestionIndex = 0;
+        let correctAnswersCount = 0;
+        let answerSaved = false; // Флаг для проверки, был ли ответ сохранён
+
+        function showQuestion(index) {
+            const questionData = questionsArray[index];
+            document.querySelector('.survey-asking-text').textContent = questionData.question;
+            document.querySelector('.survey-answer').style.display = 'none';
+            document.querySelector('.survey-next-asking').style.display = 'none';
+            document.querySelector('.survey-asking-input').value = '';
+            document.querySelector('.survey-asking-buttonSave').disabled = true;
+            document.querySelector('.survey-asking-buttonSave').classList.remove('disabled-button'); // Убираем класс disabled-button
+            document.querySelector('.survey-asking-input').disabled = false; // Разрешаем редактирование
+            answerSaved = false; // Сбрасываем флаг
+            document.querySelector('.survey-next-asking').disabled = true;
+        }
+
+        document.querySelector('.survey-asking-input').addEventListener('input', () => {
+            const userAnswer = document.querySelector('.survey-asking-input').value;
+            const saveButton = document.querySelector('.survey-asking-buttonSave');
+            saveButton.disabled = userAnswer === '' || answerSaved; // Блокируем кнопку, если ответ сохранён
+            if (!saveButton.disabled) {
+                saveButton.classList.remove('disabled-button'); // Убираем класс disabled-button
+            }
+        });
+
+        document.querySelector('.survey-asking-buttonSave').addEventListener('click', () => {
+            const userAnswer = parseFloat(document.querySelector('.survey-asking-input').value);
+            const correctAnswers = questionsArray[currentQuestionIndex].correctAnswer;
+            const { min, max } = questionsArray[currentQuestionIndex].valueCorrectAnswer;
+
+            if (userAnswer >= min && userAnswer <= max) {
+                correctAnswersCount++;
+            }
+
+            document.querySelector('.survey-answer-content').textContent = `${correctAnswers.join(' ')}`;
+            document.querySelector('.survey-answer').style.display = 'flex';
+            document.querySelector('.survey-next-asking').style.display = 'inline';
+            document.querySelector('.survey-next-asking').disabled = false;
+
+            // Делаем кнопку "Сохранить ответ" недоступной
+            const saveButton = document.querySelector('.survey-asking-buttonSave');
+            saveButton.disabled = true;
+            saveButton.classList.add('disabled-button'); // Добавляем класс disabled-button
+            document.querySelector('.survey-asking-input').disabled = true; // Блокируем поле ввода
+            answerSaved = true; // Устанавливаем флаг
+        });
+
+        document.querySelector('.survey-next-asking').addEventListener('click', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questionsArray.length) {
+                showQuestion(currentQuestionIndex);
+            } else { 
+                document.querySelector(".survey-box").innerHTML = `<h1>Спасибо за участие!</h1><p>Вы дали ${correctAnswersCount} правильных ответа(ов) из ${questionsArray.length} возможных.</p>`;
+                document.querySelector(".survey-box").style.height = "100vh";
+                document.querySelector(".survey-box").style.marginTop = "0vw";
+                document.querySelector(".survey-box").style.textAlign = "center"
+            }
+        });
+
+        showQuestion(currentQuestionIndex);
+    </script>
 </body>
 </html>
