@@ -2,41 +2,89 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>Карта в Telegram Mini App</title>
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
     <style>
-      button {
-        padding: 10px 20px;
-        margin: 5px;
-        font-size: 16px;
-        z-index: 1000;
-        position: relative;
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        font-family: Arial, sans-serif;
       }
+
+      #map {
+        width: 100%;
+        height: 70vh;
+      }
+
+      .top-buttons,
+      .bottom-buttons {
+        display: flex;
+        gap: 10px;
+        padding: 10px;
+        width: 100%;
+        justify-content: center;
+      }
+
+      button {
+        padding: 12px 16px;
+        font-size: 16px;
+        border: none;
+        border-radius: 8px;
+        background: #007bff;
+        color: white;
+        cursor: pointer;
+        touch-action: manipulation; /* Отключает зум при двойном тапе */
+        flex: 1;
+        max-width: 120px;
+      }
+
+      button:active {
+        background: #0056b3;
+      }
+
       #log {
         position: fixed;
-        top: 10px;
+        bottom: 70px;
         left: 10px;
-        background: rgba(255, 255, 255, 0.9);
+        right: 10px;
+        background: rgba(255, 255, 255, 0.95);
         padding: 10px;
         border-radius: 5px;
-        max-width: 300px;
-        font-family: Arial, sans-serif;
         font-size: 12px;
         z-index: 1000;
-      }
-      #map {
-        width: 100vw;
-        height: 90vh;
+        max-height: 100px;
+        overflow-y: auto;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column-reverse; /* Новый лог сверху */
       }
     </style>
   </head>
   <body>
+    <div class="top-buttons">
+      <button id="baseBtn">База</button>
+      <button id="citiesBtn">Города</button>
+      <button id="countriesBtn">Страны</button>
+    </div>
+
     <div id="map"></div>
-    <button id="findMeBtn">Найти меня</button>
-    <button id="bigWalkBtn">Сделать покак</button>
+
+    <div class="bottom-buttons">
+      <button id="findMeBtn">Найти меня</button>
+      <button id="bigWalkBtn">Сделать покак</button>
+    </div>
 
     <div id="log"></div>
 
@@ -57,7 +105,11 @@
 
       function addLog(message) {
         logHistory.push(message)
-        updateLogDisplay()
+        if (logHistory.length > 5) logHistory.shift()
+
+        const logContainer = document.getElementById('log')
+        logContainer.innerHTML = logHistory.map((msg) => `<div>${msg}</div>`).join('')
+        logContainer.scrollTop = logContainer.scrollHeight // Автопрокрутка вниз
       }
 
       function updateLogDisplay() {
@@ -211,16 +263,12 @@
           const lastShitTime = localStorage.getItem('lastShitTime')
           const now = Date.now()
 
-          console.log('📦 Данные в localStorage:', lastShitTime)
-
           if (lastShitTime) {
             const timeDiff = (now - parseInt(lastShitTime)) / 60000 // Разница в минутах
             if (timeDiff < 60) {
               alert(`Следующий поход в туалет доступен через ${Math.ceil(60 - timeDiff)} минут`)
               return
             }
-          } else {
-            alert(`⏳ Нет данных, устанавливаем время!`)
           }
 
           addLog('🚀 Нажата кнопка "Добавить отметку"')
@@ -318,6 +366,73 @@
           addLog('❌ Ошибка: ' + error.message)
         }
       }
+    </script>
+
+    <script>
+      document.getElementById('baseBtn').addEventListener('click', () => {
+        addLog('📂 Открываем базу данных...')
+
+        map.remove()
+
+        map = L.map('map').setView([55.76, 37.64], 5) // Центрируем на Москву (или нужные координаты)
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors',
+        }).addTo(map)
+
+        addLog('🔄 Карта перезагружена, все маркеры удалены!')
+      })
+
+      document.getElementById('citiesBtn').addEventListener('click', async () => {
+        const lastCitiesRequest = localStorage.getItem('lastCitiesRequest')
+
+        if (lastCitiesRequest) {
+          addLog('Он существует')
+          const citiesTime = (Date.now() - parseInt(lastCitiesRequest)) / 60000 // Разница в минутах
+          addLog(citiesTime)
+
+          if (citiesTime < 10) {
+            alert(`Следующий подруз через ${Math.ceil(10 - citiesTime)} минут`)
+            return
+          }
+        } else {
+          addLog('Его не существует')
+        }
+
+        try {
+          const response = await fetch('/map/get_cities')
+          const data = await response.json()
+          addLog(data)
+
+          if (data.cities && data.cities.length > 0) {
+            data.cities.forEach((city) => {
+              const lat = parseFloat(city.lat)
+              const lon = parseFloat(city.lon)
+              const shitCount = city.shit_count
+
+              // Создаем кастомную иконку (размер зависит от количества "срунов")
+              const poopIcon = L.divIcon({
+                className: 'poop-icon',
+                html: `<img src="https://cdn-icons-png.flaticon.com/128/19000/19000193.png"
+                 style="width: ${30 + shitCount * 2}px; height: ${30 + shitCount * 2}px;"/>`,
+              })
+
+              // Добавляем маркер на карту
+              L.marker([lat, lon], { icon: poopIcon }).addTo(map).bindPopup(`<b>${city.city}</b><br>💩 Количество посеров: ${shitCount}`)
+            })
+            localStorage.setItem('lastCitiesRequest', Date.now())
+          } else {
+            console.log('Нет городов для отображения')
+          }
+        } catch (error) {
+          console.error('❌ Ошибка:', error)
+          addLog('❌ Ошибка: ' + error.message)
+        }
+      })
+
+      document.getElementById('countriesBtn').addEventListener('click', () => {
+        addLog('📂 Топ по   странам...')
+      })
     </script>
   </body>
 </html>
