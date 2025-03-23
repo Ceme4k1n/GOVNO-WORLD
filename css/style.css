@@ -4,7 +4,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: "Inter", sans-serif;
+  font-family: 'Inter', sans-serif;
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -50,7 +50,12 @@ p {
   all: unset;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin: 0;
   padding: 0;
 }
@@ -59,12 +64,13 @@ input {
   all: unset;
 }
 
-input[type=number] {
+input[type='number'] {
   -moz-appearance: textfield;
   -webkit-appearance: none;
   appearance: none;
 }
-input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button {
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
@@ -134,7 +140,7 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
   font-size: 1vw;
 }
 .profile .profile-characteristics-box .profile-characteristics-point span {
-  color: #B8B8B8;
+  color: #b8b8b8;
   font-weight: 400;
 }
 .profile .profile-statistics-box {
@@ -225,7 +231,7 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
   border: solid 0.12vw #424242;
 }
 .profile-edit-modal .profile-edit-modal-point .profile-edit-modal-point-title {
-  color: #B8B8B8;
+  color: #b8b8b8;
   font-size: 0.7vw;
   margin-left: 0.6vw;
   margin-top: 0.4vw;
@@ -265,10 +271,6 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
   font-size: 1vw;
 }
 
-.registrationContainer-continue {
-  position: absolute;
-}
-
 body.modal-active {
   overflow: hidden;
   background-color: #050505;
@@ -276,7 +278,7 @@ body.modal-active {
 }
 
 body.modal-active::before {
-  content: "";
+  content: '';
   position: fixed;
   top: 0;
   left: 0;

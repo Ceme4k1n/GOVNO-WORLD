@@ -4,6 +4,8 @@ import db from '../database/db'
 const dotenv = require('dotenv')
 dotenv.config()
 
+const apiUrl = `https://api.telegram.org/bot${process.env.TG_TOKEN}`
+
 export const checkInactiveUsers = async () => {
   try {
     const now = new Date()
@@ -72,4 +74,10 @@ export const sendMessage = async (chatId: string, text: string) => {
   } catch (error) {
     console.error('Ошибка при отправке сообщения:', error)
   }
+}
+
+async function getGifts() {
+  const response = await fetch(`${apiUrl}/getAvailableGifts`)
+  const data = await response.json()
+  console.log(data.result)
 }

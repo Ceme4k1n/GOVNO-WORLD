@@ -2,7 +2,7 @@ import pgPromise from 'pg-promise'
 import dotenv from 'dotenv'
 
 dotenv.config()
-//1
+
 const pgp = pgPromise({
   // Логирование подключения
   connect() {
@@ -13,6 +13,7 @@ const pgp = pgPromise({
     console.log('🔌 Соединение с базой данных закрыто')
   },
 })
+
 const db = pgp({
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),

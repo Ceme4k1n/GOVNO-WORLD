@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>Карта в Telegram Mini App</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        font-family: Arial, sans-serif;
+      }
+
+      #map {
+        width: 100%;
+        height: 70vh;
+      }
+
+      .top-buttons,
+      .bottom-buttons {
+        display: flex;
+        gap: 10px;
+        padding: 10px;
+        width: 100%;
+        justify-content: center;
+      }
+
+      button {
+        padding: 12px 16px;
+        font-size: 16px;
+        border: none;
+        border-radius: 8px;
+        background: #007bff;
+        color: white;
+        cursor: pointer;
+        touch-action: manipulation; /* Отключает зум при двойном тапе */
+        flex: 1;
+        max-width: 120px;
+      }
+
+      button:active {
+        background: #0056b3;
+      }
+
+      #log {
+        position: fixed;
+        bottom: 70px;
+        left: 10px;
+        right: 10px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        z-index: 1000;
+        max-height: 100px;
+        overflow-y: auto;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column-reverse; /* Новый лог сверху */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="top-buttons">
+      <button id="baseBtn">База</button>
+      <button id="citiesBtn">Города</button>
+      <button id="countriesBtn">Страны</button>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="bottom-buttons">
+      <button id="findMeBtn">Найти меня</button>
+      <button id="bigWalkBtn">Сделать покак</button>
+    </div>
+
+    <div id="log"></div>
+
+    <script>
+      const tg = window.Telegram.WebApp
+      const locationManager = tg.LocationManager
+      const initDataUnsafe = tg.initDataUnsafe
+
+      document.addEventListener('DOMContentLoaded', initializeLocation)
+
+      let map = L.map('map').setView([55.76, 37.64], 10) // Москва по умолчанию
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+      }).addTo(map)
+
+      let logHistory = []
+
+      function addLog(message) {
+        logHistory.push(message)
+        if (logHistory.length > 5) logHistory.shift()
+
+        const logContainer = document.getElementById('log')
+        logContainer.innerHTML = logHistory.map((msg) => `<div>${msg}</div>`).join('')
+        logContainer.scrollTop = logContainer.scrollHeight // Автопрокрутка вниз
+      }
+
+      function updateLogDisplay() {
+        const logElement = document.getElementById('log')
+        logElement.innerHTML = logHistory.join('<br>')
+        logElement.scrollTop = logElement.scrollHeight
+      }
+
+      function getTelegramLocation() {
+        return new Promise((resolve, reject) => {
+          if (!locationManager.isAccessGranted) {
+            addLog('❌ Нет доступа к геолокации. Открываем настройки...')
+            locationManager.openSettings()
+
+            let attempts = 0
+            let interval = setInterval(() => {
+              locationManager.init(() => {
+                if (locationManager.isAccessGranted) {
+                  clearInterval(interval)
+                  addLog('✅ Доступ к геолокации получен!')
+                  resolve(getTelegramLocation()) // Повторный вызов
+                }
+              })
+              attempts++
+              if (attempts > 10) {
+                clearInterval(interval)
+                reject('Доступ так и не был предоставлен.')
+              }
+            }, 1000)
+            return
+          }
+
+          addLog('📍 Запрос геопозиции через Telegram...')
+
+          let timeout = setTimeout(() => {
+            reject('⏳ Telegram завис при получении местоположения.')
+          }, 10000)
+
+          locationManager.getLocation((location) => {
+            clearTimeout(timeout)
+            if (location) {
+              addLog(`📌 Координаты: ${JSON.stringify(location)}`)
+              resolve(location)
+            } else {
+              reject('❌ Ошибка получения геолокации через Telegram.')
+            }
+          })
+        })
+      }
+
+      function updateMapPosition(location) {
+        const { latitude, longitude } = location
+        map.setView([latitude, longitude], 15)
+
+        const userIcon = L.icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+        })
+
+        L.marker([latitude, longitude], { icon: userIcon }).addTo(map)
+
+        logHistory.unshift(`Ваши координаты: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
+        updateLogDisplay()
+      }
+
+      async function initializeLocation() {
+        try {
+          logHistory = []
+          addLog('Инициализация...')
+
+          // Явно ждем инициализации
+          await new Promise((resolve) => {
+            locationManager.init(() => {
+              addLog('✅ LocationManager инициализирован')
+              resolve()
+            })
+          })
+
+          addLog('🔍 Проверяем доступ к геолокации...')
+
+          if (!locationManager.isAccessRequested) {
+            addLog('📌 Запрашиваем доступ к геолокации...')
+            locationManager.getLocation((location) => {
+              if (location) {
+                updateMapPosition(location)
+              } else {
+                addLog('❌ Доступ не был предоставлен пользователем.')
+              }
+            })
+            return
+          }
+
+          if (!locationManager.isAccessGranted) {
+            addLog('🚫 Геолокация запрещена. Открываем настройки...')
+            locationManager.openSettings()
+            return
+          }
+
+          addLog('📍 Получаем местоположение...')
+          const telegramLocation = await getTelegramLocation()
+          updateMapPosition(telegramLocation)
+          loadShits()
+        } catch (error) {
+          addLog('❌ Ошибка: ' + error)
+        }
+      }
+
+      document.getElementById('findMeBtn').addEventListener('click', async function () {
+        try {
+          addLog('Запуск поиска местоположения...')
+
+          locationManager.init(() => {
+            addLog('LocationManager инициализирован')
+          })
+
+          addLog('Проверяем статус доступа к геолокации...')
+
+          if (!locationManager.isAccessGranted) {
+            addLog('Геолокация запрещена. Открываем настройки...')
+            locationManager.openSettings()
+
+            for (let i = 0; i < 10; i++) {
+              await new Promise((resolve) => setTimeout(resolve, 1000))
+              locationManager.init()
+              if (locationManager.isAccessGranted) {
+                addLog('Доступ к геолокации предоставлен!')
+                break
+              }
+            }
+
+            if (!locationManager.isAccessGranted) {
+              addLog('Доступ так и не был предоставлен.')
+              return
+            }
+          }
+
+          addLog('Доступ есть, получаем местоположение...')
+
+          const location = await getTelegramLocation()
+          addLog(`Координаты получены: ${JSON.stringify(location)}`)
+
+          updateMapPosition(location)
+        } catch (error) {
+          addLog('Ошибка при поиске местоположения: ' + error)
+        }
+      })
+
+      document.getElementById('bigWalkBtn').addEventListener('click', async function () {
+        try {
+          const lastShitTime = localStorage.getItem('lastShitTime')
+          const now = Date.now()
+
+          if (lastShitTime) {
+            const timeDiff = (now - parseInt(lastShitTime)) / 60000 // Разница в минутах
+            if (timeDiff < 60) {
+              alert(`Следующий поход в туалет доступен через ${Math.ceil(60 - timeDiff)} минут`)
+              return
+            }
+          }
+
+          addLog('🚀 Нажата кнопка "Добавить отметку"')
+
+          if (!locationManager.isAccessGranted) {
+            addLog('🚫 Нет доступа к геолокации в Telegram')
+            return
+          }
+
+          const location = await getTelegramLocation()
+          if (!location) {
+            addLog('❌ Ошибка получения местоположения')
+            return
+          }
+
+          addLog('📍 Отправляем данные на сервер...')
+
+          const lat = location.latitude + Math.random() / 10000
+          const lon = location.longitude - Math.random() / 10000
+
+          // Записываем в localStorage перед отправкой запроса
+
+          fetch('/map/update_shit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ initDataUnsafe, lat, lon }),
+          })
+            .then((response) => {
+              if (response.status === 200) {
+                localStorage.setItem('lastShitTime', now)
+                addLog('✅ Отметка успешно добавлена!')
+
+                const poopIcon = L.divIcon({
+                  className: 'poop-icon',
+                  html: `<img src="https://cdn-icons-png.flaticon.com/128/8277/8277628.png" style="width: 40px; height: 40px;"/>`,
+                })
+                L.marker([lat, lon], { icon: poopIcon }).addTo(map)
+                map.setView([lat, lon], 20)
+              } else if (response.status === 401) {
+                addLog('Ты покакал уже 5 раз, больше сегодня нельзя')
+                throw new Error('401 Unauthorized')
+              } else if (response.status === 429) {
+                addLog('🚫 Покакаешь через время')
+                throw new Error('429 Too Many Requests')
+              } else {
+                throw new Error(`Server responded with status ${response.status}`)
+              }
+            })
+            .catch((error) => {
+              console.error('❌ Ошибка запроса:', error)
+              addLog('❌ Ошибка: ' + error.message)
+            })
+        } catch (error) {
+          console.error('❌ Ошибка:', error)
+          addLog('❌ Ошибка: ' + error.message)
+        }
+      })
+
+      async function loadShits() {
+        try {
+          const response = await fetch('/map/get_shits', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ initDataUnsafe }),
+          })
+
+          if (!response.ok) {
+            throw new Error(`Ошибка при запросе: ${response.status}`)
+          }
+
+          const data = await response.json()
+
+          if (data && data.shits && Array.isArray(data.shits) && data.shits.length > 0) {
+            data.shits.forEach((shit) => {
+              const lat = parseFloat(shit.lat)
+              const lon = parseFloat(shit.lon)
+
+              if (isNaN(lat) || isNaN(lon)) {
+                console.error('Некорректные координаты:', shit)
+                return
+              }
+
+              const poopIcon = L.divIcon({
+                className: 'poop-icon',
+                html: `<img src="https://cdn-icons-png.flaticon.com/128/8277/8277628.png" style="width: 40px; height: 40px;"/>`,
+              })
+
+              L.marker([lat, lon], { icon: poopIcon }).addTo(map)
+            })
+          } else {
+            console.log('Нет шит-марок для отображения')
+          }
+        } catch (error) {
+          console.error('❌ Ошибка:', error)
+          addLog('❌ Ошибка: ' + error.message)
+        }
+      }
+    </script>
+
+    <script>
+      document.getElementById('baseBtn').addEventListener('click', () => {
+        addLog('📂 Открываем базу данных...')
+
+        map.remove()
+
+        map = L.map('map').setView([55.76, 37.64], 5) // Центрируем на Москву (или нужные координаты)
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors',
+        }).addTo(map)
+
+        addLog('🔄 Карта перезагружена, все маркеры удалены!')
+      })
+
+      document.getElementById('citiesBtn').addEventListener('click', async () => {
+        const lastCitiesRequest = localStorage.getItem('lastCitiesRequest')
+
+        if (lastCitiesRequest) {
+          addLog('Он существует')
+          const citiesTime = (Date.now() - parseInt(lastCitiesRequest)) / 60000 // Разница в минутах
+          addLog(citiesTime)
+
+          if (citiesTime < 10) {
+            alert(`Следующий подруз через ${Math.ceil(10 - citiesTime)} минут`)
+            return
+          }
+        } else {
+          addLog('Его не существует')
+        }
+
+        try {
+          const response = await fetch('/map/get_cities')
+          const data = await response.json()
+          addLog(data)
+
+          if (data.cities && data.cities.length > 0) {
+            data.cities.forEach((city) => {
+              const lat = parseFloat(city.lat)
+              const lon = parseFloat(city.lon)
+              const shitCount = city.shit_count
+
+              // Создаем кастомную иконку (размер зависит от количества "срунов")
+              const poopIcon = L.divIcon({
+                className: 'poop-icon',
+                html: `<img src="https://cdn-icons-png.flaticon.com/128/19000/19000193.png"
+                 style="width: ${30 + shitCount * 2}px; height: ${30 + shitCount * 2}px;"/>`,
+              })
+
+              // Добавляем маркер на карту
+              L.marker([lat, lon], { icon: poopIcon }).addTo(map).bindPopup(`<b>${city.city}</b><br>💩 Количество посеров: ${shitCount}`)
+            })
+            localStorage.setItem('lastCitiesRequest', Date.now())
+          } else {
+            console.log('Нет городов для отображения')
+          }
+        } catch (error) {
+          console.error('❌ Ошибка:', error)
+          addLog('❌ Ошибка: ' + error.message)
+        }
+      })
+
+      document.getElementById('countriesBtn').addEventListener('click', () => {
+        addLog('📂 Топ по   странам...')
+      })
+    </script>
+  </body>
+</html>
