@@ -1,0 +1,281 @@
+.registrationContainer {
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  background-color: #111111;
+}
+.registrationContainer .registrationContainer-title {
+  font-size: 2.4vw;
+  margin-top: 2.2vw;
+  margin-bottom: 2.5vw;
+  font-weight: 600;
+}
+.registrationContainer .registrationContainer-parametrs {
+  display: flex;
+  flex-direction: column;
+  gap: 2.6vw;
+  max-width: 25vw;
+}
+.registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+.registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input-span {
+  position: absolute;
+  right: 0.8vw;
+  color: #b8b8b8;
+  font-size: 0.8vw;
+  font-weight: 300;
+}
+.registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input {
+  width: 25vw;
+  height: 3vw;
+  border: none;
+  background-color: #2f2f2f;
+  border-radius: 0.4vw;
+  font-size: 0.9vw;
+  padding-left: 0.8vw;
+  font-weight: 300;
+}
+.registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input::placeholder {
+  color: #b8b8b8;
+  font-size: 0.8vw;
+}
+.registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-gender {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+.registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-gender button {
+  width: 11vw;
+  height: 3vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #2f2f2f;
+  border-radius: 0.4vw;
+  font-size: 0.75vw;
+}
+.registrationContainer .registrationContainer-continue {
+  width: 25vw;
+  height: 3vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #2f2f2f;
+  border-radius: 0.4vw;
+  margin-top: 2.6vw;
+  font-size: 0.9vw;
+}
+
+@media (max-width: 1440px) {
+  .registrationContainer .registrationContainer-title {
+    font-size: 2.8vw;
+    margin-top: 2.2vw;
+    margin-bottom: 3vw;
+  }
+  .registrationContainer .registrationContainer-parametrs {
+    gap: 2.6vw;
+    max-width: 29vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input-span {
+    right: 0.8vw;
+    font-size: 1vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input {
+    width: 29vw;
+    height: 3.5vw;
+    border-radius: 0.4vw;
+    font-size: 1.1vw;
+    padding-left: 0.8vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input::placeholder {
+    font-size: 1vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-gender {
+    width: 100%;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-gender button {
+    width: 13vw;
+    height: 3.5vw;
+    border-radius: 0.4vw;
+    font-size: 1vw;
+  }
+  .registrationContainer .registrationContainer-continue {
+    width: 29vw;
+    height: 3.5vw;
+    border-radius: 0.4vw;
+    margin-top: 2.6vw;
+    font-size: 1.1vw;
+  }
+}
+@media (max-width: 1024px) {
+  .registrationContainer .registrationContainer-title {
+    font-size: 4.6vw;
+    margin-top: 2.2vw;
+    margin-bottom: 4.8vw;
+  }
+  .registrationContainer .registrationContainer-parametrs {
+    gap: 4vw;
+    max-width: 50vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input-span {
+    right: 1vw;
+    font-size: 1.8vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input {
+    width: 50vw;
+    height: 5.8vw;
+    border-radius: 0.5vw;
+    font-size: 2vw;
+    padding-left: 1vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input::placeholder {
+    font-size: 1.8vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-gender {
+    width: 100%;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-gender button {
+    width: 22.5vw;
+    height: 5.8vw;
+    border-radius: 0.5vw;
+    font-size: 1.7vw;
+  }
+  .registrationContainer .registrationContainer-continue {
+    width: 50vw;
+    height: 5.8vw;
+    border-radius: 0.5vw;
+    margin-top: 4vw;
+    font-size: 2vw;
+  }
+}
+@media (max-width: 768px) {
+  .registrationContainer .registrationContainer-title {
+    font-size: 5.8vw;
+    margin-top: 2.2vw;
+    margin-bottom: 4.8vw;
+  }
+  .registrationContainer .registrationContainer-parametrs {
+    gap: 5.2vw;
+    max-width: 65vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input-span {
+    right: 1.6vw;
+    font-size: 2.5vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input {
+    width: 65vw;
+    height: 8vw;
+    border-radius: 0.8vw;
+    font-size: 2.7vw;
+    padding-left: 1.6vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input::placeholder {
+    font-size: 2.5vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-gender {
+    width: 100%;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-gender button {
+    width: 30vw;
+    height: 8vw;
+    border-radius: 0.8vw;
+    font-size: 2.6vw;
+  }
+  .registrationContainer .registrationContainer-continue {
+    width: 65vw;
+    height: 8vw;
+    border-radius: 0.8vw;
+    margin-top: 5.2vw;
+    font-size: 2.7vw;
+  }
+}
+@media (max-width: 600px) {
+  .registrationContainer .registrationContainer-title {
+    font-size: 6.5vw;
+    margin-top: 2.2vw;
+    margin-bottom: 5.5vw;
+  }
+  .registrationContainer .registrationContainer-parametrs {
+    gap: 6vw;
+    max-width: 72vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input-span {
+    right: 2vw;
+    font-size: 2.9vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input {
+    width: 72vw;
+    height: 10vw;
+    border-radius: 1.1vw;
+    font-size: 3vw;
+    padding-left: 2vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input::placeholder {
+    font-size: 2.9vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-gender {
+    width: 100%;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-gender button {
+    width: 32vw;
+    height: 10vw;
+    border-radius: 1.1vw;
+    font-size: 2.8vw;
+  }
+  .registrationContainer .registrationContainer-continue {
+    width: 72vw;
+    height: 10vw;
+    border-radius: 1.1vw;
+    margin-top: 6vw;
+    font-size: 3vw;
+  }
+}
+@media (max-width: 480px) {
+  .registrationContainer .registrationContainer-title {
+    font-size: 6.6vw;
+    margin-top: 2.2vw;
+    margin-bottom: 5.5vw;
+  }
+  .registrationContainer .registrationContainer-parametrs {
+    gap: 7.2vw;
+    max-width: 80vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input-span {
+    right: 2vw;
+    font-size: 3.2vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input {
+    width: 80vw;
+    height: 10.8vw;
+    border-radius: 2vw;
+    font-size: 3.3vw;
+    padding-left: 2vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-input::placeholder {
+    font-size: 3.2vw;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-gender {
+    width: 100%;
+  }
+  .registrationContainer .registrationContainer-parametrs .registrationContainer-parametrs-gender button {
+    width: 36vw;
+    height: 10.8vw;
+    border-radius: 2vw;
+    font-size: 3.1vw;
+  }
+  .registrationContainer .registrationContainer-continue {
+    width: 80vw;
+    height: 10.8vw;
+    border-radius: 2vw;
+    margin-top: 6vw;
+    font-size: 3.3vw;
+  }
+}
+
+/*# sourceMappingURL=verification.css.map */

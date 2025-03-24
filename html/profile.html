@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <script src="/js/menu.js"></script>
+    
+    <div class="profile">
+        <div class="profile_user-box">
+            <h1 class="profile_user-title">Govnochist777</h1>
+            <img class="profile_user-img" src="/img/qwe.jpg" alt="" />
+        </div>
+        
+        <div class="profile-characteristics-box">
+            <button class="profile-characteristics-buttonChange" id="profile-edit-button">
+                <img src="/img/redact.svg" alt="" />
+            </button>
+            <h2 class="profile-characteristics-title">Характеристики:</h2>
+            <p class="profile-characteristics-point">Рост: <span id="profile-characteristics-height">876</span></p>
+            <p class="profile-characteristics-point">Вес: <span id="profile-characteristics-weight">867</span></p>
+            <p class="profile-characteristics-point">Возраст: <span id="profile-characteristics-age">867</span></p>
+            <p class="profile-characteristics-point">Пол: <span id="profile-characteristics-gender">567</span></p>
+            <p class="profile-characteristics-point">Среднее кол-во посещений туалета в день: <span id="profile-characteristics-quantity"></span></p>
+            <p class="profile-characteristics-point">Тип питания: <span id="profile-characteristics-diet"></span></p>
+        </div>
+    
+        <div id="chart"></div>
+        
+        <div class="profile-statistics-box">
+            <div class="profile-statistics-subbox">
+                <p>За день</p>
+                <hr>
+                <span></span>
+            </div>
+            <div class="profile-statistics-subbox">
+                <p>За месяц</p>
+                <hr>
+                <span></span>
+            </div>
+            <div class="profile-statistics-subbox">
+                <p>За всю жизнь</p>
+                <hr>
+                <span></span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-edit-modal" id="profile-edit-modal">
+        <button class="profile-edit-modal-close" id="profile-edit-modal-close">
+            <img src="/img/close.svg" alt="">
+        </button>
+        
+        <div class="profile-edit-modal-point">
+            <p class="profile-edit-modal-point-title">Рост:</p>
+            <input id="profile_height_input" type="number" class="profile-edit-modal-point-subtitle">
+        </div>
+        
+        <div class="profile-edit-modal-point">
+            <p class="profile-edit-modal-point-title">Вес:</p>
+            <input id="profile_weight_input" type="number" class="profile-edit-modal-point-subtitle">
+        </div>
+        
+        <div class="profile-edit-modal-point">
+            <p class="profile-edit-modal-point-title">Возраст:</p>
+            <input id="profile_age_input" type="number" class="profile-edit-modal-point-subtitle">
+        </div>
+        
+        <div class="profile-edit-modal-point">
+            <p class="profile-edit-modal-point-title">Пол:</p>
+            <select id="profile_edit_gender" class="profile-edit-modal-point-subtitle profile-edit-modal-point-subtitle-select">
+                <option value="male">Мужской</option>
+                <option value="female">Женский</option>
+            </select>
+        </div>
+        
+        <div class="profile-edit-modal-point">
+            <p class="profile-edit-modal-point-title">Кол-во посещений туалета в день:</p>
+            <input id="profile_quantity_input" type="number" class="profile-edit-modal-point-subtitle">
+        </div>
+        
+        <div class="profile-edit-modal-point">
+            <p class="profile-edit-modal-point-title">Тип питания:</p>
+            <select id="profile_edit_diet" class="profile-edit-modal-point-subtitle profile-edit-modal-point-subtitle-select">
+                <option value="balanced">Сбалансированный</option>
+                <option value="carnivore">Мясоед</option>
+                <option value="vegan">Веган</option>
+                <option value="omnivore">Любитель фастфуда</option>
+            </select>
+        </div>
+        
+        <button class="profile-edit-modal-save">Сохранить</button>
+    </div>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <script src="/js/profile.js"></script>
+    <script src="/js/graph.js"></script>
+    
+
+</body>
+</html>

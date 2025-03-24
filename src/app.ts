@@ -18,7 +18,7 @@ const PORT = process.env.PORT || '4000'
 
 app.use(express.json())
 
-app.use(express.static(path.join(__dirname, '../public')))
+app.use(express.static(path.join(__dirname, '../html')))
 app.use('/scss', express.static(path.join(__dirname, '../scss')))
 app.use('/css', express.static(path.join(__dirname, '../css')))
 app.use('/img', express.static(path.join(__dirname, '../img')))
