@@ -40,23 +40,36 @@ export const update_shit = async (req: Request, res: Response) => {
     }
 
     const city = await getCityFromCoords(lat, lon)
+    const country = await getCountryFromCoords(lat, lon)
 
-    const cityData = await db.one(
-      `INSERT INTO govno_db.govno_cities(city_name, lat, lon, shit_count) 
-       VALUES($1, $2, $3, 1)
-       ON CONFLICT (city_name) 
-       DO UPDATE SET shit_count = govno_db.govno_cities.shit_count + 1 
-       RETURNING city_id`,
-      [city, lat, lon]
+    const govno = await db.one(
+      `WITH 
+        city_insert AS (
+          INSERT INTO govno_db.govno_cities(city_name, lat, lon, shit_count) 
+          VALUES($1, $2, $3, 1)
+          ON CONFLICT (city_name) 
+          DO UPDATE SET shit_count = govno_db.govno_cities.shit_count + 1 
+          RETURNING city_id
+        ),
+        country_insert AS (
+          INSERT INTO govno_db.govno_countries(country_name, lat, lon, shit_count) 
+          VALUES($4, $5, $6, 1)
+          ON CONFLICT (country_name) 
+          DO UPDATE SET shit_count = govno_db.govno_countries.shit_count + 1 
+          RETURNING country_id
+        )
+      SELECT city_insert.city_id, country_insert.country_id`,
+      [city, lat, lon, country, lat, lon]
     )
 
-    console.log(city)
+    console.log('City ID:', govno.city_id)
+    console.log('Country ID:', govno.country_id)
 
     // Сохраняем запись в БД
     await db.none(
-      `INSERT INTO govno_db.govno_map(user_id, visit_lat, visit_lon, visit_count, date, visit_time)
-       VALUES($1, $2, $3, $4, CURRENT_DATE, NOW())`,
-      [user_id, lat, lon, visitCount + 1]
+      `INSERT INTO govno_db.govno_map(user_id, visit_lat, visit_lon, visit_count, date, visit_time, city)
+       VALUES($1, $2, $3, $4, CURRENT_DATE, NOW(), $5)`,
+      [user_id, lat, lon, visitCount + 1, city]
     )
 
     res.sendStatus(200)
@@ -87,6 +100,18 @@ export const get_shits = async (req: Request, res: Response) => {
   }
 }
 
+export const get_top_shit_cities = async (req: Request, res: Response) => {
+  try {
+    const topCities = await db.any(`SELECT city_name as city, lat, lon, shit_count FROM govno_db.govno_cities ORDER BY shit_count DESC LIMIT 10`)
+
+    console.log(topCities)
+    res.json({ cities: topCities })
+  } catch (error) {
+    console.error(error)
+    res.status(500).send('Server error')
+  }
+}
+
 async function getCityFromCoords(lat: number, lon: number) {
   const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
 
@@ -105,6 +130,24 @@ async function getCityFromCoords(lat: number, lon: number) {
     }
   } catch (error) {
     console.error('Ошибка при получении города:', error)
+    return 'Ошибка'
+  }
+}
+
+async function getCountryFromCoords(lat: number, lon: number) {
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+
+  try {
+    const response = await fetch(url)
+    const data = await response.json()
+
+    if (data.address && data.address.country) {
+      return data.address.country
+    } else {
+      return 'Неизвестная страна'
+    }
+  } catch (error) {
+    console.error('Ошибка при получении страны:', error)
     return 'Ошибка'
   }
 }
