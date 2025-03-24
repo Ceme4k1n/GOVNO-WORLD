@@ -32,52 +32,13 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <script>
+      const tg_user_id = window.Telegram.WebApp.initDataUnsafe.user.id
+
       let referrals_list_empty = document.querySelector('.referrals-info-listEmpty')
       referrals_list_empty.style.display = 'none'
       let referrals_link = 'https://dota2_rule34.com'
       let button_copy_referrals_link = document.getElementById('button_copy_referrals_link')
       let button_copy_referrals_share = document.getElementById('button_copy_referrals_share')
-
-      const personas = [
-        {
-          avatar: './img/qwe.jpg',
-          name: 'Григорий',
-          time: '01.03.2025 в 10:15',
-        },
-        {
-          avatar: './img/abc.jpg',
-          name: 'Анна',
-          time: '05.03.2025 в 12:20',
-        },
-        {
-          avatar: './img/xyz.jpg',
-          name: 'Сергей',
-          time: '15.03.2025 в 16:45',
-        },
-      ]
-
-      function renderReferrals() {
-        const referralsContainer = document.querySelector('.referrals-info-list')
-        referralsContainer.innerHTML = ''
-
-        if (typeof personas !== 'undefined' && personas.length > 0) {
-          personas.forEach((person) => {
-            referralsContainer.innerHTML += `
-                        <div class="referrals-info-list-point">
-                            <div class="referrals-info-list-point-avatar"></div>
-                            <div class="referrals-info-list-point-details">
-                                <p class="referrals-info-list-point-name">${person.name}</p>
-                                <p class="referrals-info-list-point-time">${person.time}</p>
-                            </div>
-                        </div>
-                    `
-          })
-        } else {
-          referralsContainer.innerHTML += ``
-          referrals_list_empty.style.display = 'flex'
-          console.log('ЧУУУВАККК')
-        }
-      }
 
       button_copy_referrals_link.addEventListener('click', () => {
         navigator.clipboard
@@ -94,7 +55,66 @@
         // Мой пенис заводил меня в такие места куда бы я не пошел с пистолетом
       })
 
-      renderReferrals()
+      async function fetchReferrals() {
+        try {
+          fetch('/referral/get_ref', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ tg_user_id }),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                return Promise.reject('Request failed with status ' + response.status)
+              }
+              if (response.status === 200) {
+                return response.json()
+              }
+            })
+            .then((data) => {
+              if (data.referrals.length > 0) {
+                renderReferrals(data.referrals)
+              } else {
+                showEmptyMessage()
+              }
+            })
+            .catch((error) => {
+              console.log('Error:', error)
+            })
+        } catch (error) {
+          console.log('Ошибка:', error)
+        }
+      }
+
+      function renderReferrals(referrals) {
+        const referralsContainer = document.querySelector('.referrals-info-list')
+        referralsContainer.innerHTML = ''
+
+        referrals.forEach((person) => {
+          referralsContainer.innerHTML += `
+      <div class="referrals-info-list-point">
+          <div class="referrals-info-list-point-avatar"></div>
+          <div class="referrals-info-list-point-details">
+              <p class="referrals-info-list-point-name">${person.friend_username || 'Без имени'}</p>
+              <p class="referrals-info-list-point-time">Время приглошения: ${formatDate(person.created_at)}</p>
+          </div>
+      </div>
+    `
+        })
+      }
+
+      function showEmptyMessage() {
+        document.querySelector('.referrals-info-listEmpty').style.display = 'flex'
+      }
+
+      function formatDate(dateString) {
+        if (!dateString) return 'Нет данных'
+        const date = new Date(dateString)
+        return date.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+      }
+
+      document.addEventListener('DOMContentLoaded', fetchReferrals)
     </script>
   </body>
 </html>

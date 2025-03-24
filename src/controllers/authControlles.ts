@@ -92,7 +92,7 @@ export const user_reg = async (req: Request, res: Response) => {
             await t.none(
               `INSERT INTO govno_db.referrals (referral_id, friend_id, friend_username, created_at)
               VALUES ($1, $2, $3, NOW())`,
-              [referredId, user_id, referredUser.username]
+              [referredId, user_id, username]
             )
             console.log(`Пользователь добавлен с рефералом от ${referredUser.username ? '@' + referredUser.username : 'неизвестного пользователя'}`)
           } else {
