@@ -86,15 +86,15 @@ export const user_reg = async (req: Request, res: Response) => {
 
         // Проверка, что реферал существует в таблице users
         if (referredId !== 'None') {
-          const referredUserExists = await t.oneOrNone(`SELECT 1 FROM govno_db.users WHERE tg_user_id = $1`, [referredId])
+          const referredUser = await t.oneOrNone(`SELECT username FROM govno_db.users WHERE tg_user_id = $1`, [referredId])
 
-          if (referredUserExists) {
+          if (referredUser) {
             await t.none(
-              `INSERT INTO govno_db.referrals (referral_id, friend_id, created_at)
-              VALUES ($1, $2, NOW())`,
-              [referredId, user_id]
+              `INSERT INTO govno_db.referrals (referral_id, friend_id, friend_username, created_at)
+              VALUES ($1, $2, $3, NOW())`,
+              [referredId, user_id, referredUser.username]
             )
-            console.log('Пользователь добавлен с рефералом')
+            console.log(`Пользователь добавлен с рефералом от ${referredUser.username ? '@' + referredUser.username : 'неизвестного пользователя'}`)
           } else {
             console.log('Реферал не найден, добавлен без реферала')
           }
