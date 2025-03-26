@@ -58,12 +58,13 @@ export const update_shit = async (req: Request, res: Response) => {
           DO UPDATE SET shit_count = govno_db.govno_countries.shit_count + 1 
           RETURNING country_id
         )
-      SELECT city_insert.city_id, country_insert.country_id`,
+      SELECT city_insert.city_id, country_insert.country_id
+      FROM city_insert, country_insert;`,
       [city, lat, lon, country, lat, lon]
     )
 
-    console.log('City ID:', govno.city_id)
-    console.log('Country ID:', govno.country_id)
+    console.log('City ID:', govno.city_name)
+    console.log('Country ID:', govno.country_name)
 
     // Сохраняем запись в БД
     await db.none(
