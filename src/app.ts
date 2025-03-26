@@ -24,6 +24,7 @@ app.use('/css', express.static(path.join(__dirname, '../css')))
 app.use('/img', express.static(path.join(__dirname, '../img')))
 app.use('/js', express.static(path.join(__dirname, '../js')))
 
+
 app.use('/auth', authRouter)
 app.use('/quiz', quizRouter)
 app.use('/referral', referralRouter)
