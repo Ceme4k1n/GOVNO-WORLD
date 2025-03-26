@@ -1,6 +1,6 @@
 document.body.innerHTML += `
     <nav class="navbar">
-        <button class="navbar-title">$GOVNO</button>
+        <a href="./index.html" class="navbar-title">$GOVNO</a>
         <button class="navbar-buttonOpenMenu"><img class="navbar-buttonOpenMenu-img" src="/img/1.svg" alt=""></button>
     </nav>
 
@@ -11,17 +11,17 @@ document.body.innerHTML += `
                 <img src="/img/qwe.jpg" alt="">
             </div>
             <div class="menu-navbar">
-                <a href=""><img src="/img/profile-icon.svg" alt="">Мой профиль<img class="menu-navbar-arrow" src="/img/menu-arrow.svg" alt=""></a>
-                <a href=""><img src="/img/referrals-icon.svg" alt="">Рефералы<img class="menu-navbar-arrow" src="/img/menu-arrow.svg" alt=""></a>
+                <a href="./profile.html"><img src="/img/profile-icon.svg" alt="">Мой профиль<img class="menu-navbar-arrow" src="/img/menu-arrow.svg" alt=""></a>
+                <a href="./referrals.html"><img src="/img/referrals-icon.svg" alt="">Рефералы<img class="menu-navbar-arrow" src="/img/menu-arrow.svg" alt=""></a>
             </div>
             <div class="menu-navbar">
                 <a href=""><img src="/img/rates-icon.svg" alt=""> Говно-ставки</a>
-                <a href=""><img src="/img/map-icon.svg" alt="">Говно-карта</a>
+                <a href="./map.html"><img src="/img/map-icon.svg" alt="">Говно-карта</a>
                 <a href=""><img src="/img/graph-icon.svg" alt="">Говно-график</a>
-                <a href=""><img src="/img/news-icon.svg" alt="">Говно-новости</a>
+                <a href="./news.html"><img src="/img/news-icon.svg" alt="">Говно-новости</a>
                 <a href=""><img src="/img/achievements-icon.svg" alt="">Говно-достижения</a>
                 <a href=""><img src="/img/partners-icon.svg" alt="">Говно-партнеры</a>
-                <a href=""><img src="/img/survey-icon.svg" alt="">Говно-опрос</a>
+                <a href="./survey.html"><img src="/img/survey-icon.svg" alt="">Говно-опрос</a>
                 <a href=""><img src="/img/tasks-icon.svg" alt="">Говно-задания</a>
             </div>
         </div>
@@ -38,5 +38,13 @@ openMenuButton.addEventListener("click", () => {
 document.addEventListener('click', function(event) {
     if (!menu.contains(event.target) && !openMenuButton.contains(event.target)) {
         menu.classList.remove('open');
+    }
+});
+
+document.addEventListener('keydown', function (event) {
+    if (event.key === "Escape") {
+        if (menu.classList.contains('open')) {
+            menu.classList.remove('open');
+        }
     }
 });

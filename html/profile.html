@@ -10,13 +10,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
 </head>
 <body>
-
+    <script src="/js/lets.js"></script>
     <script src="/js/menu.js"></script>
     
     <div class="profile">
-        <div class="profile_user-box">
-            <h1 class="profile_user-title">Govnochist777</h1>
-            <img class="profile_user-img" src="/img/qwe.jpg" alt="" />
+        <div class="profile-user-box">
+            <h1 class="profile-user-title">Govnochist777</h1>
+            <img class="profile-user-img" src="/img/qwe.jpg" alt="" />
         </div>
         
         <div class="profile-characteristics-box">
@@ -53,42 +53,38 @@
         </div>
     </div>
     
-    <div class="profile-edit-modal" id="profile-edit-modal">
-        <button class="profile-edit-modal-close" id="profile-edit-modal-close">
-            <img src="/img/close.svg" alt="">
-        </button>
-        
-        <div class="profile-edit-modal-point">
-            <p class="profile-edit-modal-point-title">Рост:</p>
-            <input id="profile_height_input" type="number" class="profile-edit-modal-point-subtitle">
+    <form id="profileChange-form" class="profileChange-form">
+        <div class="profileChange-form-point">
+            <label for="profile-height-input" class="profileChange-form-point-title">Рост:</label>
+            <input id="profile-height-input" type="number" class="profileChange-form-point-input" min="0" required>
         </div>
         
-        <div class="profile-edit-modal-point">
-            <p class="profile-edit-modal-point-title">Вес:</p>
-            <input id="profile_weight_input" type="number" class="profile-edit-modal-point-subtitle">
+        <div class="profileChange-form-point">
+            <label for="profile-weight-input" class="profileChange-form-point-title">Вес:</label>
+            <input id="profile-weight-input" type="number" class="profileChange-form-point-input" min="0" required>
         </div>
         
-        <div class="profile-edit-modal-point">
-            <p class="profile-edit-modal-point-title">Возраст:</p>
-            <input id="profile_age_input" type="number" class="profile-edit-modal-point-subtitle">
+        <div class="profileChange-form-point">
+            <label for="profile-age-input" class="profileChange-form-point-title">Возраст:</label>
+            <input id="profile-age-input" type="number" class="profileChange-form-point-input" min="0" required>
         </div>
         
-        <div class="profile-edit-modal-point">
-            <p class="profile-edit-modal-point-title">Пол:</p>
-            <select id="profile_edit_gender" class="profile-edit-modal-point-subtitle profile-edit-modal-point-subtitle-select">
+        <div class="profileChange-form-point">
+            <label for="profile-gender-select" class="profileChange-form-point-title">Пол:</label>
+            <select id="profile-gender-select" class="profileChange-form-point-input profileChange-form-point-select" required>
                 <option value="male">Мужской</option>
                 <option value="female">Женский</option>
             </select>
         </div>
         
-        <div class="profile-edit-modal-point">
-            <p class="profile-edit-modal-point-title">Кол-во посещений туалета в день:</p>
-            <input id="profile_quantity_input" type="number" class="profile-edit-modal-point-subtitle">
+        <div class="profileChange-form-point">
+            <label for="profile-quantity-input" class="profileChange-form-point-title">Кол-во посещений туалета в день:</label>
+            <input id="profile-quantity-input" type="number" class="profileChange-form-point-input" min="0" required>
         </div>
         
-        <div class="profile-edit-modal-point">
-            <p class="profile-edit-modal-point-title">Тип питания:</p>
-            <select id="profile_edit_diet" class="profile-edit-modal-point-subtitle profile-edit-modal-point-subtitle-select">
+        <div class="profileChange-form-point">
+            <label for="profile-diet-select" class="profileChange-form-point-title">Тип питания:</label>
+            <select id="profile-diet-select" class="profileChange-form-point-input profileChange-form-point-select">
                 <option value="balanced">Сбалансированный</option>
                 <option value="carnivore">Мясоед</option>
                 <option value="vegan">Веган</option>
@@ -96,15 +92,14 @@
             </select>
         </div>
         
-        <button class="profile-edit-modal-save">Сохранить</button>
-    </div>
-    
+        <button type="submit" class="profileChange-form-submit">Сохранить</button>
+    </form>
+     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
 
     <script src="/js/profile.js"></script>
     <script src="/js/graph.js"></script>
-    
 
 </body>
 </html>

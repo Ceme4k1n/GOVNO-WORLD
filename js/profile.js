@@ -206,17 +206,27 @@ function formatDiet(diet) {
 }
 
 // Логика открытия и закрытия модального окна
-const profileEditButton = document.getElementById("profile-edit-button");
-const profileEditModal = document.getElementById("profile-edit-modal");
-const profileEditModalClose = document.getElementById("profile-edit-modal-close");
-const body = document.body;
+let profileChangeForm = document.getElementById("profileChange-form")
+let ButtonOpen_profileChangeForm = document.getElementById("profile-edit-button")
+let body = document.body;
 
-profileEditButton.addEventListener("click", () => {
-    profileEditModal.style.display = "flex";
-    body.classList.add('modal-active');
+ButtonOpen_profileChangeForm.addEventListener("click", () => {
+    profileChangeForm.classList.toggle("open");
+    body.classList.add("modal-active")
 });
 
-profileEditModalClose.addEventListener("click", () => {
-    profileEditModal.style.display = "none";
-    body.classList.remove('modal-active');
+document.addEventListener('click', function(event) {
+    if (!profileChangeForm.contains(event.target) && !ButtonOpen_profileChangeForm.contains(event.target)) {
+        profileChangeForm.classList.remove('open');
+        body.classList.remove("modal-active")
+    }
+});
+
+document.addEventListener('keydown', function (event) {
+    if (event.key === "Escape") { // Проверяем, нажат ли Esc
+        if (profileChangeForm.classList.contains('open')) { // Проверяем, открыто ли модальное окно
+            profileChangeForm.classList.remove('open');
+            body.classList.remove("modal-active");
+        }
+    }
 });
