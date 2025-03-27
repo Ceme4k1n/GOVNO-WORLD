@@ -706,7 +706,7 @@ body.modal-active::before {
   .profile {
     gap: 6.5vw;
     margin-top: 1vw;
-    width: 92vw;
+    width: 75vw;
     margin-bottom: 3vw;
   }
   .profile .profile-user-box {
@@ -722,7 +722,7 @@ body.modal-active::before {
   }
   .profile .profile-characteristics-box {
     gap: 2.5vw;
-    padding: 2.8vw;
+    padding: 3vw;
     width: 100%;
     border-radius: 1.5vw;
   }

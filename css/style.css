@@ -15,6 +15,7 @@ body {
 * {
   margin: 0;
   padding: 0;
+  outline: none;
 }
 
 html {
@@ -778,7 +779,7 @@ body.modal-active::before {
   .profile {
     gap: 6.5vw;
     margin-top: 1vw;
-    width: 92vw;
+    width: 75vw;
     margin-bottom: 3vw;
   }
   .profile .profile-user-box {
@@ -794,7 +795,7 @@ body.modal-active::before {
   }
   .profile .profile-characteristics-box {
     gap: 2.5vw;
-    padding: 2.8vw;
+    padding: 3vw;
     width: 100%;
     border-radius: 1.5vw;
   }
@@ -1975,7 +1976,7 @@ body.modal-active::before {
     height: 6.2vw;
     padding: 2.5vw;
     border-radius: 10vw;
-    margin-top: 2vw;
+    margin-top: 3vw;
     margin-bottom: 2.5vw;
   }
   .navbar .navbar-title {
@@ -2036,7 +2037,7 @@ body.modal-active::before {
     height: 8vw;
     padding: 3vw;
     border-radius: 10vw;
-    margin-top: 2vw;
+    margin-top: 4vw;
     margin-bottom: 6vw;
   }
   .navbar .navbar-title {
@@ -2097,7 +2098,7 @@ body.modal-active::before {
     height: 11vw;
     padding: 4vw;
     border-radius: 10vw;
-    margin-top: 2vw;
+    margin-top: 5vw;
     margin-bottom: 6vw;
   }
   .navbar .navbar-title {
