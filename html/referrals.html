@@ -9,112 +9,73 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <script src="/public/menu.js"></script>
+    <script src="/js/menu.js"></script>
+    <script src="/js/lets.js"></script>
 
-    <div class="referrals-box">
-      <div class="referrals-share">
-        <h2 class="referrals-title"><img class="referrals-title-share-img" src="/img/invite-friends-icon.svg" alt="" />Пригласить Друзей</h2>
-        <p class="referrals-share-subtitle">Скопируйте ссылку и отправьте её кому угодно, чтобы иметь биг блек кок.</p>
-        <div class="referrals-share-buttons">
-          <button id="button_copy_referrals_link"><img class="button-copy-icon" src="/img/copy-icon.svg" alt="" />Скопировать</button>
-          <button id="button_copy_referrals_share"><img class="button-share-icon" src="/img/share-icon.svg" alt="" />Поделиться</button>
+    <div class="referrals">
+        <h2 class="referrals-title"><img src="/img/invite-friends-icon.svg" alt="" />Пригласить Друзей</h2>
+        <p class="referrals-subtitle">Скопируйте ссылку и отправьте её кому угодно, чтобы иметь биг блек кок.</p>
+        <div class="referrals-list"></div>
+        <div class="referrals-buttons">
+          <button id="button_copy_referrals_link"><img src="/img/copy-icon.svg" alt="" />Скопировать</button>
+          <button id="button_copy_referrals_share"><img src="/img/share-icon.svg" alt="" />Поделиться</button>
         </div>
-      </div>
-      <div class="referrals-info">
-        <h2 class="referrals-title"><img class="referrals-title-info-img" src="/img/+chel2 1.svg" alt="" />Ваши рефералы</h2>
-        <div class="referrals-info-list"></div>
-        <div class="referrals-info-listEmpty">
-          <h1>У вас пока нет реф</h1>
-          <img src="/img/empty-list-icon.svg" alt="" />
-        </div>
-      </div>
     </div>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <script>
-      const tg_user_id = window.Telegram.WebApp.initDataUnsafe.user.id
+      let referrals_link = "https://dota2_rule34.com"
+      let button_copy_referrals_link = document.getElementById("button_copy_referrals_link")
 
-      let referrals_list_empty = document.querySelector('.referrals-info-listEmpty')
-      referrals_list_empty.style.display = 'none'
-      let referrals_link = 'https://dota2_rule34.com'
-      let button_copy_referrals_link = document.getElementById('button_copy_referrals_link')
-      let button_copy_referrals_share = document.getElementById('button_copy_referrals_share')
+      const personas = [
+          {
+              avatar: "./img/qwe.jpg",
+              name: "Григорий",
+              time: "01.03.2025 в 10:15"
+          },
+          {
+              avatar: "./img/abc.jpg",
+              name: "Анна",
+              time: "05.03.2025 в 12:20"
+          },
+          {
+              avatar: "./img/xyz.jpg",
+              name: "Сергей",
+              time: "15.03.2025 в 16:45"
+          }
+      ];
 
-      button_copy_referrals_link.addEventListener('click', () => {
-        navigator.clipboard
-          .writeText(referrals_link)
-          .then(() => {
-            console.log('')
-          })
-          .catch((err) => {
-            console.error('секс онлайн без смс и регистрации', err)
-          })
-      })
+      function renderReferrals() {
+          const referralsContainer = document.querySelector(".referrals-list");
+          referralsContainer.innerHTML = "";
 
-      button_copy_referrals_share.addEventListener('click', () => {
-        // Мой пенис заводил меня в такие места куда бы я не пошел с пистолетом
-      })
+          if (typeof personas !== "undefined" && personas.length > 0) {
+              referralsContainer.style.display = "flex"
+              personas.forEach(person => {
+                  referralsContainer.innerHTML += `
+                      <div class="referrals-list-point">
+                          <div class="referrals-list-point-avatar"></div>
+                          <div class="referrals-list-point-details">
+                              <p class="referrals-list-point-name">${person.name}</p>
+                              <p class="referrals-list-point-time">${person.time}</p>
+                          </div>
+                      </div>
+                  `;
+              });
+          } else if (typeof personas === "undefined" || personas.length < 1) {
+              referralsContainer.style.display = "none"
+          }
 
-      async function fetchReferrals() {
-        try {
-          fetch('/referral/get_ref', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ tg_user_id }),
-          })
-            .then((response) => {
-              if (!response.ok) {
-                return Promise.reject('Request failed with status ' + response.status)
-              }
-              if (response.status === 200) {
-                return response.json()
-              }
-            })
-            .then((data) => {
-              if (data.referrals.length > 0) {
-                renderReferrals(data.referrals)
-              } else {
-                showEmptyMessage()
-              }
-            })
-            .catch((error) => {
-              console.log('Error:', error)
-            })
-        } catch (error) {
-          console.log('Ошибка:', error)
-        }
+          
       }
 
-      function renderReferrals(referrals) {
-        const referralsContainer = document.querySelector('.referrals-info-list')
-        referralsContainer.innerHTML = ''
+      renderReferrals();
 
-        referrals.forEach((person) => {
-          referralsContainer.innerHTML += `
-      <div class="referrals-info-list-point">
-          <div class="referrals-info-list-point-avatar"></div>
-          <div class="referrals-info-list-point-details">
-              <p class="referrals-info-list-point-name">${person.friend_username || 'Без имени'}</p>
-              <p class="referrals-info-list-point-time">Время приглошения: ${formatDate(person.created_at)}</p>
-          </div>
-      </div>
-    `
-        })
-      }
+      console.log("grrehtgrteh", personas)
 
-      function showEmptyMessage() {
-        document.querySelector('.referrals-info-listEmpty').style.display = 'flex'
-      }
 
-      function formatDate(dateString) {
-        if (!dateString) return 'Нет данных'
-        const date = new Date(dateString)
-        return date.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-      }
 
-      document.addEventListener('DOMContentLoaded', fetchReferrals)
+    </script>
     </script>
   </body>
 </html>

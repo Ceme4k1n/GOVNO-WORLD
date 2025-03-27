@@ -13,13 +13,9 @@
   justify-content: center;
   align-items: start;
   box-sizing: border-box;
+  z-index: 9999;
 }
-
-.menu-modal.open {
-  right: 0;
-}
-
-.menu-content {
+.menu-modal .menu-content {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -27,26 +23,24 @@
   width: 100%;
   gap: 1vw;
 }
-
-.menu-avatar {
+.menu-modal .menu-content .menu-avatar {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 0.8vw;
 }
-.menu-avatar h2 {
+.menu-modal .menu-content .menu-avatar h2 {
   font-size: 1.6vw;
   font-weight: 300;
 }
-.menu-avatar img {
+.menu-modal .menu-content .menu-avatar img {
   width: 8vw;
   height: 8vw;
   object-fit: cover;
   border-radius: 50%;
 }
-
-.menu-navbar {
+.menu-modal .menu-content .menu-navbar {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -60,7 +54,7 @@
   position: relative;
   box-shadow: 0 0 1.1vw rgba(0, 0, 0, 0.5);
 }
-.menu-navbar a {
+.menu-modal .menu-content .menu-navbar a {
   display: flex;
   justify-content: start;
   align-items: center;
@@ -70,22 +64,20 @@
   width: 100%;
   font-weight: 400;
 }
-.menu-navbar a img {
+.menu-modal .menu-content .menu-navbar a img {
   width: 1.2vw;
   height: auto;
   left: -2vw;
 }
-.menu-navbar a:hover {
-  background-color: #222222;
-  box-shadow: 0 0 1.1vw rgba(0, 0, 0, 0.5);
-  border-radius: 5vw;
-  padding: 1vw;
-}
-.menu-navbar .menu-navbar-arrow {
+.menu-modal .menu-content .menu-navbar .menu-navbar-arrow {
   position: absolute;
   width: 0.5vw;
   height: auto;
   left: inherit;
+  right: 0;
+}
+
+.menu-modal.open {
   right: 0;
 }
 
@@ -114,6 +106,307 @@
 .navbar .navbar-buttonOpenMenu .navbar-buttonOpenMenu-img {
   width: 1vw;
   height: auto;
+}
+
+@media (max-width: 1440px) {
+  .menu-modal {
+    right: -30%;
+    width: 25%;
+    transition: right 0.3s ease;
+    padding: 1.7vw;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+  }
+  .menu-modal .menu-content {
+    gap: 1.3vw;
+  }
+  .menu-modal .menu-content .menu-avatar {
+    gap: 0.8vw;
+  }
+  .menu-modal .menu-content .menu-avatar h2 {
+    font-size: var(--font-big);
+  }
+  .menu-modal .menu-content .menu-avatar img {
+    width: 9vw;
+    height: 9vw;
+  }
+  .menu-modal .menu-content .menu-navbar {
+    gap: 1.1vw;
+    width: 100%;
+    padding: 1.1vw;
+    border-radius: 0.5vw;
+    box-shadow: 0 0 1.1vw rgba(0, 0, 0, 0.5);
+  }
+  .menu-modal .menu-content .menu-navbar a {
+    font-size: var(--font-normal);
+    gap: 0.6vw;
+    font-weight: 400;
+  }
+  .menu-modal .menu-content .menu-navbar a img {
+    width: 1.35vw;
+    left: -2vw;
+  }
+  .menu-modal .menu-content .menu-navbar .menu-navbar-arrow {
+    width: 0.7vw;
+  }
+  .menu-modal.open {
+    right: 0;
+  }
+  .navbar {
+    width: 55vw;
+    height: 3.3vw;
+    padding: 1.1vw;
+    border-radius: 10vw;
+    margin-top: 2vw;
+    margin-bottom: 2.5vw;
+  }
+  .navbar .navbar-title {
+    font-size: 1.3vw;
+  }
+  .navbar .navbar-buttonOpenMenu .navbar-buttonOpenMenu-img {
+    width: 1.3vw;
+    margin-right: 0.2vw;
+  }
+}
+@media (max-width: 1024px) {
+  .menu-modal {
+    right: -40%;
+    width: 35%;
+    transition: right 0.3s ease;
+    padding: 1.7vw;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+  }
+  .menu-modal .menu-content {
+    gap: 1.6vw;
+  }
+  .menu-modal .menu-content .menu-avatar {
+    gap: 0.8vw;
+  }
+  .menu-modal .menu-content .menu-avatar h2 {
+    font-size: var(--font-big);
+  }
+  .menu-modal .menu-content .menu-avatar img {
+    width: 13vw;
+    height: 13vw;
+  }
+  .menu-modal .menu-content .menu-navbar {
+    gap: 1.5vw;
+    width: 100%;
+    padding: 1.3vw;
+    border-radius: 0.8vw;
+    box-shadow: 0 0 1.1vw rgba(0, 0, 0, 0.5);
+  }
+  .menu-modal .menu-content .menu-navbar a {
+    font-size: var(--font-normal);
+    gap: 0.9vw;
+    font-weight: 400;
+  }
+  .menu-modal .menu-content .menu-navbar a img {
+    width: 1.8vw;
+    left: -2vw;
+  }
+  .menu-modal .menu-content .menu-navbar .menu-navbar-arrow {
+    width: 0.9vw;
+  }
+  .menu-modal.open {
+    right: 0;
+  }
+  .navbar {
+    width: 70vw;
+    height: 4.8vw;
+    padding: 2vw;
+    border-radius: 10vw;
+    margin-top: 2vw;
+    margin-bottom: 2.5vw;
+  }
+  .navbar .navbar-title {
+    font-size: 2vw;
+  }
+  .navbar .navbar-buttonOpenMenu .navbar-buttonOpenMenu-img {
+    width: 1.9vw;
+    margin-right: 0vw;
+  }
+}
+@media (max-width: 768px) {
+  .menu-modal {
+    right: -70%;
+    width: 60%;
+    transition: right 0.3s ease;
+    padding: 1.7vw;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+  }
+  .menu-modal .menu-content {
+    gap: 2.5vw;
+  }
+  .menu-modal .menu-content .menu-avatar {
+    gap: 0.8vw;
+  }
+  .menu-modal .menu-content .menu-avatar h2 {
+    font-size: var(--font-big);
+  }
+  .menu-modal .menu-content .menu-avatar img {
+    width: 20vw;
+    height: 20vw;
+  }
+  .menu-modal .menu-content .menu-navbar {
+    gap: 2vw;
+    width: 100%;
+    padding: 2vw;
+    border-radius: 0.8vw;
+    box-shadow: 0 0 1.1vw rgba(0, 0, 0, 0.5);
+  }
+  .menu-modal .menu-content .menu-navbar a {
+    font-size: var(--font-normal);
+    gap: 1.4vw;
+    font-weight: 400;
+  }
+  .menu-modal .menu-content .menu-navbar a img {
+    width: 2.5vw;
+    left: -2vw;
+  }
+  .menu-modal .menu-content .menu-navbar .menu-navbar-arrow {
+    width: 1.2vw;
+    right: 0.3vw;
+  }
+  .menu-modal.open {
+    right: 0;
+  }
+  .navbar {
+    width: 75vw;
+    height: 6.2vw;
+    padding: 2.5vw;
+    border-radius: 10vw;
+    margin-top: 2vw;
+    margin-bottom: 2.5vw;
+  }
+  .navbar .navbar-title {
+    font-size: 3vw;
+  }
+  .navbar .navbar-buttonOpenMenu .navbar-buttonOpenMenu-img {
+    width: 2.7vw;
+    margin-right: 0vw;
+  }
+}
+@media (max-width: 600px) {
+  .menu-modal {
+    right: -80%;
+    width: 70%;
+    transition: right 0.3s ease;
+    padding: 2.6vw;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+  }
+  .menu-modal .menu-content {
+    gap: 3vw;
+  }
+  .menu-modal .menu-content .menu-avatar {
+    gap: 1.2vw;
+  }
+  .menu-modal .menu-content .menu-avatar h2 {
+    font-size: var(--font-big);
+  }
+  .menu-modal .menu-content .menu-avatar img {
+    width: 22vw;
+    height: 22vw;
+  }
+  .menu-modal .menu-content .menu-navbar {
+    gap: 2.5vw;
+    width: 100%;
+    padding: 2.5vw;
+    border-radius: 0.8vw;
+    box-shadow: 0 0 1.1vw rgba(0, 0, 0, 0.5);
+  }
+  .menu-modal .menu-content .menu-navbar a {
+    font-size: 3.4vw;
+    gap: 1.7vw;
+    font-weight: 400;
+    padding-left: 0.3vw;
+  }
+  .menu-modal .menu-content .menu-navbar a img {
+    width: 3.2vw;
+    left: -2vw;
+  }
+  .menu-modal .menu-content .menu-navbar .menu-navbar-arrow {
+    width: 1.8vw;
+    right: 0.3vw;
+  }
+  .menu-modal.open {
+    right: 0;
+  }
+  .navbar {
+    width: 85vw;
+    height: 8vw;
+    padding: 3vw;
+    border-radius: 10vw;
+    margin-top: 2vw;
+    margin-bottom: 6vw;
+  }
+  .navbar .navbar-title {
+    font-size: 3.6vw;
+  }
+  .navbar .navbar-buttonOpenMenu .navbar-buttonOpenMenu-img {
+    width: 3.3vw;
+    margin-right: 0.1vw;
+  }
+}
+@media (max-width: 480px) {
+  .menu-modal {
+    right: -80%;
+    width: 70%;
+    transition: right 0.3s ease;
+    padding: 3.2vw;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+  }
+  .menu-modal .menu-content {
+    gap: 4vw;
+  }
+  .menu-modal .menu-content .menu-avatar {
+    gap: 1.2vw;
+  }
+  .menu-modal .menu-content .menu-avatar h2 {
+    font-size: var(--font-big);
+  }
+  .menu-modal .menu-content .menu-avatar img {
+    width: 30vw;
+    height: 30vw;
+  }
+  .menu-modal .menu-content .menu-navbar {
+    gap: 3vw;
+    width: 100%;
+    padding: 3vw;
+    border-radius: 1.5vw;
+    box-shadow: 0 0 1.1vw rgba(0, 0, 0, 0.5);
+  }
+  .menu-modal .menu-content .menu-navbar a {
+    font-size: 4.2vw;
+    gap: 2.2vw;
+    font-weight: 400;
+    padding-left: 0vw;
+  }
+  .menu-modal .menu-content .menu-navbar a img {
+    width: 4.2vw;
+    left: -2vw;
+  }
+  .menu-modal .menu-content .menu-navbar .menu-navbar-arrow {
+    width: 2.2vw;
+    right: 0.5vw;
+  }
+  .menu-modal.open {
+    right: 0;
+  }
+  .navbar {
+    width: 90vw;
+    height: 11vw;
+    padding: 4vw;
+    border-radius: 10vw;
+    margin-top: 2vw;
+    margin-bottom: 6vw;
+  }
+  .navbar .navbar-title {
+    font-size: 4.8vw;
+  }
+  .navbar .navbar-buttonOpenMenu .navbar-buttonOpenMenu-img {
+    width: 4.5vw;
+    margin-right: 0.1vw;
+  }
 }
 
 /*# sourceMappingURL=menu.css.map */

@@ -884,9 +884,9 @@ body.modal-active::before {
 @media (max-width: 480px) {
 
     .profile {
-        gap: 5vw;
+        gap: 6.5vw;
         margin-top: 1vw;
-        width: 85vw;
+        width: 92vw;
         margin-bottom: 3vw;
         
         .profile-user-box {
@@ -897,8 +897,8 @@ body.modal-active::before {
             }
     
             .profile-user-img {
-                width: 42vw;
-                height: 42vw;
+                width: 35vw;
+                height: 35vw;
                 border-radius: 50%;
             }
         }
@@ -1017,10 +1017,10 @@ body.modal-active::before {
     // график график график
     
     :root {
-        --margin-top: 30vw;
-        --margin-right: 36vw;
-        --margin-bottom: 40vw;
-        --margin-left: 120vw;
+        --margin-top: 40vw;
+        --margin-right: 50vw;
+        --margin-bottom: 50vw;
+        --margin-left: 130vw;
         --chart-width: 800x;
         --chart-height: 400px;
     }
@@ -1032,6 +1032,10 @@ body.modal-active::before {
     
     .axis-text {
         font-size: 10vw;
+    }
+
+    .line {
+        stroke-width: 5;
     }
 
 }

@@ -1,270 +1,181 @@
-.referrals-box {
+.referrals {
+    margin-top: 4vw;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    width: 27vw;
+    align-items: start;
+    width: 25vw;
     height: fit-content;
-    margin-top: 6vw;
-    gap: 1.8vw;
+    padding: 1vw;
+    background-color: #222222;
+    border-radius: 0.5vw;
+    gap: 1.2vw;
 
     .referrals-title {
         display: flex;
         justify-content: center;
         align-items: center;
         gap: 0.5vw;
-        font-weight: 400;
-        font-size: 1vw;
+        font-weight: 500;
+        font-size: var(--font-normal);
+
+        img{
+            width: 1.3vw;
+            height: auto;
+        }
     }
 
-    .referrals-share {
+    .referrals-subtitle {
+        font-weight: 300;
+        font-size: var(--font-small);
+    }
+
+    .referrals-list {
+        margin-top: 0.3vw;
+        margin-bottom: 0.3vw;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: start;
-        background-color: #222222;
-        width: 100%;
-        height: fit-content;
-        padding: 1vw;
-        box-sizing: border-box;
-        border-radius: 0.5vw;
-        gap: 1vw;
+        gap: 1.1vw;
 
-        .referrals-share-subtitle {
-            font-weight: 300;
-            font-size: 0.8vw;
-        }
-
-        .referrals-share-buttons {
-            width: 100%;
+        .referrals-list-point {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-
-            button {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                width: 47.5%;
-                height: 2vw;
-                background-color: #424242;
-                border-radius: 0.5vw;
-                gap: 0.4vw;
-                font-size: 0.8vw;
-                transition: all 0.5s;
-            }
-
-            button:active {
-                transform: scale(0.93);
-            }
-
-            .button-copy-icon{
-                width: 0.7vw;
-                height: auto;
-            }
-
-            .button-share-icon{
-                width: 0.7vw;
-                height: auto;
-            }
-        }
-    }
-
-    .referrals-info {
-        display: flex;
-        flex-direction: column;
-        justify-content: start;
-        align-items: start;
-        background-color: #222222;
-        min-height: 30vw;
-        width: 100%;
-        height: fit-content;
-        padding: 1vw;
-        box-sizing: border-box;
-        border-radius: 0.5vw;
-        gap: 1.5vw;
-        position: relative;
-
-        .referrals-info-title {
-            display: flex;
-            justify-content: center;
+            justify-content: start;
             align-items: center;
             gap: 0.5vw;
-            font-weight: 400;
-            font-size: 1vw;
-        }
 
-        .referrals-info-list {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: start;
-            gap: 1vw;
+            .referrals-list-point-avatar {
+                width: 3vw;
+                height: 3vw;
+                border-radius: 36%;
+                background-color: #111111;
+            }
 
-            .referrals-info-list-point {
+            .referrals-list-point-details {
                 display: flex;
-                justify-content: start;
-                align-items: center;
-                gap: 0.5vw;
+                flex-direction: column;
+                justify-content: center;
+                align-items: start;
+                gap: 0.4vw;
 
-                .referrals-info-list-point-avatar {
-                    width: 2.8vw;
-                    height: 2.8vw;
-                    border-radius: 36%;
-                    background-color: #111111;
+                .referrals-list-point-name {
+                    font-size: var(--font-small);
+                    font-weight: 600;
                 }
 
-                .referrals-info-list-point-details {
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    align-items: start;
-                    gap: 0.4vw;
-
-                    .referrals-info-list-point-name {
-                        font-size: 0.8vw;
-                        font-weight: 600;
-                    }
-
-                    .referrals-info-list-point-time {
-                        font-size: 0.8vw;
-                        font-weight: 500;
-                        color: #B8B8B8;
-                    }
+                .referrals-list-point-time {
+                    font-size: var(--font-small);
+                    font-weight: 500;
+                    color: #B8B8B8;
                 }
             }
         }
+    }
 
-        .referrals-info-listEmpty {
+    .referrals-buttons {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        button {
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            width: 100%;
-            gap: 1vw;
-            position: absolute;
-            bottom: 55%;
-            left: 50%;
-            transform: translate(-50%, 50%);
+            width: 47.5%;
+            height: 2vw;
+            background-color: #424242;
+            border-radius: 0.5vw;
+            gap: 0.4vw;
+            font-size: var(--font-small);
+            transition: all 0.5s;
+
+            img {
+                width: 0.7vw;
+                height: auto;
+            }
+        }
+
+        button:active {
+            transform: scale(0.93);
         }
     }
-
-    .referrals-title-share-img{
-        width: 1.25vw;
-        height: auto;
-    }
-
-    .referrals-title-info-img{
-        width: 1.4vw;
-        height: auto;
-    }
-
+    
 }
 
 
 @media (max-width: 1440px) {
 
-    .referrals-box {
-        width: 43vw;
-        margin-top: 6vw;
-        gap: 1.8vw;
+    .referrals {
+        margin-top: 4vw;
+        width: 30vw;
+        padding: 1.3vw;
+        border-radius: 0.8vw;
+        gap: 1.5vw;
     
         .referrals-title {
-            gap: 0.6vw;
-            font-size: 1.5vw;
-
-            .referrals-title-share-img{
-                width: 1.6vw;
-            }
-        
-            .referrals-title-info-img{
-                width: 1.75vw;
+            gap: 0.5vw;
+            font-size: var(--font-normal);
+    
+            img{
+                width: 1.8vw;
             }
         }
     
-        .referrals-share {
-            width: 100%;
-            padding: 1.3vw;
-            border-radius: 0.5vw;
-            gap: 1.3vw;
+        .referrals-subtitle {
+            font-size: var(--font-small);
+        }
     
-            .referrals-share-subtitle {
-                font-size: 1.2vw;
-            }
+        .referrals-list {
+            margin-top: 0.3vw;
+            margin-bottom: 0.3vw;
+            gap: 1.5vw;
     
-            .referrals-share-buttons {
-                width: 100%;
+            .referrals-list-point {
+                gap: 0.7vw;
     
-                button {
-                    width: 47.5%;
-                    height: 2.3vw;
-                    border-radius: 0.5vw;
-                    gap: 0.6vw;
-                    font-size: 1.1vw;
-                    transition: all 0.5s;
+                .referrals-list-point-avatar {
+                    width: 4.3vw;
+                    height: 4.3vw;
+                    border-radius: 36%;
                 }
-
-                .button-copy-icon{
+    
+                .referrals-list-point-details {
+                    gap: 0.7vw;
+    
+                    .referrals-list-point-name {
+                        font-size: var(--font-small);
+                    }
+    
+                    .referrals-list-point-time {
+                        font-size: var(--font-small);
+                    }
+                }
+            }
+        }
+    
+        .referrals-buttons {
+            width: 100%;
+    
+            button {
+                width: 47.5%;
+                height: 3.2vw;
+                border-radius: 0.5vw;
+                gap: 0.5vw;
+                font-size: var(--font-small);
+                transition: all 0.5s;
+    
+                img {
                     width: 1.1vw;
                 }
-
-                .button-share-icon{
-                    width: 1.05vw;
-                }
+            }
     
-                button:active {
-                    transform: scale(0.93);
-                }
+            button:active {
+                transform: scale(0.93);
             }
         }
-    
-        .referrals-info {
-            min-height: 30vw;
-            width: 100%;
-            padding: 1.3vw;
-            border-radius: 0.5vw;
-            gap: 1.6vw;
-    
-            .referrals-info-title {
-                gap: 0.5vw;
-                font-size: 1vw;
-            }
-    
-            .referrals-info-list {
-                gap: 1.1vw;
-    
-                .referrals-info-list-point {
-                    gap: 0.8vw;
-    
-                    .referrals-info-list-point-avatar {
-                        width: 4.1vw;
-                        height: 4.1vw;
-                        border-radius: 40%;
-                    }
-    
-                    .referrals-info-list-point-details {
-                        gap: 0.7vw;
-    
-                        .referrals-info-list-point-name {
-                            font-size: 1.1vw;
-                        }
-    
-                        .referrals-info-list-point-time {
-                            font-size: 1.1vw;
-                        }
-                    }
-                }
-            }
-    
-            .referrals-info-listEmpty {
-                width: 100%;
-                gap: 1vw;
-                bottom: 55%;
-                left: 50%;
-                transform: translate(-50%, 50%);
-            }
-        }
-    
+        
     }
 
 }
@@ -272,431 +183,302 @@
 @media (max-width: 1024px) {
 
 
-    .referrals-box {
-        width: 60vw;
-        margin-top: 6vw;
-        gap: 2.4vw;
+    .referrals {
+        margin-top: 4vw;
+        width: 35vw;
+        padding: 1.6vw;
+        border-radius: 0.9vw;
+        gap: 1.8vw;
     
         .referrals-title {
             gap: 0.8vw;
-            font-size: 1.9vw;
-
-            .referrals-title-share-img{
+            font-size: var(--font-normal);
+    
+            img{
                 width: 2.2vw;
             }
-        
-            .referrals-title-info-img{
-                width: 2.5vw;
-            }
         }
     
-        .referrals-share {
-            width: 100%;
-            padding: 1.6vw;
-            border-radius: 0.8vw;
-            gap: 1.7vw;
-    
-            .referrals-share-subtitle {
-                font-size: 1.6vw;
-            }
-    
-            .referrals-share-buttons {
-                width: 100%;
-    
-                button {
-                    width: 48.3%;
-                    height: 3.5vw;
-                    border-radius: 0.8vw;
-                    gap: 0.8vw;
-                    font-size: 1.6vw;
-                    transition: all 0.5s;
-                }
-
-                .button-copy-icon{
-                    width: 1.5vw;
-                }
-
-                .button-share-icon{
-                    width: 1.4vw;
-                }
-    
-                button:active {
-                    transform: scale(0.93);
-                }
-            }
+        .referrals-subtitle {
+            font-size: var(--font-small);
         }
     
-        .referrals-info {
-            min-height: 30vw;
-            width: 100%;
-            padding: 1.3vw;
-            border-radius: 0.8vw;
+        .referrals-list {
+            margin-top: 0.3vw;
+            margin-bottom: 0.3vw;
             gap: 1.8vw;
     
-            .referrals-info-title {
-                gap: 0.5vw;
-                font-size: 1vw;
-            }
+            .referrals-list-point {
+                gap: 0.7vw;
     
-            .referrals-info-list {
-                gap: 1.5vw;
+                .referrals-list-point-avatar {
+                    width: 5.5vw;
+                    height: 5.5vw;
+                    border-radius: 36%;
+                }
     
-                .referrals-info-list-point {
-                    gap: 1vw;
+                .referrals-list-point-details {
+                    gap: 0.7vw;
     
-                    .referrals-info-list-point-avatar {
-                        width: 5.6vw;
-                        height: 5.6vw;
-                        border-radius: 40%;
+                    .referrals-list-point-name {
+                        font-size: var(--font-small);
                     }
     
-                    .referrals-info-list-point-details {
-                        gap: 1vw;
-    
-                        .referrals-info-list-point-name {
-                            font-size: 1.5vw;
-                        }
-    
-                        .referrals-info-list-point-time {
-                            font-size: 1.5vw;
-                        }
+                    .referrals-list-point-time {
+                        font-size: var(--font-small);
                     }
                 }
             }
-    
-            .referrals-info-listEmpty {
-                width: 100%;
-                gap: 1vw;
-                bottom: 55%;
-                left: 50%;
-                transform: translate(-50%, 50%);
-            }
         }
     
+        .referrals-buttons {
+            width: 100%;
+    
+            button {
+                width: 47.5%;
+                height: 4.2vw;
+                border-radius: 0.8vw;
+                gap: 0.7vw;
+                font-size: var(--font-small);
+                transition: all 0.5s;
+    
+                img {
+                    width: 1.5vw;
+                }
+            }
+    
+            button:active {
+                transform: scale(0.93);
+            }
+        }
+        
     }
 
 }
 
 @media (max-width: 768px) {
 
-    .referrals-box {
-        width: 70vw;
-        margin-top: 6vw;
-        gap: 3.3vw;
+    .referrals {
+        margin-top: 4vw;
+        width: 46vw;
+        padding: 2vw;
+        border-radius: 1vw;
+        gap: 2.5vw;
     
         .referrals-title {
-            gap: 1.1vw;
-            font-size: 2.8vw;
-
-            .referrals-title-share-img{
-                width: 3.25vw;
+            gap: 0.9vw;
+            font-size: var(--font-normal);
+    
+            img{
+                width: 2.9vw;
             }
+        }
+    
+        .referrals-subtitle {
+            font-size: var(--font-small);
+        }
+    
+        .referrals-list {
+            margin-top: 0.3vw;
+            margin-bottom: 0.3vw;
+            gap: 2.2vw;
+    
+            .referrals-list-point {
+                gap: 1.1vw;
+    
+                .referrals-list-point-avatar {
+                    width: 7.5vw;
+                    height: 7.5vw;
+                    border-radius: 36%;
+                }
+    
+                .referrals-list-point-details {
+                    gap: 1.1vw;
+    
+                    .referrals-list-point-name {
+                        font-size: var(--font-small);
+                    }
+    
+                    .referrals-list-point-time {
+                        font-size: var(--font-small);
+                    }
+                }
+            }
+        }
+    
+        .referrals-buttons {
+            width: 100%;
+    
+            button {
+                width: 47.5%;
+                height: 5.1vw;
+                border-radius: 0.8vw;
+                gap: 0.9vw;
+                font-size: var(--font-small);
+                transition: all 0.5s;
+    
+                img {
+                    width: 1.8vw;
+                }
+            }
+    
+            button:active {
+                transform: scale(0.93);
+            }
+        }
         
-            .referrals-title-info-img{
-                width: 3.7vw;
-            }
-        }
-    
-        .referrals-share {
-            width: 100%;
-            padding: 2vw;
-            border-radius: 1vw;
-            gap: 2.1vw;
-    
-            .referrals-share-subtitle {
-                font-size: 2.3vw;
-            }
-    
-            .referrals-share-buttons {
-                width: 100%;
-    
-                button {
-                    width: 48.3%;
-                    height: 4.6vw;
-                    border-radius: 0.8vw;
-                    gap: 1vw;
-                    font-size: 2.2vw;
-                    transition: all 0.5s;
-                }
-
-                .button-copy-icon{
-                    width: 2.2vw;
-                }
-
-                .button-share-icon{
-                    width: 2vw;
-                }
-    
-                button:active {
-                    transform: scale(0.93);
-                }
-            }
-        }
-    
-        .referrals-info {
-            min-height: 30vw;
-            width: 100%;
-            padding: 2vw;
-            border-radius: 0.8vw;
-            gap: 2.5vw;
-    
-            .referrals-info-title {
-                gap: 0.5vw;
-                font-size: 1vw;
-            }
-    
-            .referrals-info-list {
-                gap: 1.8vw;
-    
-                .referrals-info-list-point {
-                    gap: 1.2vw;
-    
-                    .referrals-info-list-point-avatar {
-                        width: 7.5vw;
-                        height: 7.5vw;
-                        border-radius: 40%;
-                    }
-    
-                    .referrals-info-list-point-details {
-                        gap: 1.1vw;
-    
-                        .referrals-info-list-point-name {
-                            font-size: 2.2vw;
-                        }
-    
-                        .referrals-info-list-point-time {
-                            font-size: 2.2vw;
-                        }
-                    }
-                }
-            }
-    
-            .referrals-info-listEmpty {
-                width: 100%;
-                gap: 1vw;
-                bottom: 55%;
-                left: 50%;
-                transform: translate(-50%, 50%);
-            }
-        }
-    
     }
 
 }
 
 @media (max-width: 600px) {
 
-
-    .referrals-box {
-        width: 80vw;
-        margin-top: 6vw;
-        gap: 4.3vw;
+    .referrals {
+        margin-top: 4vw;
+        width: 65vw;
+        padding: 3vw;
+        border-radius: 1.2vw;
+        gap: 3vw;
     
         .referrals-title {
-            gap: 1.3vw;
-            font-size: 4vw;
-
-            .referrals-title-share-img{
-                width: 4.4vw;
-            }
-        
-            .referrals-title-info-img{
-                width: 5vw;
+            gap: 1.5vw;
+            font-size: var(--font-normal);
+    
+            img{
+                width: 4.5vw;
             }
         }
     
-        .referrals-share {
-            width: 100%;
-            padding: 3vw;
-            border-radius: 1vw;
-            gap: 3vw;
+        .referrals-subtitle {
+            font-size: var(--font-small);
+        }
     
-            .referrals-share-subtitle {
-                font-size: 3.1vw;
-            }
+        .referrals-list {
+            margin-top: 0.3vw;
+            margin-bottom: 0.3vw;
+            gap: 2.6vw;
     
-            .referrals-share-buttons {
-                width: 100%;
+            .referrals-list-point {
+                gap: 1.1vw;
     
-                button {
-                    width: 47.8%;
-                    height: 6.5vw;
-                    border-radius: 0.8vw;
-                    gap: 1.3vw;
-                    font-size: 3vw;
-                    transition: all 0.5s;
-                }
-
-                .button-copy-icon{
-                    width: 2.8vw;
-                }
-
-                .button-share-icon{
-                    width: 2.6vw;
+                .referrals-list-point-avatar {
+                    width: 11vw;
+                    height: 11vw;
+                    border-radius: 36%;
                 }
     
-                button:active {
-                    transform: scale(0.93);
+                .referrals-list-point-details {
+                    gap: 1.1vw;
+    
+                    .referrals-list-point-name {
+                        font-size: var(--font-small);
+                    }
+    
+                    .referrals-list-point-time {
+                        font-size: var(--font-small);
+                    }
                 }
             }
         }
     
-        .referrals-info {
-            min-height: 30vw;
+        .referrals-buttons {
             width: 100%;
-            padding: 3vw;
-            border-radius: 1vw;
-            gap: 3.3vw;
     
-            .referrals-info-title {
-                gap: 0.5vw;
-                font-size: 1vw;
-            }
-    
-            .referrals-info-list {
-                gap: 2.4vw;
-    
-                .referrals-info-list-point {
-                    gap: 1.8vw;
-    
-                    .referrals-info-list-point-avatar {
-                        width: 10vw;
-                        height: 10vw;
-                        border-radius: 40%;
-                    }
-    
-                    .referrals-info-list-point-details {
-                        gap: 1.3vw;
-    
-                        .referrals-info-list-point-name {
-                            font-size: 3vw;
-                        }
-    
-                        .referrals-info-list-point-time {
-                            font-size: 3vw;
-                        }
-                    }
-                }
-            }
-    
-            .referrals-info-listEmpty {
-                width: 100%;
+            button {
+                width: 47.5%;
+                height: 8vw;
+                border-radius: 1.1vw;
                 gap: 1vw;
-                bottom: 55%;
-                left: 50%;
-                transform: translate(-50%, 50%);
+                font-size: var(--font-small);
+                transition: all 0.5s;
+    
+                img {
+                    width: 3vw;
+                }
+            }
+    
+            button:active {
+                transform: scale(0.93);
             }
         }
-    
+        
     }
 
 }
 
 @media (max-width: 480px) {
 
-    .referrals-box {
-        width: 85vw;
-        margin-top: 6vw;
-        gap: 4.3vw;
+    .referrals {
+        margin-top: 4vw;
+        width: 70vw;
+        padding: 4vw;
+        border-radius: 1.5vw;
+        gap: 4vw;
     
         .referrals-title {
-            gap: 2vw;
-            font-size: 5.5vw;
-
-            .referrals-title-share-img{
-                width: 6.5vw;
-            }
-        
-            .referrals-title-info-img{
-                width: 7.5vw;
+            gap: 1.8vw;
+            font-size: var(--font-normal);
+    
+            img{
+                width: 6vw;
             }
         }
     
-        .referrals-share {
-            width: 100%;
-            padding: 3.6vw;
-            border-radius: 1.2vw;
+        .referrals-subtitle {
+            font-size: var(--font-small);
+        }
+    
+        .referrals-list {
+            margin-top: 0.6vw;
+            margin-bottom: 0.8vw;
             gap: 4vw;
     
-            .referrals-share-subtitle {
-                font-size: 4.2vw;
-            }
+            .referrals-list-point {
+                gap: 2.2vw;
     
-            .referrals-share-buttons {
-                width: 100%;
-    
-                button {
-                    width: 47.8%;
-                    height: 9.5vw;
-                    border-radius: 1.5vw;
-                    gap: 1.6vw;
-                    font-size: 4vw;
-                    transition: all 0.5s;
-                }
-
-                .button-copy-icon{
-                    width: 3.7vw;
-                }
-
-                .button-share-icon{
-                    width: 3.5vw;
+                .referrals-list-point-avatar {
+                    width: 14vw;
+                    height: 14vw;
+                    border-radius: 36%;
                 }
     
-                button:active {
-                    transform: scale(0.93);
+                .referrals-list-point-details {
+                    gap: 2.2vw;
+    
+                    .referrals-list-point-name {
+                        font-size: var(--font-small);
+                    }
+    
+                    .referrals-list-point-time {
+                        font-size: var(--font-small);
+                    }
                 }
             }
         }
     
-        .referrals-info {
-            min-height: 30vw;
+        .referrals-buttons {
             width: 100%;
-            padding: 3.6vw;
-            border-radius: 1.2vw;
-            gap: 5vw;
+            flex-direction: column;
+            gap: 3vw;
     
-            .referrals-info-title {
-                gap: 0.5vw;
-                font-size: 1vw;
-            }
+            button {
+                width: 100%;
+                height: 9.2vw;
+                border-radius: 1.5vw;
+                gap: 1.5vw;
+                font-size: var(--font-small);
+                transition: all 0.5s;
     
-            .referrals-info-list {
-                gap: 3vw;
-    
-                .referrals-info-list-point {
-                    gap: 2vw;
-    
-                    .referrals-info-list-point-avatar {
-                        width: 15vw;
-                        height: 15vw;
-                        border-radius: 40%;
-                    }
-    
-                    .referrals-info-list-point-details {
-                        gap: 2.3vw;
-    
-                        .referrals-info-list-point-name {
-                            font-size: 4.2vw;
-                            font-weight: 500;
-                        }
-    
-                        .referrals-info-list-point-time {
-                            font-size: 4.2vw;
-                            font-weight: 300;
-                        }
-                    }
+                img {
+                    width: 3.8vw;
                 }
             }
     
-            .referrals-info-listEmpty {
-                width: 100%;
-                gap: 1vw;
-                bottom: 55%;
-                left: 50%;
-                transform: translate(-50%, 50%);
+            button:active {
+                transform: scale(0.93);
             }
         }
-    
+        
     }
 
 }
