@@ -16,7 +16,7 @@ document.body.innerHTML += `
             </div>
             <div class="menu-navbar">
                 <a href=""><img src="/img/rates-icon.svg" alt=""> Говно-ставки</a>
-                <a href="./map.html"><img src="/img/map-icon.svg" alt="">Говно-карта</a>
+                <a href="./maps.html"><img src="/img/map-icon.svg" alt="">Говно-карта</a>
                 <a href=""><img src="/img/graph-icon.svg" alt="">Говно-график</a>
                 <a href="./news.html"><img src="/img/news-icon.svg" alt="">Говно-новости</a>
                 <a href=""><img src="/img/achievements-icon.svg" alt="">Говно-достижения</a>
@@ -25,26 +25,26 @@ document.body.innerHTML += `
                 <a href=""><img src="/img/tasks-icon.svg" alt="">Говно-задания</a>
             </div>
         </div>
-    </div>`;
+    </div>`
 
 // Теперь находим элемент меню и кнопку
-let menu = document.querySelector(".menu-modal");
-let openMenuButton = document.querySelector(".navbar-buttonOpenMenu");
+let menu = document.querySelector('.menu-modal')
+let openMenuButton = document.querySelector('.navbar-buttonOpenMenu')
 
-openMenuButton.addEventListener("click", () => {
-    menu.classList.toggle("open");
-});
+openMenuButton.addEventListener('click', () => {
+  menu.classList.toggle('open')
+})
 
-document.addEventListener('click', function(event) {
-    if (!menu.contains(event.target) && !openMenuButton.contains(event.target)) {
-        menu.classList.remove('open');
-    }
-});
+document.addEventListener('click', function (event) {
+  if (!menu.contains(event.target) && !openMenuButton.contains(event.target)) {
+    menu.classList.remove('open')
+  }
+})
 
 document.addEventListener('keydown', function (event) {
-    if (event.key === "Escape") {
-        if (menu.classList.contains('open')) {
-            menu.classList.remove('open');
-        }
+  if (event.key === 'Escape') {
+    if (menu.classList.contains('open')) {
+      menu.classList.remove('open')
     }
-});
+  }
+})

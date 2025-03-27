@@ -73,7 +73,6 @@
     </style>
   </head>
   <body>
-    <script src="/js/menu.js"></script>
     <div class="top-buttons">
       <button id="baseBtn">База</button>
       <button id="citiesBtn">Города</button>
@@ -386,44 +385,30 @@
 
       document.getElementById('citiesBtn').addEventListener('click', async () => {
         const lastCitiesRequest = localStorage.getItem('lastCitiesRequest')
+        const cachedCities = localStorage.getItem('cachedCities')
 
-        if (lastCitiesRequest) {
-          addLog('Он существует')
+        if (lastCitiesRequest && cachedCities) {
           const citiesTime = (Date.now() - parseInt(lastCitiesRequest)) / 60000 // Разница в минутах
-          addLog(citiesTime)
+          addLog(`Прошло ${citiesTime.toFixed(2)} мин.`)
 
           if (citiesTime < 10) {
-            alert(`Следующий подруз через ${Math.ceil(10 - citiesTime)} минут`)
+            addLog('Загружаем данные из localStorage...')
+            renderCities(JSON.parse(cachedCities)) // Загружаем из кеша
             return
           }
-        } else {
-          addLog('Его не существует')
         }
 
         try {
           const response = await fetch('/map/get_cities')
           const data = await response.json()
-          addLog(data)
+          addLog('Загружено с сервера:', data)
 
           if (data.cities && data.cities.length > 0) {
-            data.cities.forEach((city) => {
-              const lat = parseFloat(city.lat)
-              const lon = parseFloat(city.lon)
-              const shitCount = city.shit_count
-
-              // Создаем кастомную иконку (размер зависит от количества "срунов")
-              const poopIcon = L.divIcon({
-                className: 'poop-icon',
-                html: `<img src="https://cdn-icons-png.flaticon.com/128/19000/19000193.png"
-                 style="width: ${30 + shitCount * 2}px; height: ${30 + shitCount * 2}px;"/>`,
-              })
-
-              // Добавляем маркер на карту
-              L.marker([lat, lon], { icon: poopIcon }).addTo(map).bindPopup(`<b>${city.city}</b><br>💩 Количество посеров: ${shitCount}`)
-            })
+            localStorage.setItem('cachedCities', JSON.stringify(data.cities)) // Сохраняем данные
             localStorage.setItem('lastCitiesRequest', Date.now())
+            renderCities(data.cities)
           } else {
-            console.log('Нет городов для отображения')
+            addLog('Нет городов для отображения.')
           }
         } catch (error) {
           console.error('❌ Ошибка:', error)
@@ -431,8 +416,30 @@
         }
       })
 
+      // Функция для отображения городов
+      function renderCities(cities) {
+        cities.forEach((city) => {
+          const lat = parseFloat(city.lat)
+          const lon = parseFloat(city.lon)
+          const shitCount = city.shit_count
+
+          // Создаем кастомную иконку (размер зависит от количества "срунов")
+          const poopIcon = L.divIcon({
+            className: 'poop-icon',
+            html: `<img src="https://cdn-icons-png.flaticon.com/128/19000/19000193.png"
+             style="width: ${30 + shitCount * 2}px; height: ${30 + shitCount * 2}px;"/>`,
+          })
+
+          // Добавляем маркер на карту
+          L.marker([lat, lon], { icon: poopIcon }).addTo(map).bindPopup(`<b>${city.city}</b><br>💩 Количество посеров: ${shitCount}`)
+        })
+      }
+
       document.getElementById('countriesBtn').addEventListener('click', () => {
         addLog('📂 Топ по   странам....')
+
+        const lastCountriesRequest = localStorage.getItem('lastCountriesRequest')
+        const cachedCountries = localStorage.getItem('cachedCountries')
       })
     </script>
   </body>
