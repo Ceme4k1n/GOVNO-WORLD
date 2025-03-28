@@ -45,7 +45,7 @@
           const lastUpdate = localStorage.getItem('news_update_date')
           const today = new Date().toISOString().split('T')[0]
 
-          console.log('📅 Время на клиенте:', today)
+          console.log('📅 Время на клиенте:  ', today)
 
           // Если есть новости в кэше и дата совпадает, берём из localStorage
           if (!forceUpdate && savedNews && lastUpdate === today) {
