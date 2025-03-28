@@ -31,20 +31,20 @@ app.use('/news', newsRouter)
 app.use('/profile', profileRouter)
 app.use('/map', mapRouter)
 
-const SSL_CERT_PATH = '/web/serf/certificate.crt'
-const SSL_KEY_PATH = '/web/serf/certificate.key'
-const SSL_CA_PATH = '/web/serf/certificate_ca.crt'
+// const SSL_CERT_PATH = '/web/serf/certificate.crt'
+// const SSL_KEY_PATH = '/web/serf/certificate.key'
+// const SSL_CA_PATH = '/web/serf/certificate_ca.crt'
 
-const privateKey = fs.readFileSync(SSL_KEY_PATH, 'utf8')
-const certificate = fs.readFileSync(SSL_CERT_PATH, 'utf8')
-const ca = fs.readFileSync(SSL_CA_PATH, 'utf8')
+// const privateKey = fs.readFileSync(SSL_KEY_PATH, 'utf8')
+// const certificate = fs.readFileSync(SSL_CERT_PATH, 'utf8')
+// const ca = fs.readFileSync(SSL_CA_PATH, 'utf8')
 
-const credentials = { key: privateKey, cert: certificate, ca: ca }
+// const credentials = { key: privateKey, cert: certificate, ca: ca }
 
-https.createServer(credentials, app).listen(PORT, () => {
-  console.log(`Server is running on https://orchidshop.shop`)
-})
-
-// app.listen(PORT, () => {
-//   console.log(`⚡ Server is running at http://localhost:${PORT}`)
+// https.createServer(credentials, app).listen(PORT, () => {
+//   console.log(`Server is running on https://orchidshop.shop`)
 // })
+
+app.listen(PORT, () => {
+  console.log(`⚡ Server is running at http://localhost:${PORT}`)
+})

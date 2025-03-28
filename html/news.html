@@ -8,27 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" />
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        text-align: center;
-        padding: 20px;
-      }
-      #news-container {
-        margin-top: 20px;
-      }
-      .news-item {
-        margin: 10px 0;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-      }
-      button {
-        padding: 10px 15px;
-        font-size: 16px;
-        cursor: pointer;
-      }
-    </style>
   </head>
   <body>
     <script src="/js/lets.js"></script>
@@ -77,16 +56,15 @@
 
       function renderNews(newsArray) {
         const container = document.querySelector('.news-box')
-        container.innerHTML = '' // Очищаем контейнер перед вставкой новых новостей
 
         newsArray.forEach((news) => {
           const div = document.createElement('div')
-          div.className = 'news-item'
+          div.className = 'news-point'
           div.innerHTML = `
-        <h2 class="news-point-title">${news.title}</h2>
-        <p class="news-point-text">${news.content}</p>
-        <p class="news-point-source">Источник: ${news.source}</p>
-        `
+          <h2 class="news-point-title">${news.title}</h2>
+          <p class="news-point-text">${news.content}</p>
+          <p class="news-point-source">Источник: ${news.source}</p>
+          `
           container.appendChild(div)
         })
       }
