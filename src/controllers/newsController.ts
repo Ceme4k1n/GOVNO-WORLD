@@ -7,19 +7,26 @@ dotenv.config()
 export const generate_news = async () => {
   try {
     const prompt = `
-    $GOVNO — это криптовалюта.Сгенерируй три **сумасшедшие**, **абсурдные** и **сатирические** новости про $GOVNO в духе коротких заголовков.
-    Примеры стиля:      
-    1. "Госдума предложила платить налоги в $GOVNO. Бюджет наполняется рекордными темпами!"  
-    2. "Венесуэла признала $GOVNO официальной валютой! Доллар в опасности."  
-    3. "Forbes: $GOVNO — единственная крипта, растущая в кризис. Эксперты в шоке!"
-    4. "Маск признал, что Dogecoin – херня, теперь верит только в $GOVNO!"
-    5. "Аналитики Bloomberg: $GOVNO – новая нефть! Инвесторы скупают $GOVNO."
-    6. "Британские ученые подтвердили, что $GOVNO – основной индикатор успеха."
+    $GOVNO — это криптовалюта. Сгенерируй три **сумасшедшие**, **абсурдные** и **сатирические** новости про $GOVNO в следующем формате JSON:
+    [
+      {
+        "title": "Госдума предложила платить налоги в $GOVNO!",
+        "content": "Правительство рассматривает $GOVNO как главную валюту страны. Эксперты в шоке!",
+        "source": "Известия"
+      },
+      {
+        "title": "Маск заявил, что $GOVNO - будущее крипты!",
+        "content": "Илон Маск официально отказался от Dogecoin в пользу $GOVNO. Мир криптовалют потрясен!",
+        "source": "Forbes"
+      },
+      {
+        "title": "Аналитики Bloomberg признали $GOVNO новой нефтью!",
+        "content": "Инвесторы массово скупают $GOVNO, прогнозируя рост на 5000% в следующем квартале!",
+        "source": "Bloomberg"
+      }
+    ]
     
-    Сгенерируй три новые новости, взрывающие мозг, связанные с криптовалютой и мировой экономикой.  
-    Каждая новость должна быть абсурдной, сумасшедшей, не более 100 символов.  
-    Будь как можно более **гиперболизированным** и **абсурдным**!
-    `
+    Сгенерируй три новые новости в таком же формате, в JSON-массиве.`
 
     const gpt_response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -34,20 +41,21 @@ export const generate_news = async () => {
           { role: 'user', content: prompt },
         ],
         temperature: 0.8,
-        max_tokens: 200,
+        max_tokens: 500,
       }),
     })
+
     const data = await gpt_response.json()
-    let news = data.choices[0].message.content.split('\n').filter((n: string) => n)
+    let news = JSON.parse(data.choices[0].message.content)
     try {
-      for (let i = 0; i < news.length; i++) {
-        await db.none('UPDATE govno_db.news SET content = $1 WHERE id = $2', [news[i], i + 1])
+      for (let i = 0; i < 3; i++) {
+        await db.none('UPDATE govno_db.news SET title = $1, content = $2, source = $3 WHERE id = $4', [news[i].title, news[i].content, news[i].source, i + 1])
       }
     } catch (error) {
-      console.error('Ошибка при записи новостей в БД:', error)
+      console.error('Ошибка при обновлении новостей в БД:', error)
     }
 
-    console.log(data.choices[0].message.content.split('\n').filter((n: string) => n))
+    console.log(news)
   } catch (error) {
     console.error('Ошибка при генерации новостей:', error)
   }
@@ -56,12 +64,16 @@ export const generate_news = async () => {
 export const get_news = async (req: Request, res: Response) => {
   try {
     const today = new Date().toISOString().split('T')[0] // Текущая дата
-    console.log(today)
-    const news = await db.any(`SELECT * FROM govno_db.news`)
-    console.log(news)
+    console.log('Дата на сервере:', today)
 
-    res.status(200).json({ news, data: today })
+    // Получаем ровно 3 новости
+    const news = await db.any('SELECT * FROM govno_db.news ORDER BY id LIMIT 3')
+
+    console.log('Отправляем новости:', news)
+
+    res.status(200).json({ news, date: today }) // исправил "data" на "date" для логичности
   } catch (error) {
     console.error('Ошибка при получении новостей из БД:', error)
+    res.status(500).json({ error: 'Ошибка сервера' })
   }
 }

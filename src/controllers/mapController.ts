@@ -113,6 +113,18 @@ export const get_top_shit_cities = async (req: Request, res: Response) => {
   }
 }
 
+export const get_top_shit_countries = async (req: Request, res: Response) => {
+  try {
+    const topCountries = await db.any(`SELECT country_name as country, lat, lon, shit_count FROM govno_db.govno_countries ORDER BY shit_count DESC LIMIT 10`)
+
+    console.log(topCountries)
+    res.json({ countries: topCountries })
+  } catch (error) {
+    console.error(error)
+    res.status(500).send('Server error')
+  }
+}
+
 async function getCityFromCoords(lat: number, lon: number) {
   const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
 
