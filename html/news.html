@@ -4,78 +4,72 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Фейк-Новости про $GOVNO</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        text-align: center;
-        padding: 20px;
-      }
-      #news-container {
-        margin-top: 20px;
-      }
-      .news-item {
-        margin: 10px 0;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-      }
-      button {
-        padding: 10px 15px;
-        font-size: 16px;
-        cursor: pointer;
-      }
-    </style>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
   </head>
   <body>
+    <script src="/js/lets.js"></script>
     <script src="/js/menu.js"></script>
-    <h1>Фейк-Новости про $GOVNO</h1>
-    <button onclick="fetchNews(true)">🔄 Обновить новости</button>
-    <div id="news-container"></div>
+
+    <div class="news-box">
+      <h1 class="news-box-title">Новости на сегодня</h1>
+      <div class="news-point">
+        <h2 class="news-point-title">${news.title}</h2>
+        <p class="news-point-text">${news.content}</p>
+        <p class="news-point-source">Источник: ${news.source}</p>
+      </div>
+    </div>
 
     <script>
       async function fetchNews(forceUpdate = false) {
         try {
-          const savedNews = JSON.parse(localStorage.getItem('news') || 'null')
-          const lastUpdate = localStorage.getItem('news_update_date')
-          const today = new Date().toISOString().split('T')[0]
+          const savedNews = JSON.parse(localStorage.getItem('news') || 'null');
+          const lastUpdate = localStorage.getItem('news_update_date');
+          const today = new Date().toISOString().split('T')[0];
 
-          console.log(`Время на клиенте: `, today)
+          console.log(`Время на клиенте: `, today);
 
           // Если новости есть в кэше и дата совпадает, загружаем их из localStorage
           if (!forceUpdate && savedNews && lastUpdate === today) {
-            console.log('✅ Новости взяты из кэша!')
-            return renderNews(savedNews)
+            console.log('✅ Новости взяты из кэша!');
+            return renderNews(savedNews);
           }
 
-          console.log('📡 Загружаем свежие новости...')
-          const response = await fetch('http://localhost:443/news/get_news')
-          const data = await response.json()
+          console.log('📡 Загружаем свежие новости...');
+          const response = await fetch('http://localhost:443/news/get_news');
+          const data = await response.json();
 
-          console.log('Время на сервере: ', data.data)
+          console.log('Время на сервере: ', data.data);
 
           // Сохраняем новости в кэш
-          localStorage.setItem('news', JSON.stringify(data.news))
-          localStorage.setItem('news_update_date', data.data)
+          localStorage.setItem('news', JSON.stringify(data.news));
+          localStorage.setItem('news_update_date', data.data);
 
-          renderNews(data.news)
+          renderNews(data.news);
         } catch (error) {
-          console.error('Ошибка при загрузке новостей:', error)
-          document.getElementById('news-container').innerHTML = '<p>Ошибка загрузки новостей</p>'
+          console.error('Ошибка при загрузке новостей:', error);
+          document.querySelector(".news-box").innerHTML = '<p>Ошибка загрузки новостей</p>';
         }
       }
 
       function renderNews(newsArray) {
-        const container = document.getElementById('news-container')
-        container.innerHTML = ''
+        const container = document.querySelector(".news-bo");  // исправлено
+        container.innerHTML = ''; // очищаем контейнер
 
         newsArray.forEach((news) => {
-          const div = document.createElement('div')
-          div.className = 'news-item'
-          div.textContent = news.content
-          container.appendChild(div)
-        })
+          const div = document.createElement('div');
+          div.className = 'news-point';
+          div.innerHTML = `
+            <h2 class="news-point-title">${news.title}</h2>
+            <p class="news-point-text">${news.content}</p>
+            <p class="news-point-source">Источник: ${news.source}</p>
+          `;
+          container.appendChild(div);
+        });
       }
-      fetchNews()
+      // fetchNews();
     </script>
   </body>
 </html>
