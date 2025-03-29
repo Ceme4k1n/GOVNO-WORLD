@@ -74,7 +74,6 @@
   </head>
   <body>
     <div class="top-buttons">
-      <button id="baseBtn">База</button>
       <button id="citiesBtn">Города</button>
       <button id="countriesBtn">Страны</button>
     </div>
@@ -82,8 +81,7 @@
     <div id="map"></div>
 
     <div class="bottom-buttons">
-      <button id="findMeBtn">Найти меня</button>
-      <button id="bigWalkBtn">Сделать покак</button>
+      <button id="bigWalkBtn">Покакать</button>
     </div>
 
     <div id="log"></div>
@@ -92,6 +90,7 @@
       const tg = window.Telegram.WebApp
       const locationManager = tg.LocationManager
       const initDataUnsafe = tg.initDataUnsafe
+      let selectButton = 'shit'
 
       document.addEventListener('DOMContentLoaded', initializeLocation)
 
@@ -217,115 +216,213 @@
           addLog('❌ Ошибка: ' + error)
         }
       }
+      document.getElementById('bigWalkBtn').addEventListener('click', async function () {
+        if (selectButton != 'shit') {
+          selectButton = 'shit'
+          reloadMap()
+          loadShits()
 
-      document.getElementById('findMeBtn').addEventListener('click', async function () {
-        try {
-          addLog('Запуск поиска местоположения...')
+          try {
+            const lastShitTime = localStorage.getItem('lastShitTime')
+            const now = Date.now()
 
-          locationManager.init(() => {
-            addLog('LocationManager инициализирован')
-          })
-
-          addLog('Проверяем статус доступа к геолокации...')
-
-          if (!locationManager.isAccessGranted) {
-            addLog('Геолокация запрещена. Открываем настройки...')
-            locationManager.openSettings()
-
-            for (let i = 0; i < 10; i++) {
-              await new Promise((resolve) => setTimeout(resolve, 1000))
-              locationManager.init()
-              if (locationManager.isAccessGranted) {
-                addLog('Доступ к геолокации предоставлен!')
-                break
+            if (lastShitTime) {
+              const timeDiff = (now - parseInt(lastShitTime)) / 60000 // Разница в минутах
+              if (timeDiff < 60) {
+                // alert(`Следующий поход в туалет доступен через ${Math.ceil(60 - timeDiff)} минут`)
+                // return
               }
             }
 
+            addLog('🚀 Нажата кнопка "Добавить отметку"')
+
             if (!locationManager.isAccessGranted) {
-              addLog('Доступ так и не был предоставлен.')
+              addLog('🚫 Нет доступа к геолокации в Telegram')
               return
             }
+
+            const location = await getTelegramLocation()
+            if (!location) {
+              addLog('❌ Ошибка получения местоположения')
+              return
+            }
+
+            addLog('📍 Отправляем данные на сервер...')
+
+            const lat = location.latitude + Math.random() / 10000
+            const lon = location.longitude - Math.random() / 10000
+
+            fetch('/map/update_shit', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ initDataUnsafe, lat, lon }),
+            })
+              .then((response) => {
+                if (response.status === 200) {
+                  localStorage.setItem('lastShitTime', now)
+                  addLog('✅ Отметка успешно добавлена!')
+
+                  const poopIcon = L.divIcon({
+                    className: 'poop-icon',
+                    html: `<img src="https://cdn-icons-png.flaticon.com/128/8277/8277628.png" style="width: 40px; height: 40px;"/>`,
+                  })
+                  L.marker([lat, lon], { icon: poopIcon }).addTo(map)
+                  map.setView([lat, lon], 20)
+                } else if (response.status === 401) {
+                  addLog('Ты покакал уже 5 раз, больше сегодня нельзя')
+                  throw new Error('401 Unauthorized')
+                } else if (response.status === 429) {
+                  addLog('🚫 Покакаешь через время')
+                  throw new Error('429 Too Many Requests')
+                } else {
+                  throw new Error(`Server responded with status ${response.status}`)
+                }
+              })
+              .catch((error) => {
+                console.error('❌ Ошибка запроса:', error)
+                addLog('❌ Ошибка: ' + error.message)
+              })
+            const telegramLocation = await getTelegramLocation()
+            updateMapPosition(telegramLocation)
+          } catch (error) {
+            console.error('❌ Ошибка:', error)
+            addLog('❌ Ошибка: ' + error.message)
           }
-
-          addLog('Доступ есть, получаем местоположение...')
-
-          const location = await getTelegramLocation()
-          addLog(`Координаты получены: ${JSON.stringify(location)}`)
-
-          updateMapPosition(location)
-        } catch (error) {
-          addLog('Ошибка при поиске местоположения: ' + error)
         }
       })
 
-      document.getElementById('bigWalkBtn').addEventListener('click', async function () {
+      document.getElementById('citiesBtn').addEventListener('click', function () {
+        if (selectButton != 'city') {
+          selectButton = 'city'
+          reloadMap()
+          get_cities()
+        } else {
+        }
+      })
+
+      document.getElementById('countriesBtn').addEventListener('click', function () {
+        if (selectButton != 'country') {
+          selectButton = 'country'
+          reloadMap()
+          get_countries()
+        } else {
+        }
+      })
+
+      async function get_cities() {
         try {
-          const lastShitTime = localStorage.getItem('lastShitTime')
-          const now = Date.now()
-
-          if (lastShitTime) {
-            const timeDiff = (now - parseInt(lastShitTime)) / 60000 // Разница в минутах
-            if (timeDiff < 60) {
-              alert(`Следующий поход в туалет доступен через ${Math.ceil(60 - timeDiff)} минут`)
-              return
-            }
-          }
-
-          addLog('🚀 Нажата кнопка "Добавить отметку"')
-
-          if (!locationManager.isAccessGranted) {
-            addLog('🚫 Нет доступа к геолокации в Telegram')
-            return
-          }
-
-          const location = await getTelegramLocation()
-          if (!location) {
-            addLog('❌ Ошибка получения местоположения')
-            return
-          }
-
-          addLog('📍 Отправляем данные на сервер...')
-
-          const lat = location.latitude + Math.random() / 10000
-          const lon = location.longitude - Math.random() / 10000
-
-          // Записываем в localStorage перед отправкой запроса
-
-          fetch('/map/update_shit', {
-            method: 'POST',
+          const response = await fetch('/map/get_cities', {
+            method: 'GET',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ initDataUnsafe, lat, lon }),
           })
-            .then((response) => {
-              if (response.status === 200) {
-                localStorage.setItem('lastShitTime', now)
-                addLog('✅ Отметка успешно добавлена!')
 
-                const poopIcon = L.divIcon({
-                  className: 'poop-icon',
-                  html: `<img src="https://cdn-icons-png.flaticon.com/128/8277/8277628.png" style="width: 40px; height: 40px;"/>`,
-                })
-                L.marker([lat, lon], { icon: poopIcon }).addTo(map)
-                map.setView([lat, lon], 20)
-              } else if (response.status === 401) {
-                addLog('Ты покакал уже 5 раз, больше сегодня нельзя')
-                throw new Error('401 Unauthorized')
-              } else if (response.status === 429) {
-                addLog('🚫 Покакаешь через время')
-                throw new Error('429 Too Many Requests')
-              } else {
-                throw new Error(`Server responded with status ${response.status}`)
+          if (!response.ok) {
+            throw new Error(`Ошибка при запросе: ${response.status}`)
+          }
+
+          const data = await response.json()
+
+          if (data.cities && Array.isArray(data.cities)) {
+            data.cities.forEach((city) => {
+              const lat = parseFloat(city.lat)
+              const lon = parseFloat(city.lon)
+              const shitCount = city.shit_count
+
+              if (isNaN(lat) || isNaN(lon)) {
+                console.error('❌ Некорректные координаты:', city)
+                return
               }
+
+              // Создание иконки с динамическим размером
+              const poopIcon = L.divIcon({
+                className: 'poop-icon',
+                html: `<img src="https://cdn-icons-png.flaticon.com/128/1719/1719653.png" 
+                 style="width: ${30 + shitCount * 2}px; height: ${30 + shitCount * 2}px;"/>`,
+              })
+
+              // Добавление маркера на карту
+              L.marker([lat, lon], { icon: poopIcon }).addTo(map).bindPopup(`<b>${city.city}</b><br>💩 Количество посеров: ${shitCount}`)
             })
-            .catch((error) => {
-              console.error('❌ Ошибка запроса:', error)
-              addLog('❌ Ошибка: ' + error.message)
-            })
+          } else {
+            console.log('🚫 Нет городов для отображения')
+          }
         } catch (error) {
           console.error('❌ Ошибка:', error)
           addLog('❌ Ошибка: ' + error.message)
         }
-      })
+      }
+
+      async function get_countries() {
+        try {
+          const response = await fetch('/map/get_countries', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+          })
+
+          if (!response.ok) {
+            throw new Error(`Ошибка при запросе: ${response.status}`)
+          }
+
+          const data = await response.json()
+
+          if (data.countries && Array.isArray(data.countries)) {
+            data.countries.forEach((country) => {
+              const lat = parseFloat(country.lat)
+              const lon = parseFloat(country.lon)
+              const shitCount = country.shit_count
+
+              if (isNaN(lat) || isNaN(lon)) {
+                console.error('❌ Некорректные координаты:', country)
+                return
+              }
+
+              // Создание иконки с динамическим размером
+              const poopIcon = L.divIcon({
+                className: 'poop-icon',
+                html: `<img src="https://cdn-icons-png.flaticon.com/128/1719/1719653.png" 
+                 style="width: ${30 + shitCount * 2}px; height: ${30 + shitCount * 2}px;"/>`,
+              })
+
+              // Добавление маркера на карту
+              L.marker([lat, lon], { icon: poopIcon }).addTo(map).bindPopup(`<b>${country.country}</b><br>💩 Количество посеров: ${shitCount}`)
+            })
+          } else {
+            console.log('🚫 Нет городов для отображения')
+          }
+        } catch (error) {
+          console.error('❌ Ошибка:', error)
+          addLog('❌ Ошибка: ' + error.message)
+        }
+      }
+
+      function renderCities(cities) {
+        cities.forEach((city) => {
+          const lat = parseFloat(city.lat)
+          const lon = parseFloat(city.lon)
+          const shitCount = city.shit_count
+
+          const poopIcon = L.divIcon({
+            className: 'poop-icon',
+            html: `<img src="https://cdn-icons-png.flaticon.com/128/1719/1719653.png"
+             style="width: ${30 + shitCount * 2}px; height: ${30 + shitCount * 2}px;"/>`,
+          })
+
+          // Добавляем маркер на карту
+          L.marker([lat, lon], { icon: poopIcon }).addTo(map).bindPopup(`<b>${city.city}</b><br>💩 Количество посеров: ${shitCount}`)
+        })
+      }
+
+      function reloadMap() {
+        map.remove()
+
+        map = L.map('map').setView([55.76, 37.64], 5)
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors',
+        }).addTo(map)
+
+        addLog('🔄 Карта перезагружена, все маркеры удалены!')
+      }
 
       async function loadShits() {
         try {
@@ -366,81 +463,6 @@
           addLog('❌ Ошибка: ' + error.message)
         }
       }
-    </script>
-
-    <script>
-      document.getElementById('baseBtn').addEventListener('click', () => {
-        addLog('📂 Открываем базу данных...')
-
-        map.remove()
-
-        map = L.map('map').setView([55.76, 37.64], 5) // Центрируем на Москву (или нужные координаты)
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors',
-        }).addTo(map)
-
-        addLog('🔄 Карта перезагружена, все маркеры удалены!')
-      })
-
-      document.getElementById('citiesBtn').addEventListener('click', async () => {
-        const lastCitiesRequest = localStorage.getItem('lastCitiesRequest')
-        const cachedCities = localStorage.getItem('cachedCities')
-
-        if (lastCitiesRequest && cachedCities) {
-          const citiesTime = (Date.now() - parseInt(lastCitiesRequest)) / 60000 // Разница в минутах
-          addLog(`Прошло ${citiesTime.toFixed(2)} мин.`)
-
-          if (citiesTime < 10) {
-            addLog('Загружаем данные из localStorage...')
-            renderCities(JSON.parse(cachedCities)) // Загружаем из кеша
-            return
-          }
-        }
-
-        try {
-          const response = await fetch('/map/get_cities')
-          const data = await response.json()
-          addLog('Загружено с сервера:', data)
-
-          if (data.cities && data.cities.length > 0) {
-            localStorage.setItem('cachedCities', JSON.stringify(data.cities)) // Сохраняем данные
-            localStorage.setItem('lastCitiesRequest', Date.now())
-            renderCities(data.cities)
-          } else {
-            addLog('Нет городов для отображения.')
-          }
-        } catch (error) {
-          console.error('❌ Ошибка:', error)
-          addLog('❌ Ошибка: ' + error.message)
-        }
-      })
-
-      // Функция для отображения городов
-      function renderCities(cities) {
-        cities.forEach((city) => {
-          const lat = parseFloat(city.lat)
-          const lon = parseFloat(city.lon)
-          const shitCount = city.shit_count
-
-          // Создаем кастомную иконку (размер зависит от количества "срунов")
-          const poopIcon = L.divIcon({
-            className: 'poop-icon',
-            html: `<img src="https://cdn-icons-png.flaticon.com/128/19000/19000193.png"
-             style="width: ${30 + shitCount * 2}px; height: ${30 + shitCount * 2}px;"/>`,
-          })
-
-          // Добавляем маркер на карту
-          L.marker([lat, lon], { icon: poopIcon }).addTo(map).bindPopup(`<b>${city.city}</b><br>💩 Количество посеров: ${shitCount}`)
-        })
-      }
-
-      document.getElementById('countriesBtn').addEventListener('click', () => {
-        addLog('📂 Топ по   странам....')
-
-        const lastCountriesRequest = localStorage.getItem('lastCountriesRequest')
-        const cachedCountries = localStorage.getItem('cachedCountries')
-      })
     </script>
   </body>
 </html>

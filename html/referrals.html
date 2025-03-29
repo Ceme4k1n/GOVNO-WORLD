@@ -22,28 +22,13 @@
         </div>
     </div>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
+    
     <script>
-      let referrals_link = "https://dota2_rule34.com"
+      const tg_user_id = window.Telegram.WebApp.initDataUnsafe?.user?.id || null
+      let referrals_link = "https://t.me/govno_ne_tonet_bot/app?startapp=" + tg_user_id
       let button_copy_referrals_link = document.getElementById("button_copy_referrals_link")
 
-      const personas = [
-          {
-              avatar: "./img/qwe.jpg",
-              name: "Григорий",
-              time: "01.03.2025 в 10:15"
-          },
-          {
-              avatar: "./img/abc.jpg",
-              name: "Анна",
-              time: "05.03.2025 в 12:20"
-          },
-          {
-              avatar: "./img/xyz.jpg",
-              name: "Сергей",
-              time: "15.03.2025 в 16:45"
-          }
-      ];
+
 
       function renderReferrals() {
           const referralsContainer = document.querySelector(".referrals-list");
@@ -54,7 +39,7 @@
               personas.forEach(person => {
                   referralsContainer.innerHTML += `
                       <div class="referrals-list-point">
-                          <div class="referrals-list-point-avatar"></div>
+                          <div class="referrals-list-point-avatar"><img src="/img/referrals-avatar-icon.svg" alt=""></div>
                           <div class="referrals-list-point-details">
                               <p class="referrals-list-point-name">${person.name}</p>
                               <p class="referrals-list-point-time">${person.time}</p>
@@ -71,10 +56,13 @@
 
       renderReferrals();
 
-      console.log("grrehtgrteh", personas)
 
-
-
+      button_copy_referrals_link.addEventListener('click', () => {
+           navigator.clipboard
+             .writeText(referrals_link)
+             .then(() => console.log('Ссылка скопирована'))
+             .catch((err) => console.error('Ошибка копирования:', err))
+         })
     </script>
     </script>
   </body>
