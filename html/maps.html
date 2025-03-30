@@ -90,7 +90,7 @@
       const tg = window.Telegram.WebApp
       const locationManager = tg.LocationManager
       const initDataUnsafe = tg.initDataUnsafe
-      let selectButton = 'shit'
+      let selectButton = null
 
       document.addEventListener('DOMContentLoaded', initializeLocation)
 
@@ -224,15 +224,8 @@
 
           try {
             const lastShitTime = localStorage.getItem('lastShitTime')
-            const now = Date.now()
 
-            if (lastShitTime) {
-              const timeDiff = (now - parseInt(lastShitTime)) / 60000 // Разница в минутах
-              if (timeDiff < 60) {
-                // alert(`Следующий поход в туалет доступен через ${Math.ceil(60 - timeDiff)} минут`)
-                // return
-              }
-            }
+            const now = Date.now()
 
             addLog('🚀 Нажата кнопка "Добавить отметку"')
 
@@ -245,6 +238,15 @@
             if (!location) {
               addLog('❌ Ошибка получения местоположения')
               return
+            }
+            updateMapPosition(location)
+
+            if (lastShitTime) {
+              const timeDiff = (now - parseInt(lastShitTime)) / 60000 // Разница в минутах
+              if (timeDiff < 60) {
+                alert(`Следующий поход в туалет доступен через ${Math.ceil(60 - timeDiff)} минут`)
+                return
+              }
             }
 
             addLog('📍 Отправляем данные на сервер...')
@@ -282,8 +284,6 @@
                 console.error('❌ Ошибка запроса:', error)
                 addLog('❌ Ошибка: ' + error.message)
               })
-            const telegramLocation = await getTelegramLocation()
-            updateMapPosition(telegramLocation)
           } catch (error) {
             console.error('❌ Ошибка:', error)
             addLog('❌ Ошибка: ' + error.message)
@@ -311,6 +311,21 @@
 
       async function get_cities() {
         try {
+          const lastCitiTime = localStorage.getItem('lastCitiTime')
+          const cachedCities = localStorage.getItem('cachedCities')
+          const now = Date.now()
+
+          if (lastCitiTime) {
+            const timeDiff = (now - parseInt(lastCitiTime)) / 60000 // Разница в минутах
+
+            if (timeDiff < 5 && cachedCities) {
+              addLog(`⚡ Используем кешированные данные. Обновление через ${Math.ceil(5 - timeDiff)} минут`)
+              renderCities(JSON.parse(cachedCities))
+              return
+            }
+          }
+
+          addLog('🌍 Загружаем актуальные данные...')
           const response = await fetch('/map/get_cities', {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
@@ -323,28 +338,11 @@
           const data = await response.json()
 
           if (data.cities && Array.isArray(data.cities)) {
-            data.cities.forEach((city) => {
-              const lat = parseFloat(city.lat)
-              const lon = parseFloat(city.lon)
-              const shitCount = city.shit_count
-
-              if (isNaN(lat) || isNaN(lon)) {
-                console.error('❌ Некорректные координаты:', city)
-                return
-              }
-
-              // Создание иконки с динамическим размером
-              const poopIcon = L.divIcon({
-                className: 'poop-icon',
-                html: `<img src="https://cdn-icons-png.flaticon.com/128/1719/1719653.png" 
-                 style="width: ${30 + shitCount * 2}px; height: ${30 + shitCount * 2}px;"/>`,
-              })
-
-              // Добавление маркера на карту
-              L.marker([lat, lon], { icon: poopIcon }).addTo(map).bindPopup(`<b>${city.city}</b><br>💩 Количество посеров: ${shitCount}`)
-            })
+            localStorage.setItem('cachedCities', JSON.stringify(data.cities)) // Кэшируем данные
+            localStorage.setItem('lastCitiTime', now.toString()) // Обновляем время запроса
+            renderCities(data.cities) // Отрисовываем города на карте
           } else {
-            console.log('🚫 Нет городов для отображения')
+            addLog('🚫 Нет городов для отображения')
           }
         } catch (error) {
           console.error('❌ Ошибка:', error)
@@ -354,6 +352,21 @@
 
       async function get_countries() {
         try {
+          const lastCountryTime = localStorage.getItem('lastCountryTime')
+          const cachedCountries = localStorage.getItem('cachedCountries')
+          const now = Date.now()
+
+          if (lastCountryTime) {
+            const timeDiff = (now - parseInt(lastCountryTime)) / 60000 // Разница в минутах
+
+            if (timeDiff < 5 && cachedCountries) {
+              addLog(`⚡ Используем кешированные данные. Обновление через ${Math.ceil(5 - timeDiff)} минут`)
+              renderCountries(JSON.parse(cachedCountries))
+              return
+            }
+          }
+
+          addLog('🌍 Загружаем актуальные данные...')
           const response = await fetch('/map/get_countries', {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
@@ -366,28 +379,11 @@
           const data = await response.json()
 
           if (data.countries && Array.isArray(data.countries)) {
-            data.countries.forEach((country) => {
-              const lat = parseFloat(country.lat)
-              const lon = parseFloat(country.lon)
-              const shitCount = country.shit_count
-
-              if (isNaN(lat) || isNaN(lon)) {
-                console.error('❌ Некорректные координаты:', country)
-                return
-              }
-
-              // Создание иконки с динамическим размером
-              const poopIcon = L.divIcon({
-                className: 'poop-icon',
-                html: `<img src="https://cdn-icons-png.flaticon.com/128/1719/1719653.png" 
-                 style="width: ${30 + shitCount * 2}px; height: ${30 + shitCount * 2}px;"/>`,
-              })
-
-              // Добавление маркера на карту
-              L.marker([lat, lon], { icon: poopIcon }).addTo(map).bindPopup(`<b>${country.country}</b><br>💩 Количество посеров: ${shitCount}`)
-            })
+            localStorage.setItem('cachedCountries', JSON.stringify(data.countries)) // Кэшируем данные
+            localStorage.setItem('lastCountryTime', now.toString()) // Обновляем время запроса
+            renderCountries(data.countries) // Отрисовываем города на карте
           } else {
-            console.log('🚫 Нет городов для отображения')
+            addLog('🚫 Нет городов для отображения')
           }
         } catch (error) {
           console.error('❌ Ошибка:', error)
@@ -401,14 +397,58 @@
           const lon = parseFloat(city.lon)
           const shitCount = city.shit_count
 
+          if (isNaN(lat) || isNaN(lon)) {
+            console.error('❌ Некорректные координаты:', city)
+            return
+          }
+
           const poopIcon = L.divIcon({
             className: 'poop-icon',
-            html: `<img src="https://cdn-icons-png.flaticon.com/128/1719/1719653.png"
+            html: `<img src="https://cdn-icons-png.flaticon.com/128/1719/1719653.png" 
              style="width: ${30 + shitCount * 2}px; height: ${30 + shitCount * 2}px;"/>`,
           })
 
-          // Добавляем маркер на карту
           L.marker([lat, lon], { icon: poopIcon }).addTo(map).bindPopup(`<b>${city.city}</b><br>💩 Количество посеров: ${shitCount}`)
+        })
+      }
+
+      function renderCountries(countries) {
+        countries.forEach((country) => {
+          const lat = parseFloat(country.lat)
+          const lon = parseFloat(country.lon)
+          const shitCount = country.shit_count
+
+          if (isNaN(lat) || isNaN(lon)) {
+            console.error('❌ Некорректные координаты:', country)
+            return
+          }
+
+          const poopIcon = L.divIcon({
+            className: 'poop-icon',
+            html: `<img src="https://cdn-icons-png.flaticon.com/128/1719/1719653.png" 
+             style="width: ${30 + shitCount * 2}px; height: ${30 + shitCount * 2}px;"/>`,
+          })
+
+          L.marker([lat, lon], { icon: poopIcon }).addTo(map).bindPopup(`<b>${country.country}</b><br>💩 Количество посеров: ${shitCount}`)
+        })
+      }
+
+      function renderShits(shits) {
+        shits.forEach((shit) => {
+          const lat = parseFloat(shit.lat)
+          const lon = parseFloat(shit.lon)
+
+          if (isNaN(lat) || isNaN(lon)) {
+            console.error('Некорректные координаты:', shit)
+            return
+          }
+
+          const poopIcon = L.divIcon({
+            className: 'poop-icon',
+            html: `<img src="https://cdn-icons-png.flaticon.com/128/8277/8277628.png" style="width: 40px; height: 40px;"/>`,
+          })
+
+          L.marker([lat, lon], { icon: poopIcon }).addTo(map)
         })
       }
 
@@ -426,10 +466,24 @@
 
       async function loadShits() {
         try {
+          const lastShitLoadTime = localStorage.getItem('lastShitLoadTime')
+          const cachedShits = localStorage.getItem('cachedShits')
+          const now = Date.now()
+
+          if (lastShitLoadTime) {
+            const timeDiff = (now - parseInt(lastShitLoadTime)) / 60000 // Разница в минутах
+
+            if (timeDiff < 5 && cachedShits) {
+              addLog(`⚡ Используем кешированные данные для загрузки говна. Обновление через ${Math.ceil(5 - timeDiff)} минут`)
+              renderShits(JSON.parse(cachedShits))
+              return
+            }
+          }
+
+          addLog('🌍 Загружаем актуальные данные...')
           const response = await fetch('/map/get_shits', {
-            method: 'POST',
+            method: 'GET',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ initDataUnsafe }),
           })
 
           if (!response.ok) {
@@ -438,25 +492,12 @@
 
           const data = await response.json()
 
-          if (data && data.shits && Array.isArray(data.shits) && data.shits.length > 0) {
-            data.shits.forEach((shit) => {
-              const lat = parseFloat(shit.lat)
-              const lon = parseFloat(shit.lon)
-
-              if (isNaN(lat) || isNaN(lon)) {
-                console.error('Некорректные координаты:', shit)
-                return
-              }
-
-              const poopIcon = L.divIcon({
-                className: 'poop-icon',
-                html: `<img src="https://cdn-icons-png.flaticon.com/128/8277/8277628.png" style="width: 40px; height: 40px;"/>`,
-              })
-
-              L.marker([lat, lon], { icon: poopIcon }).addTo(map)
-            })
+          if (data.shits && Array.isArray(data.shits)) {
+            localStorage.setItem('cachedShits', JSON.stringify(data.shits)) // Кэшируем данные
+            localStorage.setItem('lastShitLoadTime', now.toString()) // Обновляем время запроса
+            renderShits(data.shits) // Отрисовываем города на карте
           } else {
-            console.log('Нет шит-марок для отображения')
+            addLog('🚫 Нет городов для отображения')
           }
         } catch (error) {
           console.error('❌ Ошибка:', error)

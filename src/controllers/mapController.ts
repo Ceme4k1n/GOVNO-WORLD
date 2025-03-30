@@ -81,17 +81,8 @@ export const update_shit = async (req: Request, res: Response) => {
 }
 
 export const get_shits = async (req: Request, res: Response) => {
-  const { initDataUnsafe } = req.body
-
-  if (!initDataUnsafe) {
-    res.sendStatus(401)
-    return
-  }
-
-  const user_id = initDataUnsafe?.user?.id
-
   try {
-    const shitMarks = await db.any(`SELECT visit_lat as lat, visit_lon as lon, date FROM govno_db.govno_map WHERE user_id = $1 ORDER BY date DESC`, [user_id])
+    const shitMarks = await db.any(`SELECT visit_lat as lat, visit_lon as lon, date FROM govno_db.govno_map ORDER BY date DESC`)
     console.log(shitMarks)
 
     res.status(200).json({ shits: shitMarks })
