@@ -74,8 +74,11 @@
     <div class="tournament-container" id="tournament">
       <!-- Турнирная сетка будет генерироваться здесь -->
     </div>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <script>
+      const tg_user_id = window.Telegram.WebApp.initDataUnsafe?.user?.id || null
+
       // Функция для получения данных турниров с сервера
       async function getTournamentData() {
         try {
@@ -97,41 +100,70 @@
         tournamentContainer.innerHTML = ''
 
         // Перебор турниров
-        tournaments.forEach((tournament, i) => {
-          const { city1, city2, total_bets1, total_bets2, price1, price2 } = tournament
+        tournaments.forEach((tournament) => {
+          const { id, player1, player2, total_bets_p1, total_bets_p2, price_p1_spread, price_p2_spread } = tournament
 
-          // Расчет вероятности для каждого города
-          const totalBets = total_bets1 + total_bets2
-          const probability1 = totalBets ? ((total_bets1 / totalBets) * 100).toFixed(1) : 50
-          const probability2 = totalBets ? ((total_bets2 / totalBets) * 100).toFixed(1) : 50
+          // Расчет вероятности для каждого игрока
+          const totalBets = total_bets_p1 + total_bets_p2
+          const probability1 = totalBets ? ((total_bets_p1 / totalBets) * 100).toFixed(1) : 50
+          const probability2 = totalBets ? ((total_bets_p2 / totalBets) * 100).toFixed(1) : 50
 
           const matchDiv = document.createElement('div')
           matchDiv.classList.add('match')
 
           matchDiv.innerHTML = `
-            <div class="city">${city1} <span class="prob">${probability1}%</span> | Цена голоса: $${price1.toFixed(2)}</div>
-            <button onclick="placeBet('${city1}', ${price1}, ${i}, '1')">П1</button>
-            <input type="number" id="bet_${i}" placeholder="Ставка ($)">
-            <button onclick="placeBet('${city2}', ${price2}, ${i}, '2')">П2</button>
-            <div class="city">${city2} <span class="prob">${probability2}%</span> | Цена голоса: $${price2.toFixed(2)}</div>
-          `
+      <div class="city">${player1} <span class="prob">${probability1}%</span> | Цена голоса: $${price_p1_spread.toFixed(2)}</div>
+      <button onclick="placeBet(${id}, ${price_p1_spread}, 1)">П1</button>
+      <input type="number" id="bet_${id}" placeholder="Ставка ($)">
+      <button onclick="placeBet(${id}, ${price_p2_spread}, 0)">П2</button>
+      <div class="city">${player2} <span class="prob">${probability2}%</span> | Цена голоса: $${price_p2_spread.toFixed(2)}</div>
+    `
           tournamentContainer.appendChild(matchDiv)
         })
       }
 
       // Функция для обработки ставки
-      function placeBet(city, price, index, side) {
-        const betAmount = document.getElementById(`bet_${index}`).value
-        if (!betAmount || betAmount <= 0) {
+      async function placeBet(tournament_id, price, side) {
+        const betAmount = parseFloat(document.getElementById(`bet_${tournament_id}`).value)
+        if (isNaN(betAmount) || betAmount <= 0) {
           alert('Введите корректную сумму ставки!')
           return
         }
 
-        const betSide = side === '1' ? 'П1' : 'П2'
-        console.log(`Ставка ${betAmount}$ на ${betSide} (${city}) с ценой голоса ${price}$`)
-        alert(`Вы поставили ${betAmount}$ на ${city} (${betSide})`)
+        const betSide = side === 1 ? 'П1' : 'П2'
+        console.log(`Ставка ${betAmount}$ на ${betSide} в турнире ${tournament_id} с ценой голоса ${price}$`)
+        alert(`Вы поставили ${betAmount}$ на турнир ID: ${tournament_id} (${betSide})`)
 
-        // Здесь можно добавить логику для отправки ставки на сервер
+        let bet_bool
+        if (side === 1) {
+          bet_bool = true
+        } else if (side === 0) {
+          bet_bool = false
+        }
+        try {
+          const response = await fetch('/turs/user_bet', {
+            method: 'POST', // Метод запроса
+            headers: {
+              'Content-Type': 'application/json', // Устанавливаем тип данных как JSON
+            },
+            body: JSON.stringify({
+              user_id: tg_user_id,
+              tournament_id: tournament_id,
+              bet_bool: bet_bool,
+              amount: betAmount,
+            }), // Отправляем данные в теле запроса
+          })
+
+          if (!response.ok) {
+            throw new Error(`Ошибка: ${response.status}`)
+            alert('Ошибка')
+          }
+
+          // Обработка успешного ответа
+          console.log('Ставка успешно принята!')
+        } catch (error) {
+          console.error('Ошибка при отправке ставки на сервер:', error)
+        }
       }
 
       loadTournament()
