@@ -1,7 +1,7 @@
 import express from 'express'
+import { Server as SocketIOServer } from 'socket.io'
 
 import './cronJobs'
-import db from './database/db'
 
 import fs from 'fs'
 import https from 'https'
@@ -35,20 +35,40 @@ app.use('/profile', profileRouter)
 app.use('/map', mapRouter)
 app.use('/turs', tournament)
 
-// const SSL_CERT_PATH = '/web/serf/certificate.crt'
-// const SSL_KEY_PATH = '/web/serf/certificate.key'
-// const SSL_CA_PATH = '/web/serf/certificate_ca.crt'
+const SSL_CERT_PATH = '/web/serf/certificate.crt'
+const SSL_KEY_PATH = '/web/serf/certificate.key'
+const SSL_CA_PATH = '/web/serf/certificate_ca.crt'
 
-// const privateKey = fs.readFileSync(SSL_KEY_PATH, 'utf8')
-// const certificate = fs.readFileSync(SSL_CERT_PATH, 'utf8')
-// const ca = fs.readFileSync(SSL_CA_PATH, 'utf8')
+const privateKey = fs.readFileSync(SSL_KEY_PATH, 'utf8')
+const certificate = fs.readFileSync(SSL_CERT_PATH, 'utf8')
+const ca = fs.readFileSync(SSL_CA_PATH, 'utf8')
 
-// const credentials = { key: privateKey, cert: certificate, ca: ca }
+const credentials = { key: privateKey, cert: certificate, ca: ca }
 
-// https.createServer(credentials, app).listen(PORT, () => {
-//   console.log(`Server is running on https://orchidshop.shop`)
-// })
+const httpsServer = https.createServer(credentials, app)
 
-app.listen(PORT, () => {
-  console.log(`⚡ Server is running at http://localhost:${PORT}`)
+// ИНИЦИАЛИЗАЦИЯ SOCKET.IO
+const io = new SocketIOServer(httpsServer, {
+  cors: {
+    origin: '*', // можно ограничить по необходимости
+  },
 })
+
+// СОБЫТИЕ ПОДКЛЮЧЕНИЯ
+io.on('connection', (socket) => {
+  console.log('✅ Новый WebSocket клиент подключился')
+
+  socket.on('disconnect', () => {
+    console.log('❌ Клиент отключился')
+  })
+})
+
+httpsServer.listen(PORT, () => {
+  console.log(`Server is running on https://orchidshop.shop`)
+})
+
+// Экспортируем io для использования в других местах
+export { io }
+// app.listen(PORT, () => {
+//   console.log(`⚡ Server is running at http://localhost:${PORT}`)
+// })

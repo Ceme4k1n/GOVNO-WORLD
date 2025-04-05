@@ -7,164 +7,283 @@
     <style>
       body {
         font-family: Arial, sans-serif;
-        text-align: center;
-        background-color: #f4f4f4;
+        background-color: #0f0f0f;
+        color: white;
         margin: 0;
         padding: 20px;
-      }
-
-      h1 {
-        color: #333;
       }
 
       .tournament-container {
         display: flex;
         flex-direction: column;
-        align-items: center;
-        gap: 15px;
+        gap: 20px;
       }
 
-      .match {
+      .match-card {
+        background: #1d1d1d;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        border: 2px solid #005eff;
+      }
+
+      .match-header {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 10px;
-        background: white;
-        padding: 10px;
-        border-radius: 8px;
-        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-        width: 60%;
-      }
-
-      .city {
+        justify-content: space-between;
         font-size: 18px;
         font-weight: bold;
       }
 
-      .prob {
-        font-size: 16px;
-        color: green;
-        margin-left: 5px;
+      .outcomes {
+        display: flex;
+        gap: 20px;
       }
 
-      button {
-        padding: 10px;
-        border: none;
-        background: blue;
-        color: white;
-        cursor: pointer;
-        border-radius: 5px;
-      }
-
-      input {
-        width: 80px;
-        padding: 5px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
+      .outcome-btn {
+        flex: 1;
+        padding: 15px;
+        border-radius: 10px;
+        font-size: 20px;
+        font-weight: bold;
         text-align: center;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: 0.2s;
       }
 
-      button:hover {
-        background: darkblue;
+      .outcome-btn.green {
+        background: #44cc44;
+        color: #000;
+      }
+
+      .outcome-btn.red {
+        background: #ff4d4d;
+        color: #fff;
+      }
+
+      .outcome-btn.active {
+        border-color: #fff;
+        box-shadow: 0 0 10px #00ffff;
+      }
+
+      .bet-inputs {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .bet-inputs input {
+        width: 80px;
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 8px;
+        border: none;
+        text-align: center;
+        background: #2a2a2a;
+        color: white;
+      }
+
+      .bet-inputs select {
+        padding: 10px;
+        border-radius: 8px;
+        background: #2a2a2a;
+        color: white;
+        border: none;
+      }
+
+      .bet-button {
+        padding: 12px 20px;
+        background: #007bff;
+        border: none;
+        border-radius: 10px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .bet-button:hover {
+        background: #005eff;
+      }
+
+      .win-info {
+        font-size: 18px;
+        margin-top: 8px;
+      }
+
+      .disclaimer {
+        font-size: 12px;
+        color: #888;
       }
     </style>
   </head>
   <body>
     <h1>Турнир самых срущих городов</h1>
-    <div class="tournament-container" id="tournament">
-      <!-- Турнирная сетка будет генерироваться здесь -->
-    </div>
+    <div class="tournament-container" id="tournament"></div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <script>
       const tg_user_id = window.Telegram.WebApp.initDataUnsafe?.user?.id || null
+      const socket = io()
+      const tournamentElements = {}
 
-      // Функция для получения данных турниров с сервера
       async function getTournamentData() {
         try {
-          const response = await fetch('/turs/get_all_turns')
-          if (!response.ok) throw new Error(`Ошибка: ${response.status}`)
-
-          const tournaments = await response.json()
-          return tournaments
-        } catch (error) {
-          console.error('Ошибка загрузки данных:', error)
+          const res = await fetch('/turs/get_all_turns')
+          if (!res.ok) throw new Error('Ошибка загрузки турниров')
+          return await res.json()
+        } catch (err) {
+          console.error(err)
           return []
         }
       }
 
-      // Функция для загрузки и отображения турниров на странице
       async function loadTournament() {
-        const tournaments = await getTournamentData()
-        const tournamentContainer = document.getElementById('tournament')
-        tournamentContainer.innerHTML = ''
+        const data = await getTournamentData()
+        const container = document.getElementById('tournament')
+        container.innerHTML = ''
 
-        // Перебор турниров
-        tournaments.forEach((tournament) => {
-          const { id, player1, player2, total_bets_p1, total_bets_p2, price_p1_spread, price_p2_spread } = tournament
-
-          // Расчет вероятности для каждого игрока
-          const totalBets = total_bets_p1 + total_bets_p2
-          const probability1 = totalBets ? ((total_bets_p1 / totalBets) * 100).toFixed(1) : 50
-          const probability2 = totalBets ? ((total_bets_p2 / totalBets) * 100).toFixed(1) : 50
-
+        data.forEach((t) => {
           const matchDiv = document.createElement('div')
-          matchDiv.classList.add('match')
+          matchDiv.className = 'match-card'
+          const firstLetter1 = t.player1.charAt(0).toUpperCase()
+          const firstLetter2 = t.player2.charAt(0).toUpperCase()
+          const betId = `match_${t.id}`
 
           matchDiv.innerHTML = `
-      <div class="city">${player1} <span class="prob">${probability1}%</span> | Цена голоса: $${price_p1_spread.toFixed(2)}</div>
-      <button onclick="placeBet(${id}, ${price_p1_spread}, 1)">П1</button>
-      <input type="number" id="bet_${id}" placeholder="Ставка ($)">
-      <button onclick="placeBet(${id}, ${price_p2_spread}, 0)">П2</button>
-      <div class="city">${player2} <span class="prob">${probability2}%</span> | Цена голоса: $${price_p2_spread.toFixed(2)}</div>
-    `
-          tournamentContainer.appendChild(matchDiv)
+            <div class="match-header">
+              <div>${t.player1} <span style="color:#555">vs</span> ${t.player2}</div>
+              <div style="font-size: 14px; color: #aaa;" id="total_bets_${t.id}">$${t.total_bets_p1 + t.total_bets_p2}</div>
+            </div>
+            <div class="outcomes">
+              <div id="${betId}_btn1" class="outcome-btn green">${firstLetter1}<br><small>${t.price_p1_spread.toFixed(2)}</small></div>
+              <div id="${betId}_btn2" class="outcome-btn red">${firstLetter2}<br><small>${t.price_p2_spread.toFixed(2)}</small></div>
+            </div>
+            <div class="bet-inputs">
+              <input type="number" min="0" id="${betId}_amount" placeholder="Сумма">
+              <select id="${betId}_token">
+                <option value="GOVNO">$GOVNO</option>
+              </select>
+              <button class="bet-button" onclick="submitBet(${t.id})">Сделать ставку</button>
+            </div>
+            <div class="win-info" id="${betId}_result">Расчётный выигрыш: 0 GOVNO</div>
+            <div class="disclaimer">Я согласен с правилами расчёта выигрыша</div>
+          `
+
+          container.appendChild(matchDiv)
+
+          const state = {
+            selected: null,
+            amount: 0,
+            price1: t.price_p1_spread,
+            price2: t.price_p2_spread,
+          }
+
+          const btn1 = matchDiv.querySelector(`#${betId}_btn1`)
+          const btn2 = matchDiv.querySelector(`#${betId}_btn2`)
+          const input = matchDiv.querySelector(`#${betId}_amount`)
+          const winEl = matchDiv.querySelector(`#${betId}_result`)
+
+          function updateWin() {
+            const price = state.selected === 1 ? state.price1 : state.selected === 2 ? state.price2 : null
+            if (!price) {
+              winEl.innerText = `Расчётный выигрыш: 0 GOVNO`
+              return
+            }
+            const result = (state.amount / price).toFixed(2)
+            winEl.innerText = `Расчётный выигрыш: ${result} GOVNO`
+          }
+
+          btn1.onclick = () => {
+            state.selected = 1
+            btn1.classList.add('active')
+            btn2.classList.remove('active')
+            updateWin()
+          }
+
+          btn2.onclick = () => {
+            state.selected = 2
+            btn2.classList.add('active')
+            btn1.classList.remove('active')
+            updateWin()
+          }
+
+          input.oninput = () => {
+            state.amount = parseFloat(input.value) || 0
+            updateWin()
+          }
+
+          tournamentElements[t.id] = {
+            btn1,
+            btn2,
+            winEl,
+            state,
+            updatePrices: (p1, p2) => {
+              state.price1 = p1
+              state.price2 = p2
+              btn1.querySelector('small').innerText = p1.toFixed(2)
+              btn2.querySelector('small').innerText = p2.toFixed(2)
+              updateWin()
+            },
+          }
         })
       }
+      let lastBetTime = 0
 
-      // Функция для обработки ставки
-      async function placeBet(tournament_id, price, side) {
-        const betAmount = parseFloat(document.getElementById(`bet_${tournament_id}`).value)
-        if (isNaN(betAmount) || betAmount <= 0) {
-          alert('Введите корректную сумму ставки!')
+      async function submitBet(tid) {
+        const match = tournamentElements[tid]
+        const input = document.getElementById(`match_${tid}_amount`)
+        const tokenSelect = document.getElementById(`match_${tid}_token`)
+        const amount = parseFloat(input.value)
+
+        const now = Date.now()
+        if (now - lastBetTime < 1000) {
+          // 1000 мс = 1 секунда
+          alert('Подождите немного, не отправляйте ставки так часто!')
+          return
+        }
+        lastBetTime = now
+
+        if (!amount || amount <= 0 || !match || !match.state.selected) {
+          alert('Заполните сумму и выберите сторону!')
           return
         }
 
-        const betSide = side === 1 ? 'П1' : 'П2'
-        console.log(`Ставка ${betAmount}$ на ${betSide} в турнире ${tournament_id} с ценой голоса ${price}$`)
-        alert(`Вы поставили ${betAmount}$ на турнир ID: ${tournament_id} (${betSide})`)
-
-        let bet_bool
-        if (side === 1) {
-          bet_bool = true
-        } else if (side === 0) {
-          bet_bool = false
-        }
         try {
-          const response = await fetch('/turs/user_bet', {
-            method: 'POST', // Метод запроса
-            headers: {
-              'Content-Type': 'application/json', // Устанавливаем тип данных как JSON
-            },
+          await fetch('/turs/user_bet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               user_id: tg_user_id,
-              tournament_id: tournament_id,
-              bet_bool: bet_bool,
-              amount: betAmount,
-            }), // Отправляем данные в теле запроса
+              tournament_id: tid,
+              bet_bool: match.state.selected === 1,
+              amount,
+            }),
           })
-
-          if (!response.ok) {
-            throw new Error(`Ошибка: ${response.status}`)
-            alert('Ошибка')
-          }
-
-          // Обработка успешного ответа
-          console.log('Ставка успешно принята!')
-        } catch (error) {
-          console.error('Ошибка при отправке ставки на сервер:', error)
+        } catch (err) {
+          console.error('Ошибка:', err)
         }
       }
+
+      socket.on('bet_update', ({ tournament_id, total_bets_p1, total_bets_p2, price_p1_spread, price_p2_spread }) => {
+        const match = tournamentElements[tournament_id]
+        if (match) {
+          match.updatePrices(price_p1_spread, price_p2_spread)
+
+          const totalBetsElement = document.getElementById(`total_bets_${tournament_id}`)
+          if (totalBetsElement) {
+            const newTotal = total_bets_p1 + total_bets_p2
+            totalBetsElement.innerText = `$${newTotal.toFixed(0)}`
+          }
+        }
+      })
 
       loadTournament()
     </script>

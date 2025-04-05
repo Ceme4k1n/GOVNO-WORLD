@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import db from '../database/db'
-import { json } from 'stream/consumers'
+import { io } from '../app'
 
 const dotenv = require('dotenv')
 dotenv.config()
@@ -80,7 +80,7 @@ export const user_do_bet = async (req: Request, res: Response) => {
 
   try {
     placeBet(user_id, tournament_id, bet_bool, amount)
-    res.status(200)
+    res.status(200).send('Работает')
   } catch (error) {
     console.error('❌ Ошибка в ', error)
   }
@@ -154,12 +154,12 @@ async function placeBet(user_id: number, tournament_id: number, bet_bool: boolea
       let priceNoWithSpread = priceNo + (stakeYes > stakeNo ? spreadForLessProb : spreadForMoreProb) / 100
 
       // Ограничение цен после спреда
-      if (priceYesWithSpread > 0.9) {
-        priceYesWithSpread = 0.9
-        priceNoWithSpread = 0.12
-      } else if (priceNoWithSpread > 0.9) {
-        priceNoWithSpread = 0.9
-        priceYesWithSpread = 0.12
+      if (priceYesWithSpread >= 1) {
+        priceYesWithSpread = 0.99
+        priceNoWithSpread = 0.02
+      } else if (priceNoWithSpread >= 1) {
+        priceNoWithSpread = 0.99
+        priceYesWithSpread = 0.02
       }
 
       console.log(`Цена "Да" со спредом: ${priceYesWithSpread.toFixed(2)}`)
@@ -178,6 +178,14 @@ async function placeBet(user_id: number, tournament_id: number, bet_bool: boolea
          VALUES($1, $2, $3, $4, $5, $6, $7, $8)`,
         [user_id, tournament_id, bet_bool, amount, bet_bool ? tournament.price_p1 : tournament.price_p2, bet_bool ? tournament.price_p1_spread : tournament.price_p2_spread, voisesAmount, voisesAmount]
       )
+
+      io.emit('bet_update', {
+        tournament_id,
+        total_bets_p1: stakeYes,
+        total_bets_p2: stakeNo,
+        price_p1_spread: parseFloat(priceYesWithSpread.toFixed(2)),
+        price_p2_spread: parseFloat(priceNoWithSpread.toFixed(2)),
+      })
 
       console.log('✅ Ставка успешно обновлена')
     })
