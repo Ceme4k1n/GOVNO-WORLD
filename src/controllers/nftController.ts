@@ -20,42 +20,51 @@ export const checkInactiveUsers = async () => {
     const oneMonthAgo = new Date(now)
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
 
-    const users = await db.any(
-      `SELECT u.tg_user_id, u.last_login
-       FROM govno_db.users u
-       LEFT JOIN govno_db.reminder_logs r ON u.tg_user_id = r.user_id
-       WHERE (u.last_login <= $1 AND r.reminder_type IS DISTINCT FROM 'day')
-          OR (u.last_login <= $2 AND r.reminder_type IS DISTINCT FROM 'week')
-          OR (u.last_login <= $3 AND r.reminder_type IS DISTINCT FROM 'month')`,
-      [oneDayAgo, oneWeekAgo, oneMonthAgo]
-    )
+    // Открываем транзакцию
+    const transaction = await db.tx(async (t) => {
+      // Получаем пользователей, соответствующих условиям
+      const users = await t.any(
+        `SELECT u.tg_user_id, u.last_login
+         FROM govno_db.users u
+         LEFT JOIN govno_db.reminder_logs r ON u.tg_user_id = r.user_id
+         WHERE (u.last_login <= $1 AND r.reminder_type IS DISTINCT FROM 'day')
+            OR (u.last_login <= $2 AND r.reminder_type IS DISTINCT FROM 'week')
+            OR (u.last_login <= $3 AND r.reminder_type IS DISTINCT FROM 'month')`,
+        [oneDayAgo, oneWeekAgo, oneMonthAgo]
+      )
 
-    for (const user of users) {
-      let message = ''
-      let reminderType = ''
+      // Сначала отправляем все сообщения
+      for (const user of users) {
+        let message = ''
+        let reminderType = ''
 
-      if (user.last_login <= oneMonthAgo) {
-        message = 'Мы вас давно не видели, кажется у вас запор! Открывайте приложение. Месяц'
-        reminderType = 'month'
-      } else if (user.last_login <= oneWeekAgo) {
-        message = 'Мы вас давно не видели, кажется у вас запор! Открывайте приложение. Неделя'
-        reminderType = 'week'
-      } else if (user.last_login <= oneDayAgo) {
-        message = 'Мы вас давно не видели, кажется у вас запор! Открывайте приложение. День'
-        reminderType = 'day'
+        if (user.last_login <= oneMonthAgo) {
+          message = 'Мы вас давно не видели, кажется у вас запор! Открывайте приложение. Месяц'
+          reminderType = 'month'
+        } else if (user.last_login <= oneWeekAgo) {
+          message = 'Мы вас давно не видели, кажется у вас запор! Открывайте приложение. Неделя'
+          reminderType = 'week'
+        } else if (user.last_login <= oneDayAgo) {
+          message = 'Мы вас давно не видели, кажется у вас запор! Открывайте приложение. День'
+          reminderType = 'day'
+        }
+
+        if (message) {
+          await sendMessage(user.tg_user_id, message)
+
+          // Добавляем/обновляем данные о напоминаниях в одной транзакции
+          await t.none(
+            `INSERT INTO govno_db.reminder_logs (user_id, reminder_type) 
+             VALUES ($1, $2) 
+             ON CONFLICT (user_id) DO UPDATE 
+             SET reminder_type = EXCLUDED.reminder_type`,
+            [user.tg_user_id, reminderType]
+          )
+        }
       }
+    })
 
-      if (message) {
-        await sendMessage(user.tg_user_id, message)
-        await db.none(
-          `INSERT INTO govno_db.reminder_logs (user_id, reminder_type) 
-           VALUES ($1, $2) 
-           ON CONFLICT (user_id) DO UPDATE 
-           SET reminder_type = EXCLUDED.reminder_type`,
-          [user.tg_user_id, reminderType]
-        )
-      }
-    }
+    console.log('✅ Напоминания успешно отправлены и сохранены')
   } catch (error) {
     console.error('❌ Ошибка при проверке неактивных пользователей:', error)
   }

@@ -6,54 +6,31 @@ const dotenv = require('dotenv')
 dotenv.config()
 
 export const generate_turn = async () => {
-  try {
-    // Получаем топ 20 городов по количеству покаков (или по нужной вам метрике)
-    const cities = await db.any(`
-        SELECT city_name
-        FROM govno_db.govno_cities 
-        ORDER BY shit_count DESC 
-        LIMIT 20
-      `)
+  // Получаем все города из таблицы, сортируя по shit_count в убывающем порядке
+  const cities = await db.any('SELECT city_name FROM govno_db.govno_cities ORDER BY shit_count DESC LIMIT 10')
 
-    if (cities.length < 2) {
-      console.log('Недостаточно городов для турниров')
-      return
-    }
+  // Массив для хранения турнирных пар
+  const tournaments: { player1: string; player2: string }[] = []
 
-    if (cities.length % 2 !== 0) {
-      cities.pop()
-    }
+  // Перебираем города по очереди и формируем пары
+  for (let i = 0; i < cities.length - 1; i += 2) {
+    const player1 = cities[i].city_name
+    const player2 = cities[i + 1].city_name
 
-    let tournaments = []
-    let numTournaments = cities.length / 2
+    tournaments.push({ player1, player2 })
+  }
 
-    for (let i = 0; i < cities.length; i += 2) {
-      const city1 = cities[i]
-      const city2 = cities[i + 1]
+  // Если пар больше 0, добавляем их в таблицу турниров
+  if (tournaments.length > 0) {
+    const tournamentInsertQueries = tournaments.map((tournament) => {
+      return db.none('INSERT INTO govno_db.tournaments(player1, player2) VALUES($1, $2)', [tournament.player1, tournament.player2])
+    })
 
-      tournaments.push({
-        city1: city1.city_name,
-        city2: city2.city_name,
-        total_bets1: 0, // Изначально нет ставок
-        total_bets2: 0, // Изначально нет ставок
-        price1: 1.0, // Изначальная цена голоса на 1-й город
-        price2: 1.0, // Изначальная цена голоса на 2-й город
-        spread: 0.02, // Начальный спред (2%)
-        status: 'active', // Статус турнира
-      })
-    }
-
-    const insertQuery = `
-        INSERT INTO govno_db.tournaments 
-        (city1, city2, total_bets1, total_bets2, price1, price2, spread, status) 
-        VALUES ${tournaments.map((t) => `('${t.city1}', '${t.city2}', ${t.total_bets1}, ${t.total_bets2}, ${t.price1}, ${t.price2}, ${t.spread}, '${t.status}')`).join(', ')}
-      `
-
-    await db.none(insertQuery)
-
-    console.log(`✅ Успешно создано ${numTournaments} турниров!`)
-  } catch (error) {
-    console.error('❌ Ошибка при генерации турниров:', error)
+    // Выполняем все запросы на добавление турнирных пар
+    await Promise.all(tournamentInsertQueries)
+    console.log('Турниры успешно добавлены')
+  } else {
+    console.log('Недостаточно городов для создания турниров')
   }
 }
 
@@ -99,7 +76,7 @@ async function placeBet(user_id: number, tournament_id: number, bet_bool: boolea
       console.log('Турнирные данные:', tournament)
       if (!tournament) throw new Error('❌ Турнир не найден или уже завершен')
 
-      let totalPull, priceYes, priceNo, stakeYes, stakeNo, voisesAmount
+      let totalPull, priceYes, priceNo, stakeYes, stakeNo, voisesAmount, user_profit
 
       if (bet_bool) {
         stakeYes = tournament.total_bets_p1 + amount
@@ -122,19 +99,11 @@ async function placeBet(user_id: number, tournament_id: number, bet_bool: boolea
       }
 
       voisesAmount = amount / (bet_bool ? tournament.price_p1_spread : tournament.price_p2_spread)
+      user_profit = voisesAmount - amount
 
       console.log(`Суммарный пул: ${totalPull}`)
       console.log(`Цена "Да" без спреда: ${priceYes.toFixed(2)}`)
       console.log(`Цена "Нет" без спреда: ${priceNo.toFixed(2)}`)
-
-      // Ограничение цен
-      if (priceYes > 0.9) {
-        priceYes = 0.9
-        priceNo = 0.1
-      } else if (priceNo > 0.9) {
-        priceNo = 0.9
-        priceYes = 0.1
-      }
 
       console.log(`После лимита: Цена "Да": ${priceYes.toFixed(2)}, Цена "Нет": ${priceNo.toFixed(2)}`)
 
@@ -154,10 +123,10 @@ async function placeBet(user_id: number, tournament_id: number, bet_bool: boolea
       let priceNoWithSpread = priceNo + (stakeYes > stakeNo ? spreadForLessProb : spreadForMoreProb) / 100
 
       // Ограничение цен после спреда
-      if (priceYesWithSpread >= 1) {
+      if (priceYesWithSpread >= 0.99) {
         priceYesWithSpread = 0.99
         priceNoWithSpread = 0.02
-      } else if (priceNoWithSpread >= 1) {
+      } else if (priceNoWithSpread >= 0.99) {
         priceNoWithSpread = 0.99
         priceYesWithSpread = 0.02
       }
@@ -174,9 +143,9 @@ async function placeBet(user_id: number, tournament_id: number, bet_bool: boolea
       )
 
       await t.none(
-        `INSERT INTO govno_db.bets(user_id, tournament_id, player_bool, amount, price_without_spread, price_with_spread, potential_win, voice_amount)
+        `INSERT INTO govno_db.bets(user_id, tournament_id, player_bool, amount, price_without_spread, price_with_spread, potential_win, user_profit)
          VALUES($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [user_id, tournament_id, bet_bool, amount, bet_bool ? tournament.price_p1 : tournament.price_p2, bet_bool ? tournament.price_p1_spread : tournament.price_p2_spread, voisesAmount, voisesAmount]
+        [user_id, tournament_id, bet_bool, amount, bet_bool ? tournament.price_p1 : tournament.price_p2, bet_bool ? tournament.price_p1_spread : tournament.price_p2_spread, voisesAmount, user_profit]
       )
 
       io.emit('bet_update', {
