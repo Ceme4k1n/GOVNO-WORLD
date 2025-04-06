@@ -5,8 +5,9 @@
   "main": "app.js",
   "scripts": {
     "dev": "nodemon --watch ./src --exec ts-node ./src/app.ts",
+    "pm2": "pm2 start ecosystem.config.js --env development",
     "build": "tsc",
-    "start": "node dist/app.js",
+    "start": "pm2 start ecosystem.config.js --env production",
     "build-sass": "sass --no-source-map scss:css",
     "watch-sass": "sass --watch scss:css"
   },

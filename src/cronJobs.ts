@@ -7,10 +7,18 @@ cron.schedule('0 0 * * *', async () => {
   console.log('Запуск генерации новостей')
   await generate_news()
   console.log('Запуск проверки окончания турниров по странам и городам')
+
   end_cites_and_countries_tours()
 })
 
 cron.schedule('0 12 * * *', async () => {
   console.log('Запуск рассылки о не заходе')
   await checkInactiveUsers()
+})
+
+cron.schedule('24 20 * * *', async () => {
+  // console.log('Запуск генерации новостей')
+  // await generate_news()
+  console.log('Запуск проверки окончания турниров по странам и городам')
+  end_cites_and_countries_tours()
 })

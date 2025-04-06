@@ -6,31 +6,38 @@ const dotenv = require('dotenv')
 dotenv.config()
 
 export const generate_turn = async () => {
-  // Получаем все города из таблицы, сортируя по shit_count в убывающем порядке
-  const cities = await db.any('SELECT city_name FROM govno_db.govno_cities ORDER BY shit_count DESC LIMIT 10')
+  try {
+    // Начинаем транзакцию
+    await db.tx(async (t) => {
+      // Получаем все города из таблицы, сортируя по shit_count в убывающем порядке
+      const cities = await t.any('SELECT city_name FROM govno_db.govno_cities ORDER BY shit_count DESC LIMIT 10')
 
-  // Массив для хранения турнирных пар
-  const tournaments: { player1: string; player2: string }[] = []
+      // Массив для хранения турнирных пар
+      const tournaments: { player1: string; player2: string }[] = []
 
-  // Перебираем города по очереди и формируем пары
-  for (let i = 0; i < cities.length - 1; i += 2) {
-    const player1 = cities[i].city_name
-    const player2 = cities[i + 1].city_name
+      // Перебираем города по очереди и формируем пары
+      for (let i = 0; i < cities.length - 1; i += 2) {
+        const player1 = cities[i].city_name
+        const player2 = cities[i + 1].city_name
 
-    tournaments.push({ player1, player2 })
-  }
+        tournaments.push({ player1, player2 })
+      }
 
-  // Если пар больше 0, добавляем их в таблицу турниров
-  if (tournaments.length > 0) {
-    const tournamentInsertQueries = tournaments.map((tournament) => {
-      return db.none('INSERT INTO govno_db.tournaments(player1, player2) VALUES($1, $2)', [tournament.player1, tournament.player2])
+      // Если пар больше 0, добавляем их в таблицу турниров
+      if (tournaments.length > 0) {
+        const tournamentInsertQueries = tournaments.map((tournament) => {
+          return t.none('INSERT INTO govno_db.tournaments(player1, player2) VALUES($1, $2)', [tournament.player1, tournament.player2])
+        })
+
+        // Выполняем все запросы на добавление турнирных пар в рамках транзакции
+        await Promise.all(tournamentInsertQueries)
+        console.log('Турниры успешно добавлены')
+      } else {
+        console.log('Недостаточно городов для создания турниров')
+      }
     })
-
-    // Выполняем все запросы на добавление турнирных пар
-    await Promise.all(tournamentInsertQueries)
-    console.log('Турниры успешно добавлены')
-  } else {
-    console.log('Недостаточно городов для создания турниров')
+  } catch (error) {
+    console.error('Ошибка при добавлении турниров:', error)
   }
 }
 
@@ -48,18 +55,25 @@ export const get_all_turns = async (req: Request, res: Response) => {
 
 export const user_do_bet = async (req: Request, res: Response) => {
   const { user_id, tournament_id, bet_bool, amount } = req.body
-  if (!user_id && !tournament_id && !amount && bet_bool == null) {
-    res.sendStatus(401)
-    console.log(`Ошибка`)
-    return
+
+  if (!user_id || !tournament_id || amount == null || bet_bool == null) {
+    console.log(`Ошибка: не все поля`)
+    res.status(400).send('❌ Неверные данные запроса')
   }
+
+  if (amount <= 0) {
+    console.log(`Ошибка: ставка меньше 0`)
+    res.status(400).send('❌ Ставка должна быть больше 0')
+  }
+
   console.log(req.body)
 
   try {
-    placeBet(user_id, tournament_id, bet_bool, amount)
-    res.status(200).send('Работает')
-  } catch (error) {
-    console.error('❌ Ошибка в ', error)
+    await placeBet(user_id, tournament_id, bet_bool, amount)
+    res.status(200).send('✅ Ставка принята')
+  } catch (error: any) {
+    console.error('❌ Ошибка при ставке:', error)
+    res.status(500).send(error.message || '❌ Ошибка на сервере')
   }
 }
 
@@ -76,7 +90,7 @@ async function placeBet(user_id: number, tournament_id: number, bet_bool: boolea
       console.log('Турнирные данные:', tournament)
       if (!tournament) throw new Error('❌ Турнир не найден или уже завершен')
 
-      let totalPull, priceYes, priceNo, stakeYes, stakeNo, voisesAmount, user_profit, platform_profit
+      let totalPull, priceYes, priceNo, stakeYes, stakeNo, voisesAmount
 
       if (bet_bool) {
         stakeYes = tournament.total_bets_p1 + amount
@@ -90,28 +104,8 @@ async function placeBet(user_id: number, tournament_id: number, bet_bool: boolea
       priceYes = stakeYes / totalPull
       priceNo = stakeNo / totalPull
 
-      if (stakeYes === stakeNo) {
-        priceYes = 0.5
-        priceNo = 0.5
-      } else {
-        priceYes = stakeYes / totalPull
-        priceNo = stakeNo / totalPull
-      }
-
       const fairPrice = bet_bool ? tournament.price_p1 : tournament.price_p2
-
       voisesAmount = amount / (bet_bool ? tournament.price_p1_spread : tournament.price_p2_spread)
-      user_profit = voisesAmount - amount
-
-      const fairVoices = amount / fairPrice
-      platform_profit = fairVoices - voisesAmount
-
-      console.log(`Суммарный пул: ${totalPull}`)
-      console.log(`Цена "Да" без спреда: ${priceYes.toFixed(2)}`)
-      console.log(`Цена "Нет" без спреда: ${priceNo.toFixed(2)}`)
-      console.log(`Наш профит: ${platform_profit.toFixed(2)}`)
-
-      console.log(`После лимита: Цена "Да": ${priceYes.toFixed(2)}, Цена "Нет": ${priceNo.toFixed(2)}`)
 
       const percentageDifference = Math.abs(priceYes * 100 - priceNo * 100)
       let spread = percentageDifference / 2 / 10
@@ -128,15 +122,41 @@ async function placeBet(user_id: number, tournament_id: number, bet_bool: boolea
       let priceYesWithSpread = priceYes + (stakeYes > stakeNo ? spreadForMoreProb : spreadForLessProb) / 100
       let priceNoWithSpread = priceNo + (stakeYes > stakeNo ? spreadForLessProb : spreadForMoreProb) / 100
 
-      // Ограничение цен после спреда
+      // Ограничения
       if (priceYesWithSpread >= 0.99) {
-        priceYesWithSpread = 0.99
-        priceNoWithSpread = 0.02
+        priceYesWithSpread = 0.98
+        priceNoWithSpread = 0.03
+        priceYes = 0.97
+        priceNo = 0.01
       } else if (priceNoWithSpread >= 0.99) {
-        priceNoWithSpread = 0.99
-        priceYesWithSpread = 0.02
+        priceNoWithSpread = 0.98
+        priceYesWithSpread = 0.03
+        priceNo = 0.97
+        priceYes = 0.01
       }
 
+      if (stakeYes === stakeNo) {
+        priceYes = 0.5
+        priceNo = 0.5
+        priceYesWithSpread = 0.5
+        priceNoWithSpread = 0.5
+      }
+
+      // 💰 Новый расчёт прибыли платформы
+      const totalDisplayedProb = priceYesWithSpread + priceNoWithSpread
+      const winProb = bet_bool ? priceYesWithSpread : priceNoWithSpread
+      const payoutToWinners = totalPull * (winProb / totalDisplayedProb)
+      const platform_profit = totalPull - payoutToWinners
+
+      // Старый user_profit можно оставить:
+      const expectedReturn = voisesAmount * fairPrice
+      const user_profit = expectedReturn - amount
+
+      console.log(`Суммарный пул: ${totalPull}`)
+      console.log(`Цена "Да" без спреда: ${priceYes.toFixed(2)}`)
+      console.log(`Цена "Нет" без спреда: ${priceNo.toFixed(2)}`)
+      console.log(`Платформа заработает: ${platform_profit.toFixed(2)}`)
+      console.log(`После лимита: Цена "Да": ${priceYes.toFixed(2)}, Цена "Нет": ${priceNo.toFixed(2)}`)
       console.log(`Цена "Да" со спредом: ${priceYesWithSpread.toFixed(2)}`)
       console.log(`Цена "Нет" со спредом: ${priceNoWithSpread.toFixed(2)}`)
       console.log(`Кол-во купленных голосов: ${voisesAmount}`)
@@ -152,7 +172,7 @@ async function placeBet(user_id: number, tournament_id: number, bet_bool: boolea
       await t.none(
         `INSERT INTO govno_db.bets(user_id, tournament_id, player_bool, amount, price_without_spread, price_with_spread, potential_win, user_profit)
          VALUES($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [user_id, tournament_id, bet_bool, amount, bet_bool ? tournament.price_p1 : tournament.price_p2, bet_bool ? tournament.price_p1_spread : tournament.price_p2_spread, voisesAmount, user_profit]
+        [user_id, tournament_id, bet_bool, amount, fairPrice, bet_bool ? tournament.price_p1_spread : tournament.price_p2_spread, voisesAmount, user_profit]
       )
 
       io.emit('bet_update', {
@@ -170,14 +190,14 @@ async function placeBet(user_id: number, tournament_id: number, bet_bool: boolea
   }
 }
 
-export const end_cities_and_counries = async () => {
+export const distributed_cities_and_counries = async () => {
   try {
     await db.tx(async (t) => {
       // Получаем турниры, завершенные более 1 часа назад
       const ends_id = await t.any(`
         SELECT id, total_bets_p1, total_bets_p2, winning_side, distributed_status
         FROM govno_db.tournaments
-        WHERE created_at <= NOW() - INTERVAL '1 hour' AND distributed_status = 'no_distributed'
+        WHERE created_at <= NOW() - INTERVAL '7 days' AND distributed_status = 'no_distributed' AND status = 'finished'
       `)
 
       console.log(ends_id)
@@ -333,7 +353,16 @@ export const end_cites_and_countries_tours = async () => {
        WHERE status = 'active' 
        AND created_at <= NOW() - INTERVAL '7 days'`
     )
-    console.log(`🕒 Авто-деактивация турниров: ${result.rowCount} турниров закрыто`)
+
+    if (result.rowCount > 0) {
+      console.log(`🕒 Авто-завершено турниров: ${result.rowCount}, запускаем распределение`)
+      await distributed_cities_and_counries()
+      console.log(`Рассчитал выплаты и сделал их`)
+      generate_turn()
+      console.log(`Создал новые турниры`)
+    } else {
+      console.log('🟢 Нет турниров к завершению — пропуск')
+    }
   } catch (error) {
     console.error('❌ Ошибка в авто-деактивации турниров:', error)
   }
