@@ -76,7 +76,7 @@ async function placeBet(user_id: number, tournament_id: number, bet_bool: boolea
       console.log('Турнирные данные:', tournament)
       if (!tournament) throw new Error('❌ Турнир не найден или уже завершен')
 
-      let totalPull, priceYes, priceNo, stakeYes, stakeNo, voisesAmount, user_profit
+      let totalPull, priceYes, priceNo, stakeYes, stakeNo, voisesAmount, user_profit, platform_profit
 
       if (bet_bool) {
         stakeYes = tournament.total_bets_p1 + amount
@@ -98,12 +98,18 @@ async function placeBet(user_id: number, tournament_id: number, bet_bool: boolea
         priceNo = stakeNo / totalPull
       }
 
+      const fairPrice = bet_bool ? tournament.price_p1 : tournament.price_p2
+
       voisesAmount = amount / (bet_bool ? tournament.price_p1_spread : tournament.price_p2_spread)
       user_profit = voisesAmount - amount
+
+      const fairVoices = amount / fairPrice
+      platform_profit = fairVoices - voisesAmount
 
       console.log(`Суммарный пул: ${totalPull}`)
       console.log(`Цена "Да" без спреда: ${priceYes.toFixed(2)}`)
       console.log(`Цена "Нет" без спреда: ${priceNo.toFixed(2)}`)
+      console.log(`Наш профит: ${platform_profit.toFixed(2)}`)
 
       console.log(`После лимита: Цена "Да": ${priceYes.toFixed(2)}, Цена "Нет": ${priceNo.toFixed(2)}`)
 
@@ -137,9 +143,10 @@ async function placeBet(user_id: number, tournament_id: number, bet_bool: boolea
 
       await t.none(
         `UPDATE govno_db.tournaments 
-         SET total_bets_p1 = $1, total_bets_p2 = $2, price_p1 = $3, price_p2 = $4, price_p1_spread = $5, price_p2_spread = $6
-         WHERE id = $7 AND status = 'active'`,
-        [stakeYes, stakeNo, parseFloat(priceYes.toFixed(2)), parseFloat(priceNo.toFixed(2)), parseFloat(priceYesWithSpread.toFixed(2)), parseFloat(priceNoWithSpread.toFixed(2)), tournament_id]
+         SET total_bets_p1 = $1, total_bets_p2 = $2, price_p1 = $3, price_p2 = $4, 
+             price_p1_spread = $5, price_p2_spread = $6, our_profite = our_profite + $7
+         WHERE id = $8 AND status = 'active'`,
+        [stakeYes, stakeNo, parseFloat(priceYes.toFixed(2)), parseFloat(priceNo.toFixed(2)), parseFloat(priceYesWithSpread.toFixed(2)), parseFloat(priceNoWithSpread.toFixed(2)), parseFloat(platform_profit.toFixed(2)), tournament_id]
       )
 
       await t.none(
