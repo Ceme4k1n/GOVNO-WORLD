@@ -14,6 +14,7 @@ import newsRouter from './routes/news'
 import profileRouter from './routes/profile'
 import mapRouter from './routes/map'
 import tournament from './routes/tournament'
+import staking from './routes/staking'
 
 import path from 'path'
 
@@ -35,6 +36,7 @@ app.use('/news', newsRouter)
 app.use('/profile', profileRouter)
 app.use('/map', mapRouter)
 app.use('/turs', tournament)
+app.use('/staking', staking)
 
 // Комментируем часть для HTTPS
 /*

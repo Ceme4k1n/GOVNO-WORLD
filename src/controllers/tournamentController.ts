@@ -234,16 +234,7 @@ export const distributed_cities_and_counries = async () => {
               )
               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NOW())
             `,
-              [
-                bet.user_id,
-                tournament.id,
-                bet.player_bool,
-                bet.amount,
-                bet.user_profit,
-                0, // payout
-                false,
-                bet.created_at,
-              ]
+              [bet.user_id, tournament.id, bet.player_bool, bet.amount, bet.user_profit, 0, false, bet.created_at]
             )
           }
           continue

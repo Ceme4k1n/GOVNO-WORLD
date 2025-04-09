@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Стейкинг</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #0f0f0f;
+        color: white;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 60px;
+      }
+
+      h1 {
+        font-size: 24px;
+        margin-bottom: 30px;
+      }
+
+      .staking-card {
+        background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+        border-radius: 16px;
+        padding: 24px;
+        width: 320px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        margin-bottom: 24px;
+      }
+
+      .staking-card img {
+        position: absolute;
+        right: -10px;
+        bottom: -10px;
+        width: 120px;
+        pointer-events: none;
+      }
+
+      .staking-info {
+        z-index: 2;
+        position: relative;
+      }
+
+      .staking-info h2 {
+        font-size: 32px;
+        margin: 8px 0;
+      }
+
+      .staking-info p {
+        margin: 0;
+        font-size: 14px;
+        color: #aaa;
+      }
+
+      .input-box {
+        background-color: #1a1a1a;
+        border: 1px solid #333;
+        border-radius: 12px;
+        padding: 24px;
+        width: 320px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+      }
+
+      input[type='number'] {
+        background-color: #111;
+        border: 1px solid #444;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 16px;
+        color: white;
+        outline: none;
+        width: 100%;
+      }
+
+      input[type='number']::placeholder {
+        color: #777;
+      }
+
+      button {
+        background-color: #f1c40f;
+        border: none;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        color: #000;
+        font-weight: bold;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #d4ac0d;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Стейкинг</h1>
+
+    <div class="staking-card">
+      <div class="staking-info">
+        <p>Ваш баланс стейкинга</p>
+        <h2>$ 777</h2>
+        <p>= 1 $GOVNO</p>
+      </div>
+      <img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="Wallet" />
+    </div>
+
+    <div class="input-box">
+      <input type="number" placeholder="Введите сумму депозита в $GOVNO" />
+      <button id="stake-create-btn">Продолжить</button>
+    </div>
+
+    <div id="staking-cards-container"></div>
+
+    <script>
+      const input = document.querySelector("input[type='number']")
+      const createBtn = document.getElementById('stake-create-btn')
+      const cardsContainer = document.getElementById('staking-cards-container')
+
+      const user_id = 1029163005
+      const API_URL = 'http://localhost:443'
+
+      let lastFetchTime = 0
+      const MIN_FETCH_INTERVAL = 10000 // 10 секунд между запросами
+
+      // Проверяем данные в localStorage на актуальность
+      function isStakesCacheValid() {
+        const cachedData = localStorage.getItem('cachedStakes')
+        const cacheTimestamp = localStorage.getItem('cachedStakesTimestamp')
+        if (!cachedData || !cacheTimestamp) {
+          return false
+        }
+        const cacheAge = Date.now() - parseInt(cacheTimestamp)
+        return cacheAge < 60000 // 1 минута
+      }
+
+      function createCard(stake) {
+        const card = document.createElement('div')
+        card.classList.add('staking-card')
+
+        const countdownId = `countdown-${stake.id}`
+
+        card.innerHTML = `
+          <div class="staking-info">
+            <p>Стейк на сумму</p>
+            <h2>$ ${stake.amount}</h2>
+            <p>Потенциальный выигрыш: $ ${stake.gambler_level}</p>
+            <p>Потенциальный выигрыш: $ ${stake.potencial_win}</p>
+            <p>Дней завершено: ${stake.days_completed}/10</p>
+            <p>Следующее окно подтверждения: <span id="${countdownId}">Загрузка...</span></p>
+            <button class="claim-btn" data-id="${stake.id}">Продолжить</button>
+          </div>
+          <img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="Wallet" />
+        `
+
+        cardsContainer.appendChild(card)
+
+        const claimBtn = card.querySelector('.claim-btn')
+        claimBtn.addEventListener('click', async () => {
+          const now = Date.now()
+          if (now - lastFetchTime < MIN_FETCH_INTERVAL) {
+            alert('Подождите 5 секунд перед следующим нажатием!')
+            return
+          }
+          lastFetchTime = now
+
+          try {
+            const res = await fetch(`${API_URL}/staking/update_day_staking?user_id=${user_id}&stake_id=${stake.id}`)
+            if (!res.ok) {
+              alert('Ошибка при подтверждении стейка')
+              return
+            }
+            await fetchAndRenderStakes()
+          } catch (err) {
+            console.error('Ошибка запроса update:', err)
+          }
+        })
+
+        // 🕒 Запуск обратного отсчёта
+        const countdownEl = document.getElementById(countdownId)
+        const lastClaim = new Date(stake.last_claim).getTime()
+        const nextWindow = lastClaim + 24 * 60 * 60 * 1000
+
+        const updateCountdown = () => {
+          const now = Date.now()
+          const diff = nextWindow - now
+
+          if (diff <= 0) {
+            countdownEl.textContent = 'Окно открыто!'
+            return
+          }
+
+          const hours = Math.floor(diff / (1000 * 60 * 60))
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+          const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+
+          countdownEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+        }
+
+        updateCountdown()
+        setInterval(updateCountdown, 1000)
+      }
+
+      async function fetchAndRenderStakes(forceUpdate = false) {
+        cardsContainer.innerHTML = ''
+        try {
+          // Если forceUpdate true, сбрасываем данные в localStorage
+          if (forceUpdate) {
+            localStorage.removeItem('cachedStakes')
+            localStorage.removeItem('cachedStakesTimestamp')
+          }
+
+          // Проверяем актуальность данных в localStorage
+          if (isStakesCacheValid() && !forceUpdate) {
+            const cachedData = JSON.parse(localStorage.getItem('cachedStakes'))
+            cachedData.forEach(createCard)
+            return
+          }
+
+          // Делаем GET-запрос для получения активных стейков
+          const res = await fetch(`${API_URL}/staking/get_day_staking_active?user_id=${user_id}`)
+          if (!res.ok) throw new Error('Ошибка получения данных')
+
+          const data = await res.json()
+
+          // Добавляем данные в localStorage
+          localStorage.setItem('cachedStakes', JSON.stringify(data))
+          localStorage.setItem('cachedStakesTimestamp', Date.now().toString())
+
+          // Рендерим карточки с данными
+          data.forEach(createCard)
+        } catch (err) {
+          console.error('Ошибка загрузки стейков:', err)
+        }
+      }
+
+      createBtn.addEventListener('click', async () => {
+        const amount = parseFloat(input.value)
+        if (isNaN(amount) || amount <= 0) {
+          alert('Введите корректную сумму (> 0)')
+          return
+        }
+
+        try {
+          // Отправляем POST-запрос на создание стейка
+          const res = await fetch(`${API_URL}/staking/create_day_staking`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id,
+              amount,
+              last_claim: Date.now(),
+            }),
+          })
+
+          if (!res.ok) {
+            alert('Ошибка при создании стейка')
+            return
+          }
+
+          input.value = ''
+          // После успешного создания стейка, принудительно обновляем список стейков
+          await fetchAndRenderStakes(true) // forceUpdate = true
+        } catch (err) {
+          console.error('Ошибка при создании:', err)
+        }
+      })
+
+      fetchAndRenderStakes()
+    </script>
+  </body>
+</html>
