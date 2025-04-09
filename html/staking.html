@@ -103,6 +103,32 @@
       button:hover {
         background-color: #d4ac0d;
       }
+
+      #modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+      }
+
+      #modal > div {
+        background: #1e1e1e;
+        padding: 24px;
+        border-radius: 12px;
+        width: 300px;
+        text-align: center;
+        box-shadow: 0 0 10px black;
+      }
+
+      #modal button {
+        margin: 5px;
+      }
     </style>
   </head>
   <body>
@@ -124,6 +150,15 @@
 
     <div id="staking-cards-container"></div>
 
+    <div id="modal">
+      <div>
+        <h2>Вы прошли 10 дней!</h2>
+        <p id="modal-text" style="margin-bottom: 20px"></p>
+        <button id="modal-continue">Залудить</button>
+        <button id="modal-cashout">Забрать</button>
+      </div>
+    </div>
+
     <script>
       const input = document.querySelector("input[type='number']")
       const createBtn = document.getElementById('stake-create-btn')
@@ -133,17 +168,13 @@
       const API_URL = 'http://localhost:443'
 
       let lastFetchTime = 0
-      const MIN_FETCH_INTERVAL = 10000 // 10 секунд между запросами
+      const MIN_FETCH_INTERVAL = 5000
 
-      // Проверяем данные в localStorage на актуальность
       function isStakesCacheValid() {
         const cachedData = localStorage.getItem('cachedStakes')
         const cacheTimestamp = localStorage.getItem('cachedStakesTimestamp')
-        if (!cachedData || !cacheTimestamp) {
-          return false
-        }
-        const cacheAge = Date.now() - parseInt(cacheTimestamp)
-        return cacheAge < 60000 // 1 минута
+        if (!cachedData || !cacheTimestamp) return false
+        return Date.now() - parseInt(cacheTimestamp) < 60000
       }
 
       function createCard(stake) {
@@ -156,7 +187,7 @@
           <div class="staking-info">
             <p>Стейк на сумму</p>
             <h2>$ ${stake.amount}</h2>
-            <p>Потенциальный выигрыш: $ ${stake.gambler_level}</p>
+            <p>Уровень лудонизма: ${stake.gambler_level}</p>
             <p>Потенциальный выигрыш: $ ${stake.potencial_win}</p>
             <p>Дней завершено: ${stake.days_completed}/10</p>
             <p>Следующее окно подтверждения: <span id="${countdownId}">Загрузка...</span></p>
@@ -164,7 +195,6 @@
           </div>
           <img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="Wallet" />
         `
-
         cardsContainer.appendChild(card)
 
         const claimBtn = card.querySelector('.claim-btn')
@@ -176,19 +206,60 @@
           }
           lastFetchTime = now
 
+          if (stake.days_completed >= 10) {
+            const modal = document.getElementById('modal')
+            const modalText = document.getElementById('modal-text')
+            const bonus = Math.floor((stake.amount + stake.potencial_win) * 0.15)
+            const newWin = stake.potencial_win + bonus
+
+            modalText.textContent = `Хотите увеличить выигрыш до $${newWin}? Нужно продолжить ещё на 10 дней, но окно сократится.`
+            modal.style.display = 'flex'
+
+            document.getElementById('modal-continue').onclick = async () => {
+              modal.style.display = 'none'
+              try {
+                const res = await fetch(`${API_URL}/staking/update_gambler_level`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ user_id, stake_id: stake.id }),
+                })
+                if (!res.ok) throw new Error('Ошибка при обновлении уровня')
+                await fetchAndRenderStakes(true)
+              } catch (err) {
+                console.error('Ошибка запроса update_gambler_level:', err)
+              }
+            }
+
+            document.getElementById('modal-cashout').onclick = async () => {
+              modal.style.display = 'none'
+              try {
+                const res = await fetch(`${API_URL}/staking/day_staking_cashout`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ user_id, stake_id: stake.id }),
+                })
+                if (!res.ok) throw new Error('Ошибка при кэшауте')
+                await fetchAndRenderStakes(true)
+              } catch (err) {
+                console.error('Ошибка запроса day_staking_cashout:', err)
+              }
+            }
+
+            return
+          }
+
           try {
             const res = await fetch(`${API_URL}/staking/update_day_staking?user_id=${user_id}&stake_id=${stake.id}`)
             if (!res.ok) {
               alert('Ошибка при подтверждении стейка')
               return
             }
-            await fetchAndRenderStakes()
+            await fetchAndRenderStakes(true)
           } catch (err) {
             console.error('Ошибка запроса update:', err)
           }
         })
 
-        // 🕒 Запуск обратного отсчёта
         const countdownEl = document.getElementById(countdownId)
         const lastClaim = new Date(stake.last_claim).getTime()
         const nextWindow = lastClaim + 24 * 60 * 60 * 1000
@@ -196,7 +267,6 @@
         const updateCountdown = () => {
           const now = Date.now()
           const diff = nextWindow - now
-
           if (diff <= 0) {
             countdownEl.textContent = 'Окно открыто!'
             return
@@ -205,7 +275,6 @@
           const hours = Math.floor(diff / (1000 * 60 * 60))
           const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
           const seconds = Math.floor((diff % (1000 * 60)) / 1000)
-
           countdownEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
         }
 
@@ -216,30 +285,23 @@
       async function fetchAndRenderStakes(forceUpdate = false) {
         cardsContainer.innerHTML = ''
         try {
-          // Если forceUpdate true, сбрасываем данные в localStorage
           if (forceUpdate) {
             localStorage.removeItem('cachedStakes')
             localStorage.removeItem('cachedStakesTimestamp')
           }
 
-          // Проверяем актуальность данных в localStorage
           if (isStakesCacheValid() && !forceUpdate) {
             const cachedData = JSON.parse(localStorage.getItem('cachedStakes'))
             cachedData.forEach(createCard)
             return
           }
 
-          // Делаем GET-запрос для получения активных стейков
           const res = await fetch(`${API_URL}/staking/get_day_staking_active?user_id=${user_id}`)
           if (!res.ok) throw new Error('Ошибка получения данных')
 
           const data = await res.json()
-
-          // Добавляем данные в localStorage
           localStorage.setItem('cachedStakes', JSON.stringify(data))
           localStorage.setItem('cachedStakesTimestamp', Date.now().toString())
-
-          // Рендерим карточки с данными
           data.forEach(createCard)
         } catch (err) {
           console.error('Ошибка загрузки стейков:', err)
@@ -254,7 +316,6 @@
         }
 
         try {
-          // Отправляем POST-запрос на создание стейка
           const res = await fetch(`${API_URL}/staking/create_day_staking`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -271,8 +332,7 @@
           }
 
           input.value = ''
-          // После успешного создания стейка, принудительно обновляем список стейков
-          await fetchAndRenderStakes(true) // forceUpdate = true
+          await fetchAndRenderStakes(true)
         } catch (err) {
           console.error('Ошибка при создании:', err)
         }
