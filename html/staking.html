@@ -222,32 +222,52 @@
           const type = claimBtn.dataset.type
           const endpoint = type === 'super' ? `/staking/update_super_staking?user_id=${user_id}&stake_id=${stake.id}` : `/staking/update_day_staking?user_id=${user_id}&stake_id=${stake.id}`
 
-          if (stake.days_completed >= 10 && type === 'day') {
+          if (stake.days_completed >= 10) {
             const modal = document.getElementById('modal')
             const modalText = document.getElementById('modal-text')
+            const modalContinue = document.getElementById('modal-continue')
+            const modalCashout = document.getElementById('modal-cashout')
+
             const bonus = Math.floor((stake.amount + stake.potencial_win) * 0.15)
             const newWin = stake.potencial_win + bonus
 
-            modalText.textContent = `Хотите увеличить выигрыш до $${newWin}? Нужно продолжить ещё на 10 дней, но окно сократится.`
+            modalText.textContent = stake.type === 'super' ? `Вы завершили суперстейк! Забрать или лудить дальше с новым окном?` : `Хотите увеличить выигрыш до $${newWin}? Нужно продолжить ещё на 10 дней, но окно сократится.`
+
             modal.style.display = 'flex'
 
-            document.getElementById('modal-continue').onclick = async () => {
+            modalContinue.onclick = async () => {
               modal.style.display = 'none'
-              await fetch(`${API_URL}/staking/update_gambler_level`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id, stake_id: stake.id }),
-              })
+              if (stake.type === 'day') {
+                await fetch(`${API_URL}/staking/update_gambler_level`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ user_id, stake_id: stake.id, stake_type: 'day' }),
+                })
+              } else {
+                await fetch(`${API_URL}/staking/update_gambler_level`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ user_id, stake_id: stake.id, stake_type: 'super' }),
+                })
+              }
               await fetchAndRenderStakes(true)
             }
 
-            document.getElementById('modal-cashout').onclick = async () => {
+            modalCashout.onclick = async () => {
               modal.style.display = 'none'
-              await fetch(`${API_URL}/staking/day_staking_cashout`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id, stake_id: stake.id }),
-              })
+              if (stake.type === 'day') {
+                await fetch(`${API_URL}/staking/staking_cashout`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ user_id, stake_id: stake.id, stake_type: 'day' }),
+                })
+              } else {
+                await fetch(`${API_URL}/staking/staking_cashout`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ user_id, stake_id: stake.id, stake_type: 'super' }),
+                })
+              }
               await fetchAndRenderStakes(true)
             }
 
