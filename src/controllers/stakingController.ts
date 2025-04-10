@@ -214,7 +214,7 @@ export const update_gambler_level = async (req: Request, res: Response) => {
   }
 }
 
-export const day_staking_cashout = async (req: Request, res: Response) => {
+export const staking_cashout = async (req: Request, res: Response) => {
   const { user_id, stake_id, stake_type } = req.body
 
   if (!user_id || !stake_id) {
