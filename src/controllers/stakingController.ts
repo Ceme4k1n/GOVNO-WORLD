@@ -5,10 +5,10 @@ import { error } from 'console'
 const dotenv = require('dotenv')
 dotenv.config()
 
-export const create_day_staking = async (req: Request, res: Response) => {
-  const { user_id, amount, last_claim } = req.body
+export const create_day_night_staking = async (req: Request, res: Response) => {
+  const { user_id, amount, stake_type } = req.body
 
-  if (!user_id || !amount || !last_claim) {
+  if (!user_id || !amount || !stake_type) {
     res.sendStatus(401)
     return
   }
@@ -19,9 +19,32 @@ export const create_day_staking = async (req: Request, res: Response) => {
   }
   try {
     const last_claim = new Date()
-    const potencial_win = amount + amount * 0.05
+    const currentHour = last_claim.getHours()
+
     await db.tx(async (t) => {
-      await t.none(`INSERT INTO govno_db.day_staking(user_id, amount, potencial_win, last_claim)  VALUES($1, $2, $3, $4)`, [user_id, amount, potencial_win, last_claim])
+      if (stake_type === 'day') {
+        if (currentHour < 6 || currentHour >= 24) {
+          res.status(403).json({ error: 'Дневной стейк можно создавать только с 06:00 до 23:59' })
+          return
+        }
+
+        await t.none(`INSERT INTO govno_db.day_staking(user_id, amount, potencial_win, last_claim)  VALUES($1, $2, $3, $4)`, [user_id, amount, amount * 1.05, last_claim])
+
+        res.status(200).json(`Создал дневной стейк`)
+      } else if (stake_type === 'night') {
+        if (currentHour >= 6) {
+          res.status(403).json({ error: 'Ночной стейк можно создавать только с 00:00 до 05:59' })
+          return
+        }
+
+        await t.none(`INSERT INTO govno_db.night_staking(user_id, amount, potencial_win, last_claim)  VALUES($1, $2, $3, $4)`, [user_id, amount, amount * 1.15, last_claim])
+
+        res.status(200).json(`Создал ночной стейк`)
+      } else if (stake_type === 'super') {
+        await t.none(`INSERT INTO govno_db.super_staking(user_id, amount, potencial_win, last_claim)  VALUES($1, $2, $3, $4)`, [user_id, amount, amount * 1.3, last_claim])
+
+        res.status(200).json(`Создал супер стейк`)
+      }
     })
     res.sendStatus(200)
   } catch (error) {
@@ -29,7 +52,7 @@ export const create_day_staking = async (req: Request, res: Response) => {
   }
 }
 
-export const get_day_staking_active = async (req: Request, res: Response) => {
+export const get_staking_active = async (req: Request, res: Response) => {
   const { user_id } = req.query
 
   if (!user_id) {
@@ -47,6 +70,14 @@ export const get_day_staking_active = async (req: Request, res: Response) => {
         [user_id]
       )
 
+      const nightStakes = await t.any(
+        `SELECT id, amount, potencial_win, days_completed, is_active, last_claim, gambler_level,
+                'night' AS type
+           FROM govno_db.night_staking 
+           WHERE user_id = $1 AND is_active = TRUE AND burned = FALSE`,
+        [user_id]
+      )
+
       const superStakes = await t.any(
         `SELECT id, amount, potencial_win, days_completed, is_active, last_claim, gambler_level,
                 'super' AS type
@@ -55,7 +86,7 @@ export const get_day_staking_active = async (req: Request, res: Response) => {
         [user_id]
       )
 
-      const allStakes = [...dayStakes, ...superStakes]
+      const allStakes = [...dayStakes, ...superStakes, ...nightStakes]
 
       res.status(200).json(allStakes)
     })
@@ -66,7 +97,7 @@ export const get_day_staking_active = async (req: Request, res: Response) => {
 }
 
 export const update_day_staking = async (req: Request, res: Response) => {
-  const { user_id, stake_id } = req.query
+  const { user_id, stake_id, stake_type } = req.query
 
   if (!user_id || !stake_id) {
     res.sendStatus(401)
@@ -141,44 +172,75 @@ export const update_gambler_level = async (req: Request, res: Response) => {
     await db.tx(async (t) => {
       let raw
       if (stake_type === 'day') {
-        raw = await t.oneOrNone(
-          `
-              SELECT gambler_level, potencial_win, amount
-              FROM govno_db.day_staking
-              WHERE user_id = $1 AND id = $2
-              `,
+        const raw = await t.oneOrNone(
+          `SELECT gambler_level, potencial_win, amount
+           FROM govno_db.day_staking
+           WHERE user_id = $1 AND id = $2`,
           [user_id, stake_id]
         )
+
         if (!raw) {
           res.status(404).json({ error: 'Ставка не найдена' })
           return
         }
-        if (raw.gambler_level == 0) {
-          const new_potencial_win = (parseFloat(raw.potencial_win) - parseFloat(raw.amount)) * 2 + parseFloat(raw.amount)
-          await t.none(
-            `UPDATE govno_db.day_staking 
-             SET gambler_level = $1, potencial_win = $2, days_completed = 0, last_claim = $5
-             WHERE user_id = $3 AND id = $4`,
-            [1, new_potencial_win, user_id, stake_id, claim_time]
-          )
-          res.status(200).json(`Обновил до 1 первого уровня`)
-          return
-        } else if (raw.gambler_level == 1) {
-          const new_potencial_win = (parseFloat(raw.potencial_win) - parseFloat(raw.amount)) * 2 + parseFloat(raw.amount)
-          await t.none(
-            `UPDATE govno_db.day_staking 
-             SET gambler_level = $1, potencial_win = $2, days_completed = 0, last_claim = $5
-             WHERE user_id = $3 AND id = $4`,
-            [2, new_potencial_win, user_id, stake_id, claim_time]
-          )
-          res.status(200).json(`Обновил до 2 первого уровня`)
-          return
-        } else if (raw.gambler_level >= 2) {
-          res.status(405).json(`Нельзя выше обновиться`)
+
+        const currentLevel = raw.gambler_level
+        const maxLevel = 2
+
+        if (currentLevel >= maxLevel) {
+          res.status(405).json('Нельзя выше обновиться')
           return
         }
+
+        const newLevel = currentLevel + 1
+        const win = parseFloat(raw.potencial_win)
+        const amount = parseFloat(raw.amount)
+        const newPotencialWin = (win - amount) * 2 + amount
+
+        await t.none(
+          `UPDATE govno_db.day_staking 
+           SET gambler_level = $1, potencial_win = $2, days_completed = 0, last_claim = $5
+           WHERE user_id = $3 AND id = $4`,
+          [newLevel, newPotencialWin, user_id, stake_id, claim_time]
+        )
+
+        res.status(200).json(`Обновил до ${newLevel} уровня`)
+        return
       } else if (stake_type === 'night') {
-        // Сделать позже
+        const raw = await t.oneOrNone(
+          `SELECT gambler_level, potencial_win, amount
+           FROM govno_db.night_staking
+           WHERE user_id = $1 AND id = $2`,
+          [user_id, stake_id]
+        )
+
+        if (!raw) {
+          res.status(404).json({ error: 'Ставка не найдена' })
+          return
+        }
+
+        const currentLevel = raw.gambler_level
+        const maxLevel = 3
+
+        if (currentLevel >= maxLevel) {
+          res.status(405).json('Нельзя выше обновиться')
+          return
+        }
+
+        const newLevel = currentLevel + 1
+        const win = parseFloat(raw.potencial_win)
+        const amount = parseFloat(raw.amount)
+        const newPotencialWin = (win - amount) * 2 + amount
+
+        await t.none(
+          `UPDATE govno_db.night_staking 
+           SET gambler_level = $1, potencial_win = $2, days_completed = 0, last_claim = $5
+           WHERE user_id = $3 AND id = $4`,
+          [newLevel, newPotencialWin, user_id, stake_id, claim_time]
+        )
+
+        res.status(200).json(`Обновил до ${newLevel} уровня`)
+        return
       } else if (stake_type === 'super') {
         raw = await t.oneOrNone(
           `
@@ -219,12 +281,15 @@ export const staking_cashout = async (req: Request, res: Response) => {
 
   if (!user_id || !stake_id) {
     res.sendStatus(401)
+    return
   }
 
   try {
     await db.tx(async (t) => {
+      let stake: { potencial_win: number; amount: number } | null = null
+
       if (stake_type === 'day') {
-        const stake = await t.oneOrNone(
+        stake = await t.oneOrNone(
           `
             UPDATE govno_db.day_staking 
             SET is_active = false, burned = false, claimed = true
@@ -234,27 +299,12 @@ export const staking_cashout = async (req: Request, res: Response) => {
               AND burned = false
               AND claimed = false
               AND days_completed >= 10
-            RETURNING potencial_win
-            `,
+            RETURNING potencial_win, amount
+          `,
           [user_id, stake_id]
         )
-
-        if (!stake) {
-          res.sendStatus(403)
-          return
-        }
-
-        await t.none(
-          `
-            UPDATE govno_db.users 
-            SET balance = balance + $1
-            WHERE tg_user_id = $2
-            `,
-          [stake.potencial_win, user_id]
-        )
-      } else if (stake_type === 'night') {
       } else if (stake_type === 'super') {
-        const stake = await t.oneOrNone(
+        stake = await t.oneOrNone(
           `
             UPDATE govno_db.super_staking
             SET is_active = false, burned = false, claimed = true
@@ -264,66 +314,57 @@ export const staking_cashout = async (req: Request, res: Response) => {
               AND burned = false
               AND claimed = false
               AND days_completed >= 10
-            RETURNING potencial_win
-            `,
+            RETURNING potencial_win, amount
+          `,
           [user_id, stake_id]
         )
-
-        if (!stake) {
-          res.sendStatus(403)
-          return
-        }
-
-        await t.none(
+      } else if (stake_type === 'night') {
+        stake = await t.oneOrNone(
           `
-            UPDATE govno_db.users 
-            SET balance = balance + $1
-            WHERE tg_user_id = $2
-            `,
-          [stake.potencial_win, user_id]
+            UPDATE govno_db.night_staking 
+            SET is_active = false, burned = false, claimed = true
+            WHERE user_id = $1 
+              AND id = $2 
+              AND is_active = true
+              AND burned = false
+              AND claimed = false
+              AND days_completed >= 10
+            RETURNING potencial_win, amount
+          `,
+          [user_id, stake_id]
         )
       }
-    })
 
-    res.sendStatus(200)
-  } catch (error) {
-    console.error('Ошибка при распределении денег со стейка: ', error)
-    res.sendStatus(500)
-  }
-}
+      if (!stake) {
+        res.sendStatus(403)
+        return
+      }
 
-export const create_super_staking = async (req: Request, res: Response) => {
-  const { user_id, amount } = req.body
+      const { potencial_win, amount } = stake
+      const profit = amount - potencial_win
 
-  if (!user_id || !amount) {
-    res.sendStatus(401)
-    return
-  }
-
-  if (amount <= 0) {
-    res.sendStatus(402)
-    return
-  }
-
-  try {
-    const last_claim = new Date()
-    const potencial_win = amount * 1.3
-    await db.tx(async (t) => {
       await t.none(
         `
-        INSERT INTO govno_db.super_staking (
-          user_id, amount, potencial_win, last_claim
-        ) VALUES (
-          $1, $2, $3, $4
-        )
+          UPDATE govno_db.users 
+          SET balance = balance + $1
+          WHERE tg_user_id = $2
         `,
-        [user_id, amount, potencial_win, last_claim] // передаем оба времени как строки ISO
+        [potencial_win, user_id]
+      )
+
+      await t.none(
+        `
+          INSERT INTO govno_db.stake_platform_profits 
+            (user_id, stake_id_${stake_type}, stake_type, action, payout, amount, profit)
+          VALUES ($1, $2, $3, 'stake_cashout', $4, $5, $6)
+        `,
+        [user_id, stake_id, stake_type, potencial_win, amount, profit]
       )
     })
 
     res.sendStatus(200)
   } catch (error) {
-    console.error('Ошибка при добавлении стейкинга:', error)
+    console.error('Ошибка при распределении денег со стейка: ', error)
     res.sendStatus(500)
   }
 }

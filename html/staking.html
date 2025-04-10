@@ -160,7 +160,8 @@
 
     <div class="input-box">
       <input type="number" placeholder="Введите сумму депозита в $GOVNO" />
-      <button id="stake-create-btn">Создать обычный</button>
+      <button id="stake-day-btn">Создать дневной</button>
+      <button id="stake-night-btn">Создать ночной</button>
       <button id="super-stake-btn" class="super-btn">Создать супер</button>
     </div>
 
@@ -174,10 +175,10 @@
         <button id="modal-cashout">Забрать</button>
       </div>
     </div>
-
     <script>
       const input = document.querySelector("input[type='number']")
-      const createBtn = document.getElementById('stake-create-btn')
+      const createBtn = document.getElementById('stake-day-btn')
+      const createNightBtn = document.getElementById('stake-night-btn')
       const superBtn = document.getElementById('super-stake-btn')
       const cardsContainer = document.getElementById('staking-cards-container')
 
@@ -220,7 +221,15 @@
           lastFetchTime = now
 
           const type = claimBtn.dataset.type
-          const endpoint = type === 'super' ? `/staking/update_super_staking?user_id=${user_id}&stake_id=${stake.id}` : `/staking/update_day_staking?user_id=${user_id}&stake_id=${stake.id}`
+
+          let endpoint = ''
+          if (type === 'super') {
+            endpoint = `/staking/update_super_staking?user_id=${user_id}&stake_id=${stake.id}`
+          } else if (type === 'night') {
+            endpoint = `/staking/update_night_staking?user_id=${user_id}&stake_id=${stake.id}&stake_type=night`
+          } else {
+            endpoint = `/staking/update_day_staking?user_id=${user_id}&stake_id=${stake.id}&stake_type=day`
+          }
 
           if (stake.days_completed >= 10) {
             const modal = document.getElementById('modal')
@@ -231,43 +240,39 @@
             const bonus = Math.floor((stake.amount + stake.potencial_win) * 0.15)
             const newWin = stake.potencial_win + bonus
 
-            modalText.textContent = stake.type === 'super' ? `Вы завершили суперстейк! Забрать или лудить дальше с новым окном?` : `Хотите увеличить выигрыш до $${newWin}? Нужно продолжить ещё на 10 дней, но окно сократится.`
+            if (stake.type === 'super') {
+              modalText.textContent = `Вы завершили суперстейк! Забрать или лудить дальше с новым окном?`
+            } else {
+              modalText.textContent = `Хотите увеличить выигрыш до $${newWin}? Нужно продолжить ещё на 10 дней, но окно сократится.`
+            }
 
             modal.style.display = 'flex'
 
             modalContinue.onclick = async () => {
               modal.style.display = 'none'
-              if (stake.type === 'day') {
-                await fetch(`${API_URL}/staking/update_gambler_level`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ user_id, stake_id: stake.id, stake_type: 'day' }),
-                })
-              } else {
-                await fetch(`${API_URL}/staking/update_gambler_level`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ user_id, stake_id: stake.id, stake_type: 'super' }),
-                })
-              }
+              await fetch(`${API_URL}/staking/update_gambler_level`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  user_id,
+                  stake_id: stake.id,
+                  stake_type: stake.type,
+                }),
+              })
               await fetchAndRenderStakes(true)
             }
 
             modalCashout.onclick = async () => {
               modal.style.display = 'none'
-              if (stake.type === 'day') {
-                await fetch(`${API_URL}/staking/staking_cashout`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ user_id, stake_id: stake.id, stake_type: 'day' }),
-                })
-              } else {
-                await fetch(`${API_URL}/staking/staking_cashout`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ user_id, stake_id: stake.id, stake_type: 'super' }),
-                })
-              }
+              await fetch(`${API_URL}/staking/staking_cashout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  user_id,
+                  stake_id: stake.id,
+                  stake_type: stake.type,
+                }),
+              })
               await fetchAndRenderStakes(true)
             }
 
@@ -280,10 +285,15 @@
 
         const countdownEl = document.getElementById(countdownId)
         const lastClaim = new Date(stake.last_claim).getTime()
-        const nextWindow =
-          stake.type === 'super'
-            ? lastClaim + 24 * 60 * 60 * 1000 // Можно усложнить позже
-            : lastClaim + 24 * 60 * 60 * 1000
+
+        let nextWindow
+        if (stake.type === 'super') {
+          nextWindow = lastClaim + 24 * 60 * 60 * 1000
+        } else if (stake.type === 'night') {
+          nextWindow = lastClaim + 24 * 60 * 60 * 1000 // при необходимости меняем позже
+        } else {
+          nextWindow = lastClaim + 24 * 60 * 60 * 1000
+        }
 
         const updateCountdown = () => {
           const now = Date.now()
@@ -316,7 +326,7 @@
           return
         }
 
-        const res = await fetch(`${API_URL}/staking/get_day_staking_active?user_id=${user_id}`)
+        const res = await fetch(`${API_URL}/staking/get_staking_active?user_id=${user_id}`)
         const data = await res.json()
         localStorage.setItem('cachedStakes', JSON.stringify(data))
         localStorage.setItem('cachedStakesTimestamp', Date.now().toString())
@@ -333,12 +343,26 @@
         const amount = parseFloat(input.value)
         if (isNaN(amount) || amount <= 0) return alert('Введите корректную сумму (> 0)')
 
-        const res = await fetch(`${API_URL}/staking/create_day_staking`, {
+        const res = await fetch(`${API_URL}/staking/create_day_night_staking`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id, amount, last_claim: Date.now() }),
+          body: JSON.stringify({ user_id, amount, stake_type: 'day' }),
         })
 
+        if (res.ok) {
+          input.value = ''
+          await fetchAndRenderStakes(true)
+        }
+      })
+
+      createNightBtn.addEventListener('click', async () => {
+        const amount = parseFloat(input.value)
+        if (isNaN(amount) || amount <= 0) return alert('Введите корректную сумму (> 0)')
+        const res = await fetch(`${API_URL}/staking/create_day_night_staking`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id, amount, stake_type: 'night' }),
+        })
         if (res.ok) {
           input.value = ''
           await fetchAndRenderStakes(true)
