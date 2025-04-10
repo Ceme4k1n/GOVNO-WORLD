@@ -1,4 +1,4 @@
-import { Request, Response } from 'express'
+import { raw, Request, Response } from 'express'
 import db from '../database/db'
 
 const dotenv = require('dotenv')
@@ -38,18 +38,29 @@ export const get_day_staking_active = async (req: Request, res: Response) => {
 
   try {
     await db.tx(async (t) => {
-      const stakes = await t.any(
-        `SELECT id, amount, potencial_win, days_completed, is_active, last_claim, gambler_level
+      const dayStakes = await t.any(
+        `SELECT id, amount, potencial_win, days_completed, is_active, last_claim, gambler_level,
+                'day' AS type
            FROM govno_db.day_staking 
            WHERE user_id = $1 AND is_active = TRUE AND burned = FALSE`,
         [user_id]
       )
 
-      res.status(200).json(stakes) // ✅ исправлено здесь
+      const superStakes = await t.any(
+        `SELECT id, amount, potencial_win, days_completed, is_active, last_claim, gambler_level,
+                'super' AS type
+           FROM govno_db.super_staking 
+           WHERE user_id = $1 AND is_active = TRUE AND burned = FALSE`,
+        [user_id]
+      )
+
+      const allStakes = [...dayStakes, ...superStakes]
+
+      res.status(200).json(allStakes)
     })
   } catch (error) {
-    console.error('Ошибка при отправки стейкинга:', error)
-    res.sendStatus(500) // внутреняя ошибка сервера
+    console.error('Ошибка при получении стейкингов:', error)
+    res.sendStatus(500)
   }
 }
 
@@ -151,7 +162,7 @@ export const update_gambler_level = async (req: Request, res: Response) => {
       let bonusMultiplier = 0
       if (level === 0) bonusMultiplier = 0.15
       else if (level === 1) bonusMultiplier = 0.2
-
+      //Сделать 5 уровней
       const bonus = raw.potencial_win * bonusMultiplier
       const newPotencialWin = raw.potencial_win + bonus
 
@@ -224,6 +235,111 @@ export const day_staking_cashout = async (req: Request, res: Response) => {
     res.sendStatus(200)
   } catch (error) {
     console.error('Ошибка при распределении денег с дневного стейка: ', error)
+    res.sendStatus(500)
+  }
+}
+
+export const create_super_staking = async (req: Request, res: Response) => {
+  const { user_id, amount } = req.body
+
+  if (!user_id || !amount) {
+    res.sendStatus(401)
+    return
+  }
+
+  if (amount <= 0) {
+    res.sendStatus(402)
+    return
+  }
+
+  try {
+    const last_claim = new Date()
+    const potencial_win = amount * 1.3
+    await db.tx(async (t) => {
+      await t.none(
+        `
+        INSERT INTO govno_db.super_staking (
+          user_id, amount, potencial_win, last_claim
+        ) VALUES (
+          $1, $2, $3, $4
+        )
+        `,
+        [user_id, amount, potencial_win, last_claim] // передаем оба времени как строки ISO
+      )
+    })
+
+    res.sendStatus(200)
+  } catch (error) {
+    console.error('Ошибка при добавлении стейкинга:', error)
+    res.sendStatus(500)
+  }
+}
+
+export const update_super_staking = async (req: Request, res: Response) => {
+  const { user_id, stake_id } = req.query
+
+  if (!user_id || !stake_id) {
+    res.sendStatus(401)
+    return
+  }
+
+  try {
+    const claim_time = new Date()
+
+    await db.tx(async (t) => {
+      const row = await t.oneOrNone(
+        `
+        SELECT last_claim, deadline_time, days_completed, amount, potencial_win
+        FROM govno_db.super_staking
+        WHERE user_id = $1 AND id = $2 AND is_active = true AND burned = false
+        `,
+        [user_id, stake_id]
+      )
+
+      if (!row) {
+        res.status(404).json({ error: 'Суперстейк не найден или не активен' })
+        return
+      }
+
+      const lastClaimTime = new Date(row.last_claim)
+      let deadlineTime = row.deadline_time
+
+      // Вычисляем разницу между временем текущего клика и предыдущим кликом
+      const timeDelay = claim_time.getTime() - lastClaimTime.getTime()
+
+      // Переводим миллисекунды в минуты
+      const minutesDelay = timeDelay / (1000 * 60) - 1440
+
+      console.log(`Time elapsed: ${minutesDelay} minutes`)
+
+      if (minutesDelay < 0) {
+        res.status(403).json({ error: 'Еще не время' })
+        return
+      }
+      console.log(`Time elapsed: ${minutesDelay} minutes`)
+
+      if (minutesDelay >= 30) {
+        res.status(403).json({ error: 'Ты обосрался с опозданием' })
+        return
+      }
+      deadlineTime -= minutesDelay
+
+      if (deadlineTime < 0) {
+        res.status(403).json({ error: 'Ты обосрался' })
+        return
+      }
+      console.log(`У тебя осталось `, deadlineTime)
+
+      await t.none(
+        `UPDATE govno_db.super_staking
+         SET days_completed = days_completed + 1, last_claim = $1, deadline_time = $2
+         WHERE user_id = $3 AND id = $4 `,
+        [claim_time, deadlineTime, user_id, stake_id]
+      )
+      res.status(200).json({ last_claim: claim_time })
+    })
+  } catch (error) {
+    console.error('Ошибка при обновлении суперстейкинга:', error)
     res.sendStatus(500)
   }
 }
