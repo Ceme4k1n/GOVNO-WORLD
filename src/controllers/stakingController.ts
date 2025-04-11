@@ -523,4 +523,120 @@ async function burn_stake(user_id: any, stake_id: any, stake_type: string) {
   }
 }
 
-async function check_stakes_to_burn() {}
+export async function check_stakes_to_burn() {
+  try {
+    return await db.tx(async (t) => {
+      // Проверяем и сжигаем дневные стейки
+      const burnedStakes = await t.any(`
+        UPDATE govno_db.day_staking
+        SET burned = TRUE,
+            is_active = FALSE
+        WHERE is_active = TRUE
+          AND burned = FALSE
+          AND claimed = FALSE
+          AND last_claim IS NOT NULL
+          AND NOW() > last_claim + INTERVAL '24 hours 30 minutes'
+        RETURNING id, user_id, amount
+      `)
+
+      if (burnedStakes.length > 0) {
+        console.log(`🔥 Сгорело ${burnedStakes.length} дневных стейков:`)
+
+        // Добавляем информацию о сгоревших стейках в таблицу с профитом
+        for (const stake of burnedStakes) {
+          const { user_id, id: stake_id, amount } = stake
+
+          // Запись о сгоревшем стейке
+          await t.none(
+            `
+            INSERT INTO govno_db.stake_platform_profits 
+              (user_id, stake_id_day, stake_type, action, payout, amount, profit)
+            VALUES ($1, $2, 'day', 'burn', $3, $4, $5)
+          `,
+            [user_id, stake_id, 0, amount, amount]
+          )
+
+          console.log(`- user_id: ${user_id}, stake_id: ${stake_id}, amount: ${amount}`)
+        }
+      } else {
+        console.log('✅ Нет сгоревших дневных стейков.')
+      }
+
+      // Проверяем и сжигаем ночные стейки
+      const burnedNightStakes = await t.any(`
+        UPDATE govno_db.night_staking
+        SET burned = TRUE,
+            is_active = FALSE
+        WHERE is_active = TRUE
+          AND burned = FALSE
+          AND claimed = FALSE
+          AND last_claim IS NOT NULL
+          AND NOW() > last_claim + INTERVAL '24 hours 30 minutes'
+        RETURNING id, user_id, amount
+      `)
+
+      if (burnedNightStakes.length > 0) {
+        console.log(`🔥 Сгорело ${burnedNightStakes.length} ночных стейков:`)
+
+        for (const stake of burnedNightStakes) {
+          const { user_id, id: stake_id, amount } = stake
+
+          await t.none(
+            `
+            INSERT INTO govno_db.stake_platform_profits 
+              (user_id, stake_id_night, stake_type, action, payout, amount, profit)
+            VALUES ($1, $2, 'night', 'burn', $3, $4, $5)
+          `,
+            [user_id, stake_id, 0, amount, amount]
+          )
+
+          console.log(`- user_id: ${user_id}, stake_id: ${stake_id}, amount: ${amount}`)
+        }
+      } else {
+        console.log('✅ Нет сгоревших ночных стейков.')
+      }
+
+      // Проверяем и сжигаем суперстейки
+      const burnedSuperStakes = await t.any(`
+        UPDATE govno_db.super_staking
+        SET burned = TRUE,
+            is_active = FALSE
+        WHERE is_active = TRUE
+          AND burned = FALSE
+          AND claimed = FALSE
+          AND last_claim IS NOT NULL
+          AND NOW() > last_claim + INTERVAL '24 hours 30 minutes'
+        RETURNING id, user_id, amount
+      `)
+
+      if (burnedSuperStakes.length > 0) {
+        console.log(`🔥 Сгорело ${burnedSuperStakes.length} суперстейков:`)
+
+        for (const stake of burnedSuperStakes) {
+          const { user_id, id: stake_id, amount } = stake
+
+          await t.none(
+            `
+            INSERT INTO govno_db.stake_platform_profits 
+              (user_id, stake_id_super, stake_type, action, payout, amount, profit)
+            VALUES ($1, $2, 'super', 'burn', $3, $4, $5)
+          `,
+            [user_id, stake_id, 0, amount, amount]
+          )
+
+          console.log(`- user_id: ${user_id}, stake_id: ${stake_id}, amount: ${amount}`)
+        }
+      } else {
+        console.log('✅ Нет сгоревших суперстейков.')
+      }
+
+      return {
+        burnedStakes,
+        burnedNightStakes,
+        burnedSuperStakes,
+      }
+    })
+  } catch (error) {
+    console.error('Ошибка проверки стейков:', error)
+  }
+}
