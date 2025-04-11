@@ -224,11 +224,11 @@
 
           let endpoint = ''
           if (type === 'super') {
-            endpoint = `/staking/update_super_staking?user_id=${user_id}&stake_id=${stake.id}`
+            endpoint = `/staking/update_stakings?user_id=${user_id}&stake_id=${stake.id}&stake_type=super`
           } else if (type === 'night') {
-            endpoint = `/staking/update_night_staking?user_id=${user_id}&stake_id=${stake.id}&stake_type=night`
+            endpoint = `/staking/update_stakings?user_id=${user_id}&stake_id=${stake.id}&stake_type=night`
           } else {
-            endpoint = `/staking/update_day_staking?user_id=${user_id}&stake_id=${stake.id}&stake_type=day`
+            endpoint = `/staking/update_stakings?user_id=${user_id}&stake_id=${stake.id}&stake_type=day`
           }
 
           if (stake.days_completed >= 10) {
@@ -373,10 +373,10 @@
         const amount = parseFloat(input.value)
         if (isNaN(amount) || amount <= 0) return alert('Введите корректную сумму (> 0)')
 
-        const res = await fetch(`${API_URL}/staking/create_super_staking`, {
+        const res = await fetch(`${API_URL}/staking/create_day_night_staking`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id, amount, last_claim: Date.now() }),
+          body: JSON.stringify({ user_id, amount, stake_type: 'super' }),
         })
 
         if (res.ok) {

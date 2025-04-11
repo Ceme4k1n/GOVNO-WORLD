@@ -1,6 +1,5 @@
-import { raw, Request, Response } from 'express'
+import { Request, Response } from 'express'
 import db from '../database/db'
-import { error } from 'console'
 
 const dotenv = require('dotenv')
 dotenv.config()
@@ -31,6 +30,7 @@ export const create_day_night_staking = async (req: Request, res: Response) => {
         await t.none(`INSERT INTO govno_db.day_staking(user_id, amount, potencial_win, last_claim)  VALUES($1, $2, $3, $4)`, [user_id, amount, amount * 1.05, last_claim])
 
         res.status(200).json(`Создал дневной стейк`)
+        return
       } else if (stake_type === 'night') {
         if (currentHour >= 6) {
           res.status(403).json({ error: 'Ночной стейк можно создавать только с 00:00 до 05:59' })
@@ -40,13 +40,14 @@ export const create_day_night_staking = async (req: Request, res: Response) => {
         await t.none(`INSERT INTO govno_db.night_staking(user_id, amount, potencial_win, last_claim)  VALUES($1, $2, $3, $4)`, [user_id, amount, amount * 1.15, last_claim])
 
         res.status(200).json(`Создал ночной стейк`)
+        return
       } else if (stake_type === 'super') {
         await t.none(`INSERT INTO govno_db.super_staking(user_id, amount, potencial_win, last_claim)  VALUES($1, $2, $3, $4)`, [user_id, amount, amount * 1.3, last_claim])
 
         res.status(200).json(`Создал супер стейк`)
+        return
       }
     })
-    res.sendStatus(200)
   } catch (error) {
     console.error('Ошибка при добавлении стейкинга:', error)
   }
@@ -96,7 +97,7 @@ export const get_staking_active = async (req: Request, res: Response) => {
   }
 }
 
-export const update_day_staking = async (req: Request, res: Response) => {
+export const update_stakings = async (req: Request, res: Response) => {
   const { user_id, stake_id, stake_type } = req.query
 
   if (!user_id || !stake_id) {
@@ -106,51 +107,163 @@ export const update_day_staking = async (req: Request, res: Response) => {
 
   try {
     const claim_time = new Date()
+    const currentHour = claim_time.getHours()
 
     await db.tx(async (t) => {
-      const row = await t.oneOrNone(
-        `
-          SELECT last_claim, gambler_level
-          FROM govno_db.day_staking
-          WHERE user_id = $1 AND id = $2
-          `,
-        [user_id, stake_id]
-      )
+      if (stake_type === 'day') {
+        if (currentHour < 6 || currentHour >= 24) {
+          res.status(403).json({ error: 'Дневной стейк можно подтвердить только с 06:00 до 23:59' })
+          return
+        }
 
-      if (!row) {
-        res.status(404).json({ error: 'Стейкинг не найден' })
+        const row = await t.oneOrNone(
+          `
+            SELECT last_claim, gambler_level
+            FROM govno_db.day_staking
+            WHERE user_id = $1 AND id = $2
+            `,
+          [user_id, stake_id]
+        )
+
+        if (!row) {
+          res.status(404).json({ error: 'Стейкинг не найден' })
+          return
+        }
+
+        const lastClaimTime = new Date(row.last_claim)
+        const level = parseInt(row.gambler_level) || 0
+
+        // Базовая точка отсчёта: сутки от прошлого клима
+        const nextWindowStart = new Date(lastClaimTime)
+        nextWindowStart.setDate(nextWindowStart.getDate() + 1)
+
+        // Устанавливаем длительность окна по уровню
+        let windowMinutes = 5
+        if (level === 1) windowMinutes = 2.5
+        else if (level >= 2) windowMinutes = 1.25
+
+        const windowEnd = new Date(nextWindowStart.getTime() + windowMinutes * 60 * 1000)
+
+        if (claim_time < nextWindowStart || claim_time > windowEnd) {
+          res.status(403).json({ error: 'Вы не попали в окно подтверждения' })
+          return
+        }
+
+        await t.none(
+          `
+            UPDATE govno_db.day_staking 
+            SET days_completed = days_completed + 1, last_claim = $1
+            WHERE user_id = $2 AND id = $3
+            `,
+          [claim_time, user_id, stake_id]
+        )
+
+        res.status(200).json({ last_claim: claim_time })
+        return
+      } else if (stake_type === 'night') {
+        if (currentHour >= 6) {
+          res.status(403).json({ error: 'Ночной стейк можно подтвердить только с 00:00 до 05:59' })
+          return
+        }
+        const row = await t.oneOrNone(
+          `
+            SELECT last_claim, gambler_level
+            FROM govno_db.night_staking
+            WHERE user_id = $1 AND id = $2
+            `,
+          [user_id, stake_id]
+        )
+
+        if (!row) {
+          res.status(404).json({ error: 'Стейкинг не найден' })
+          return
+        }
+
+        const lastClaimTime = new Date(row.last_claim)
+        const level = parseInt(row.gambler_level) || 0
+
+        // Базовая точка отсчёта: сутки от прошлого клима
+        const nextWindowStart = new Date(lastClaimTime)
+        nextWindowStart.setDate(nextWindowStart.getDate() + 1)
+
+        // Устанавливаем длительность окна по уровню
+        let windowMinutes = 15
+        if (level === 1) windowMinutes = 7.5
+        else if (level >= 2) windowMinutes = 3.25
+        else if (level >= 3) windowMinutes = 1.6
+
+        const windowEnd = new Date(nextWindowStart.getTime() + windowMinutes * 60 * 1000)
+
+        if (claim_time < nextWindowStart || claim_time > windowEnd) {
+          res.status(403).json({ error: 'Вы не попали в окно подтверждения' })
+          return
+        }
+
+        await t.none(
+          `
+            UPDATE govno_db.night_staking 
+            SET days_completed = days_completed + 1, last_claim = $1
+            WHERE user_id = $2 AND id = $3
+            `,
+          [claim_time, user_id, stake_id]
+        )
+
+        res.status(200).json({ last_claim: claim_time })
+        return
+      } else if (stake_type === 'super') {
+        const row = await t.oneOrNone(
+          `
+          SELECT last_claim, deadline_time, days_completed, amount, potencial_win
+          FROM govno_db.super_staking
+          WHERE user_id = $1 AND id = $2 AND is_active = true AND burned = false
+          `,
+          [user_id, stake_id]
+        )
+
+        if (!row) {
+          res.status(404).json({ error: 'Суперстейк не найден или не активен' })
+          return
+        }
+
+        const lastClaimTime = new Date(row.last_claim)
+        let deadlineTime = row.deadline_time
+        // Вычисляем разницу между временем текущего клика и предыдущим кликом
+        const timeDelay = claim_time.getTime() - lastClaimTime.getTime()
+
+        // Переводим миллисекунды в минуты
+        const minutesDelay = timeDelay / (1000 * 60) - 1440
+
+        console.log(`Time elapsed: ${minutesDelay} minutes`)
+
+        if (minutesDelay < 0) {
+          res.status(403).json({ error: 'Еще не время' })
+          return
+        }
+        console.log(`Time elapsed: ${minutesDelay} minutes`)
+
+        if (minutesDelay >= deadlineTime) {
+          res.status(403).json({ error: 'Ты обосрался с опозданием и стейк сгорел' })
+          burn_stake(user_id, stake_id, 'super')
+          return
+        }
+        deadlineTime -= minutesDelay
+
+        if (deadlineTime < 0) {
+          res.status(403).json({ error: 'Ты обосрался и стейк сгорел' })
+          burn_stake(user_id, stake_id, 'super')
+          return
+        }
+        console.log(`У тебя осталось `, deadlineTime)
+
+        await t.none(
+          `UPDATE govno_db.super_staking
+           SET days_completed = days_completed + 1, last_claim = $1, deadline_time = $2
+           WHERE user_id = $3 AND id = $4 `,
+          [claim_time, deadlineTime, user_id, stake_id]
+        )
+        res.status(200).json({ last_claim: claim_time })
         return
       }
-
-      const lastClaimTime = new Date(row.last_claim)
-      const level = parseInt(row.gambler_level) || 0
-
-      // Базовая точка отсчёта: сутки от прошлого клима
-      const nextWindowStart = new Date(lastClaimTime)
-      nextWindowStart.setDate(nextWindowStart.getDate() + 1)
-
-      // Устанавливаем длительность окна по уровню
-      let windowMinutes = 5
-      if (level === 1) windowMinutes = 2.5
-      else if (level >= 2) windowMinutes = 1.25
-
-      const windowEnd = new Date(nextWindowStart.getTime() + windowMinutes * 60 * 1000)
-
-      if (claim_time < nextWindowStart || claim_time > windowEnd) {
-        res.status(403).json({ error: 'Вы не попали в окно подтверждения' })
-        return
-      }
-
-      await t.none(
-        `
-          UPDATE govno_db.day_staking 
-          SET days_completed = days_completed + 1, last_claim = $1
-          WHERE user_id = $2 AND id = $3
-          `,
-        [claim_time, user_id, stake_id]
-      )
-
-      res.status(200).json({ last_claim: claim_time })
     })
   } catch (error) {
     console.error('Ошибка при обновлении стейкинга:', error)
@@ -365,76 +478,6 @@ export const staking_cashout = async (req: Request, res: Response) => {
     res.sendStatus(200)
   } catch (error) {
     console.error('Ошибка при распределении денег со стейка: ', error)
-    res.sendStatus(500)
-  }
-}
-
-export const update_super_staking = async (req: Request, res: Response) => {
-  const { user_id, stake_id } = req.query
-
-  if (!user_id || !stake_id) {
-    res.sendStatus(401)
-    return
-  }
-
-  try {
-    const claim_time = new Date()
-
-    await db.tx(async (t) => {
-      const row = await t.oneOrNone(
-        `
-        SELECT last_claim, deadline_time, days_completed, amount, potencial_win
-        FROM govno_db.super_staking
-        WHERE user_id = $1 AND id = $2 AND is_active = true AND burned = false
-        `,
-        [user_id, stake_id]
-      )
-
-      if (!row) {
-        res.status(404).json({ error: 'Суперстейк не найден или не активен' })
-        return
-      }
-
-      const lastClaimTime = new Date(row.last_claim)
-      let deadlineTime = row.deadline_time
-      // Вычисляем разницу между временем текущего клика и предыдущим кликом
-      const timeDelay = claim_time.getTime() - lastClaimTime.getTime()
-
-      // Переводим миллисекунды в минуты
-      const minutesDelay = timeDelay / (1000 * 60) - 1440
-
-      console.log(`Time elapsed: ${minutesDelay} minutes`)
-
-      if (minutesDelay < 0) {
-        res.status(403).json({ error: 'Еще не время' })
-        return
-      }
-      console.log(`Time elapsed: ${minutesDelay} minutes`)
-
-      if (minutesDelay >= deadlineTime) {
-        res.status(403).json({ error: 'Ты обосрался с опозданием и стейк сгорел' })
-        burn_stake(user_id, stake_id, 'super')
-        return
-      }
-      deadlineTime -= minutesDelay
-
-      if (deadlineTime < 0) {
-        res.status(403).json({ error: 'Ты обосрался и стейк сгорел' })
-        burn_stake(user_id, stake_id, 'super')
-        return
-      }
-      console.log(`У тебя осталось `, deadlineTime)
-
-      await t.none(
-        `UPDATE govno_db.super_staking
-         SET days_completed = days_completed + 1, last_claim = $1, deadline_time = $2
-         WHERE user_id = $3 AND id = $4 `,
-        [claim_time, deadlineTime, user_id, stake_id]
-      )
-      res.status(200).json({ last_claim: claim_time })
-    })
-  } catch (error) {
-    console.error('Ошибка при обновлении суперстейкинга:', error)
     res.sendStatus(500)
   }
 }
