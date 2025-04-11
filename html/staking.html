@@ -230,6 +230,10 @@
           } else {
             endpoint = `/staking/update_stakings?user_id=${user_id}&stake_id=${stake.id}&stake_type=day`
           }
+          try {
+          } catch (error) {
+            console.error('Ошибка при обновлении стейка:', error)
+          }
 
           if (stake.days_completed >= 10) {
             const modal = document.getElementById('modal')

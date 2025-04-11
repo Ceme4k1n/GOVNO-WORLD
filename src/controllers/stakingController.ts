@@ -144,8 +144,13 @@ export const update_stakings = async (req: Request, res: Response) => {
 
         const windowEnd = new Date(nextWindowStart.getTime() + windowMinutes * 60 * 1000)
 
-        if (claim_time < nextWindowStart || claim_time > windowEnd) {
-          res.status(403).json({ error: 'Вы не попали в окно подтверждения' })
+        if (claim_time < nextWindowStart) {
+          res.status(405).json({ error: 'Вы слишком рано' })
+          return
+        }
+        if (claim_time > windowEnd) {
+          res.status(406).json({ error: 'Вы опоздали' })
+          burn_stake(user_id, stake_id, 'day')
           return
         }
 
@@ -194,8 +199,13 @@ export const update_stakings = async (req: Request, res: Response) => {
 
         const windowEnd = new Date(nextWindowStart.getTime() + windowMinutes * 60 * 1000)
 
-        if (claim_time < nextWindowStart || claim_time > windowEnd) {
-          res.status(403).json({ error: 'Вы не попали в окно подтверждения' })
+        if (claim_time < nextWindowStart) {
+          res.status(405).json({ error: 'Вы слишком рано' })
+          return
+        }
+        if (claim_time > windowEnd) {
+          res.status(406).json({ error: 'Вы опоздали' })
+          burn_stake(user_id, stake_id, 'night')
           return
         }
 
@@ -236,20 +246,20 @@ export const update_stakings = async (req: Request, res: Response) => {
         console.log(`Time elapsed: ${minutesDelay} minutes`)
 
         if (minutesDelay < 0) {
-          res.status(403).json({ error: 'Еще не время' })
+          res.status(405).json({ error: 'Еще не время' })
           return
         }
         console.log(`Time elapsed: ${minutesDelay} minutes`)
 
         if (minutesDelay >= deadlineTime) {
-          res.status(403).json({ error: 'Ты обосрался с опозданием и стейк сгорел' })
+          res.status(406).json({ error: 'Ты обосрался с опозданием и стейк сгорел' })
           burn_stake(user_id, stake_id, 'super')
           return
         }
         deadlineTime -= minutesDelay
 
         if (deadlineTime < 0) {
-          res.status(403).json({ error: 'Ты обосрался и стейк сгорел' })
+          res.status(406).json({ error: 'Ты обосрался и стейк сгорел' })
           burn_stake(user_id, stake_id, 'super')
           return
         }
@@ -484,22 +494,33 @@ export const staking_cashout = async (req: Request, res: Response) => {
 
 async function burn_stake(user_id: any, stake_id: any, stake_type: string) {
   try {
-    // Проверка на валидность чисел
     if (isNaN(user_id) || isNaN(stake_id) || !stake_type) {
       console.error('Данные не валидны:', { user_id, stake_id, stake_type })
       return
     }
 
     await db.tx(async (t) => {
+      let stake
       if (stake_type === 'day') {
-        await t.none(`UPDATE govno_db.day_staking SET is_active = false, burned = true WHERE user_id = $1 AND id = $2`, [user_id, stake_id])
+        stake = await t.oneOrNone(`UPDATE govno_db.day_staking SET is_active = false, burned = true WHERE user_id = $1 AND id = $2  RETURNING amount`, [user_id, stake_id])
       } else if (stake_type === 'night') {
-        // Сделать позже
+        stake = await t.oneOrNone(`UPDATE govno_db.night_staking SET is_active = false, burned = true WHERE user_id = $1 AND id = $2  RETURNING amount`, [user_id, stake_id])
       } else if (stake_type === 'super') {
-        await t.none(`UPDATE govno_db.super_staking SET is_active = false, burned = true WHERE user_id = $1 AND id = $2`, [user_id, stake_id])
+        stake = await t.oneOrNone(`UPDATE govno_db.super_staking SET is_active = false, burned = true WHERE user_id = $1 AND id = $2 RETURNING amount`, [user_id, stake_id])
       }
+      const { amount } = stake
+      await t.none(
+        `
+          INSERT INTO govno_db.stake_platform_profits 
+            (user_id, stake_id_${stake_type}, stake_type, action, payout, amount, profit)
+          VALUES ($1, $2, $3, 'burn', $4, $5, $6)
+        `,
+        [user_id, stake_id, stake_type, 0, amount, amount]
+      )
     })
   } catch (error) {
     console.error('Ошибка при сгорании стейка:', error)
   }
 }
+
+async function check_stakes_to_burn() {}
