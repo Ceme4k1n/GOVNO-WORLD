@@ -73,6 +73,25 @@ export const update_shit = async (req: Request, res: Response) => {
         [user_id, lat, lon, visitCount + 1, city]
       )
 
+      await db.none(
+        `
+        DO $$
+        DECLARE
+          uid BIGINT := $1;
+        BEGIN
+          UPDATE govno_db.users
+          SET app_balance = app_balance + 0.01
+          WHERE tg_user_id = uid;
+      
+          UPDATE govno_db.our_loss
+          SET poop_payout = poop_payout - 0.01
+          WHERE id = TRUE;
+        END
+        $$;
+      `,
+        [user_id]
+      )
+
       if (places_index.length > 0) {
         const insertPromises = places_index.map((placeIndex: number) =>
           t.none(
@@ -95,7 +114,7 @@ export const update_shit = async (req: Request, res: Response) => {
 
 export const get_shits = async (req: Request, res: Response) => {
   try {
-    const shitMarks = await db.any(`SELECT visit_lat as lat, visit_lon as lon, date FROM govno_db.govno_map ORDER BY date DESC`)
+    const shitMarks = await db.any(`SELECT visit_lat as lat, visit_lon as lon, shit_skin as skin, date FROM govno_db.govno_map ORDER BY date DESC`)
     console.log(shitMarks)
 
     res.status(200).json({ shits: shitMarks })

@@ -82,6 +82,7 @@
 
     <div class="bottom-buttons">
       <button id="bigWalkBtn">Покакать</button>
+      <audio id="clickSound" src="./dry-fart.mp3" preload="auto"></audio>
     </div>
 
     <div id="log"></div>
@@ -221,7 +222,10 @@
           selectButton = 'shit'
           reloadMap()
           loadShits()
-
+          const sound = document.getElementById('clickSound')
+          sound.play().catch((error) => {
+            console.error('Ошибка при воспроизведении звука:', error)
+          })
           try {
             const lastShitTime = localStorage.getItem('lastShitTime')
 
@@ -241,13 +245,13 @@
             }
             updateMapPosition(location)
 
-            if (lastShitTime) {
-              const timeDiff = (now - parseInt(lastShitTime)) / 60000 // Разница в минутах
-              if (timeDiff < 60) {
-                alert(`Следующий поход в туалет доступен через ${Math.ceil(60 - timeDiff)} минут`)
-                return
-              }
-            }
+            // if (lastShitTime) {
+            //   const timeDiff = (now - parseInt(lastShitTime)) / 60000 // Разница в минутах
+            //   if (timeDiff < 60) {
+            //     alert(`Следующий поход в туалет доступен через ${Math.ceil(60 - timeDiff)} минут`)
+            //     return
+            //   }
+            // }
 
             addLog('📍 Отправляем данные на сервер...')
 
@@ -286,6 +290,14 @@
                   })
                   L.marker([lat, lon], { icon: poopIcon }).addTo(map)
                   map.setView([lat, lon], 20)
+
+                  try {
+                    const cached = JSON.parse(localStorage.getItem('cachedShits') || '[]')
+                    cached.push({ lat, lon, skin: 0, date: new Date() })
+                    localStorage.setItem('cachedShits', JSON.stringify(cached))
+                  } catch (e) {
+                    console.error('❌ Ошибка обновления кеша:', e)
+                  }
                 } else if (response.status === 401) {
                   addLog('Ты покакал уже 5 раз, больше сегодня нельзя')
                   throw new Error('401 Unauthorized')
@@ -488,9 +500,33 @@
             return
           }
 
+          // Выбираем иконку на основе значения skin
+          let iconUrl
+          switch (shit.skin) {
+            case 0:
+              iconUrl = 'https://cdn-icons-png.flaticon.com/128/8277/8277628.png' // Дефолтная иконка
+              break
+            case 1:
+              iconUrl = 'https://i.imgur.com/eznSQgw.png' // Иконка для скина 1
+              break
+            case 2:
+              iconUrl = 'https://cdn-icons-png.flaticon.com/128/1719/1719654.png' // Иконка для скина 2
+              break
+            case 3:
+              iconUrl = 'https://cdn-icons-png.flaticon.com/128/1719/1719655.png' // Иконка для скина 3
+              break
+            case 4:
+              iconUrl = 'https://cdn-icons-png.flaticon.com/128/1719/1719656.png' // Иконка для скина 4
+              break
+            default:
+              iconUrl = 'https://cdn-icons-png.flaticon.com/128/8277/8277628.png' // Иконка по умолчанию
+              break
+          }
+
+          // Создаем иконку с выбранным URL
           const poopIcon = L.divIcon({
             className: 'poop-icon',
-            html: `<img src="https://cdn-icons-png.flaticon.com/128/8277/8277628.png" style="width: 40px; height: 40px;"/>`,
+            html: `<img src="${iconUrl}" style="width: 40px; height: 40px;"/>`,
           })
 
           L.marker([lat, lon], { icon: poopIcon }).addTo(map)

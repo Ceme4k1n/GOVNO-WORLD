@@ -175,6 +175,8 @@
         <button id="modal-cashout">Забрать</button>
       </div>
     </div>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
     <script>
       const input = document.querySelector("input[type='number']")
       const createBtn = document.getElementById('stake-day-btn')
@@ -182,8 +184,7 @@
       const superBtn = document.getElementById('super-stake-btn')
       const cardsContainer = document.getElementById('staking-cards-container')
 
-      const user_id = 1029163005
-      const API_URL = 'http://localhost:443'
+      const user_id = window.Telegram.WebApp.initDataUnsafe.user.id
 
       let lastFetchTime = 0
       const MIN_FETCH_INTERVAL = 5000
@@ -254,7 +255,7 @@
 
             modalContinue.onclick = async () => {
               modal.style.display = 'none'
-              await fetch(`${API_URL}/staking/update_gambler_level`, {
+              await fetch(`/staking/update_gambler_level`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -268,7 +269,7 @@
 
             modalCashout.onclick = async () => {
               modal.style.display = 'none'
-              await fetch(`${API_URL}/staking/staking_cashout`, {
+              await fetch(`/staking/staking_cashout`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -283,7 +284,7 @@
             return
           }
 
-          const res = await fetch(`${API_URL}${endpoint}`)
+          const res = await fetch(`${endpoint}`)
           if (res.ok) await fetchAndRenderStakes(true)
         })
 
@@ -330,7 +331,7 @@
           return
         }
 
-        const res = await fetch(`${API_URL}/staking/get_staking_active?user_id=${user_id}`)
+        const res = await fetch(`/staking/get_staking_active?user_id=${user_id}`)
         const data = await res.json()
         localStorage.setItem('cachedStakes', JSON.stringify(data))
         localStorage.setItem('cachedStakesTimestamp', Date.now().toString())
@@ -347,7 +348,7 @@
         const amount = parseFloat(input.value)
         if (isNaN(amount) || amount <= 0) return alert('Введите корректную сумму (> 0)')
 
-        const res = await fetch(`${API_URL}/staking/create_day_night_staking`, {
+        const res = await fetch(`/staking/create_day_night_staking`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id, amount, stake_type: 'day' }),
@@ -362,7 +363,7 @@
       createNightBtn.addEventListener('click', async () => {
         const amount = parseFloat(input.value)
         if (isNaN(amount) || amount <= 0) return alert('Введите корректную сумму (> 0)')
-        const res = await fetch(`${API_URL}/staking/create_day_night_staking`, {
+        const res = await fetch(`/staking/create_day_night_staking`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id, amount, stake_type: 'night' }),
@@ -377,7 +378,7 @@
         const amount = parseFloat(input.value)
         if (isNaN(amount) || amount <= 0) return alert('Введите корректную сумму (> 0)')
 
-        const res = await fetch(`${API_URL}/staking/create_day_night_staking`, {
+        const res = await fetch(`/staking/create_day_night_staking`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id, amount, stake_type: 'super' }),
