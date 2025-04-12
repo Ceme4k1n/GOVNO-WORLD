@@ -24,7 +24,7 @@ cron.schedule('24 20 * * *', async () => {
   end_cites_and_countries_tours()
 })
 
-cron.schedule('* * * * *', async () => {
-  console.log('Я запустился')
-  check_stakes_to_burn()
-})
+// cron.schedule('* * * * *', async () => {
+//   console.log('Я запустился')
+//   check_stakes_to_burn()
+// })

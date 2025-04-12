@@ -254,10 +254,26 @@
             const lat = location.latitude + Math.random() / 10000
             const lon = location.longitude - Math.random() / 10000
 
+            let nearbyIndexes = []
+
+            for (let i = 0; i < places.length; i++) {
+              const place = places[i]
+              if (isWithinRadius(lat, lon, place.lat, place.lng, 300)) {
+                nearbyIndexes.push(i)
+              }
+            }
+
+            if (nearbyIndexes.length === 0) {
+              addLog('📭 Поблизости нет доступных мест.')
+              addLog('Результат: []')
+            } else {
+              addLog('Результат: [' + nearbyIndexes.join(', ') + ']')
+            }
+
             fetch('/map/update_shit', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ initDataUnsafe, lat, lon }),
+              body: JSON.stringify({ initDataUnsafe, lat, lon, places_index: nearbyIndexes }),
             })
               .then((response) => {
                 if (response.status === 200) {
@@ -404,11 +420,13 @@
 
           const poopIcon = L.divIcon({
             className: 'poop-icon',
-            html: `<img src="https://cdn-icons-png.flaticon.com/128/1719/1719653.png" 
+            html: `<img src="https://cdn-icons-png.flaticon.com/128/1719/1719653.png"
              style="width: ${30 + shitCount * 2}px; height: ${30 + shitCount * 2}px;"/>`,
           })
 
           L.marker([lat, lon], { icon: poopIcon }).addTo(map).bindPopup(`<b>${city.city}</b><br>💩 Количество посеров: ${shitCount}`)
+
+          addStaticMarkers()
         })
       }
 
@@ -425,11 +443,38 @@
 
           const poopIcon = L.divIcon({
             className: 'poop-icon',
-            html: `<img src="https://cdn-icons-png.flaticon.com/128/1719/1719653.png" 
+            html: `<img src="https://cdn-icons-png.flaticon.com/128/1719/1719653.png"
              style="width: ${30 + shitCount * 2}px; height: ${30 + shitCount * 2}px;"/>`,
           })
 
           L.marker([lat, lon], { icon: poopIcon }).addTo(map).bindPopup(`<b>${country.country}</b><br>💩 Количество посеров: ${shitCount}`)
+
+          addStaticMarkers()
+        })
+      }
+
+      function addStaticMarkers() {
+        places.forEach((place) => {
+          const lat = parseFloat(place.lat)
+          const lng = parseFloat(place.lng)
+
+          if (isNaN(lat) || isNaN(lng)) {
+            console.error('❌ Некорректные координаты:', place)
+            return
+          }
+
+          // Используем divIcon вместо L.icon
+          const placeIcon = L.divIcon({
+            className: 'custom-icon',
+            html: `<img src="${place.iconUrl}" style="width: 40px; height: 40px;"/>`,
+          })
+
+          // Создаем маркер с divIcon
+          const marker = L.marker([lat, lng], { icon: placeIcon }).addTo(map).bindPopup(`<b>${place.title}</b><br>${place.type}<br>${place.city}`)
+
+          marker.on('click', () => {
+            addLog(`📍 ${place.title} — ${place.city}`)
+          })
         })
       }
 
@@ -449,6 +494,8 @@
           })
 
           L.marker([lat, lon], { icon: poopIcon }).addTo(map)
+
+          addStaticMarkers()
         })
       }
 
@@ -504,6 +551,105 @@
           addLog('❌ Ошибка: ' + error.message)
         }
       }
+
+      function isWithinRadius(userLat, userLng, targetLat, targetLng, radiusMeters = 300) {
+        const userPoint = L.latLng(userLat, userLng)
+        const targetPoint = L.latLng(targetLat, targetLng)
+
+        const distance = map.distance(userPoint, targetPoint) // в метрах
+
+        return distance <= radiusMeters
+      }
+
+      const places = [
+        {
+          title: '🏢 Telegram FZ LLC (официальный офис)',
+          type: 'Офис',
+          city: 'Дубай, ОАЭ',
+          lat: 25.1002,
+          lng: 55.1693,
+          iconUrl: 'https://i.imgur.com/eznSQgw.png', // Можно заменить на свой URL
+          iconSize: [40, 40],
+          iconAnchor: [20, 40], // Центр иконки по основанию
+          popupAnchor: [0, -35], // Смещение popup над иконкой
+        },
+        {
+          title: '🧠 TON Foundation (юридическая штаб-квартира)',
+          type: 'Офис',
+          city: 'Цуг, Швейцария',
+          lat: 47.1741,
+          lng: 8.5178,
+          iconUrl: 'https://i.imgur.com/1DwAMm9.png', // Можно заменить на свой URL
+          iconSize: [40, 40],
+          iconAnchor: [20, 40], // Центр иконки по основанию
+          popupAnchor: [0, -35], // Смещение popup над иконкой
+        },
+        {
+          title: '🧠 Вилла Паши Дурова',
+          type: 'Вилла',
+          city: 'Дубай, ОАЭ',
+          lat: 25.11206,
+          lng: 55.1378,
+          iconUrl: 'https://i.imgur.com/1DwAMm9.png', // Можно заменить на свой URL
+          iconSize: [40, 40],
+          iconAnchor: [20, 40], // Центр иконки по основанию
+          popupAnchor: [0, -35], // Смещение popup над иконкой
+        },
+        {
+          title: '🧠 Спортзал Паши Дурова',
+          type: 'Спортзал',
+          city: 'Дубай, ОАЭ',
+          lat: 25.19696,
+          lng: 55.27836,
+          iconUrl: 'https://i.imgur.com/1DwAMm9.png', // Можно заменить на свой URL
+          iconSize: [40, 40],
+          iconAnchor: [20, 40], // Центр иконки по основанию
+          popupAnchor: [0, -35], // Смещение popup над иконкой
+        },
+        {
+          title: '🧠 Дом Паши Дурова во Франции',
+          type: 'Дом',
+          city: 'Париж, Франция',
+          lat: 49.43921,
+          lng: 0.30993,
+          iconUrl: 'https://i.imgur.com/1DwAMm9.png', // Можно заменить на свой URL
+          iconSize: [40, 40],
+          iconAnchor: [20, 40], // Центр иконки по основанию
+          popupAnchor: [0, -35], // Смещение popup над иконкой
+        },
+        {
+          title: '🧠 База Спермикса',
+          type: 'База',
+          city: 'Дубай, ОАЭ',
+          lat: 25.10155,
+          lng: 55.16452,
+          iconUrl: 'https://i.imgur.com/1DwAMm9.png', // Можно заменить на свой URL
+          iconSize: [40, 40],
+          iconAnchor: [20, 40], // Центр иконки по основанию
+          popupAnchor: [0, -35], // Смещение popup над иконкой
+        },
+        {
+          title: '🧠 База Саши Ноткоинера',
+          type: 'База',
+          city: 'Дубай, ОАЭ',
+          lat: 25.22825,
+          lng: 55.28448,
+          iconUrl: 'https://i.imgur.com/1DwAMm9.png', // Можно заменить на свой URL
+          iconSize: [40, 40],
+          iconAnchor: [20, 40], // Центр иконки по основанию
+          popupAnchor: [0, -35], // Смещение popup над иконкой
+        },
+        {
+          title: '🧠 Мое место',
+          lat: 55.962,
+          lng: 37.9216,
+        },
+        {
+          title: '🧠 Мое место 2',
+          lat: 55.962,
+          lng: 37.9216,
+        },
+      ]
     </script>
   </body>
 </html>

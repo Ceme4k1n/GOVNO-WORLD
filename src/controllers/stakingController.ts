@@ -542,11 +542,9 @@ export async function check_stakes_to_burn() {
       if (burnedStakes.length > 0) {
         console.log(`🔥 Сгорело ${burnedStakes.length} дневных стейков:`)
 
-        // Добавляем информацию о сгоревших стейках в таблицу с профитом
         for (const stake of burnedStakes) {
           const { user_id, id: stake_id, amount } = stake
 
-          // Запись о сгоревшем стейке
           await t.none(
             `
             INSERT INTO govno_db.stake_platform_profits 
@@ -562,7 +560,6 @@ export async function check_stakes_to_burn() {
         console.log('✅ Нет сгоревших дневных стейков.')
       }
 
-      // Проверяем и сжигаем ночные стейки
       const burnedNightStakes = await t.any(`
         UPDATE govno_db.night_staking
         SET burned = TRUE,
@@ -596,7 +593,6 @@ export async function check_stakes_to_burn() {
         console.log('✅ Нет сгоревших ночных стейков.')
       }
 
-      // Проверяем и сжигаем суперстейки
       const burnedSuperStakes = await t.any(`
         UPDATE govno_db.super_staking
         SET burned = TRUE,

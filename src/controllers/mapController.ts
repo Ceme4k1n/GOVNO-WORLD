@@ -5,9 +5,9 @@ const dotenv = require('dotenv')
 dotenv.config()
 
 export const update_shit = async (req: Request, res: Response) => {
-  const { initDataUnsafe, lat, lon } = req.body
+  const { initDataUnsafe, lat, lon, places_index } = req.body
 
-  if (!initDataUnsafe) {
+  if (!initDataUnsafe || !lat || !lon || !places_index) {
     res.sendStatus(403)
     return
   }
@@ -15,65 +15,78 @@ export const update_shit = async (req: Request, res: Response) => {
   const user_id = initDataUnsafe?.user?.id
 
   try {
-    const result = await db.oneOrNone(
-      `SELECT COUNT(*) AS visit_count, MAX(visit_time) AS last_visit_time
-       FROM govno_db.govno_map 
-       WHERE user_id = $1 AND date = CURRENT_DATE`,
-      [user_id]
-    )
+    await db.tx(async (t) => {
+      // Получаем количество визитов и время последнего визита для текущего пользователя
+      const result = await t.oneOrNone(
+        `SELECT COUNT(*) AS visit_count, MAX(visit_time) AS last_visit_time
+         FROM govno_db.govno_map 
+         WHERE user_id = $1 AND date = CURRENT_DATE`,
+        [user_id]
+      )
 
-    const visitCount = parseInt(result?.visit_count) || 0
-    const lastVisitTime = result?.last_visit_time ? new Date(result.last_visit_time) : null
-    const now = new Date()
+      const visitCount = parseInt(result?.visit_count) || 0
+      const lastVisitTime = result?.last_visit_time ? new Date(result.last_visit_time) : null
+      const now = new Date()
 
-    if (visitCount >= 5) {
-      res.status(401).json({ message: 'Вы уже покакали 5 раз за день, хватит!' })
-      return
-    }
-
-    if (lastVisitTime) {
-      const diffInMinutes = Math.floor((now.getTime() - lastVisitTime.getTime()) / 60000)
-      if (diffInMinutes < 60) {
-        res.status(429).json({ message: `Следующий поход в туалет доступен через ${60 - diffInMinutes} минут` })
+      // Проверка на лимит количества визитов за день
+      if (visitCount >= 5) {
+        res.status(401).json({ message: 'Вы уже покакали 5 раз за день, хватит!' })
         return
       }
-    }
 
-    const city = await getCityFromCoords(lat, lon)
-    const country = await getCountryFromCoords(lat, lon)
+      // Проверка на интервал между визитами
+      if (lastVisitTime) {
+        const diffInMinutes = Math.floor((now.getTime() - lastVisitTime.getTime()) / 60000)
+        if (diffInMinutes < 60) {
+          res.status(429).json({ message: `Следующий поход в туалет доступен через ${60 - diffInMinutes} минут` })
+          return
+        }
+      }
 
-    const govno = await db.one(
-      `WITH 
-        city_insert AS (
-          INSERT INTO govno_db.govno_cities(city_name, lat, lon, shit_count) 
-          VALUES($1, $2, $3, 1)
-          ON CONFLICT (city_name) 
-          DO UPDATE SET shit_count = govno_db.govno_cities.shit_count + 1 
-          RETURNING city_id
-        ),
-        country_insert AS (
-          INSERT INTO govno_db.govno_countries(country_name, lat, lon, shit_count) 
-          VALUES($4, $5, $6, 1)
-          ON CONFLICT (country_name) 
-          DO UPDATE SET shit_count = govno_db.govno_countries.shit_count + 1 
-          RETURNING country_id
+      // Получаем информацию о городе и стране по координатам
+      const city = await getCityFromCoords(lat, lon)
+      const country = await getCountryFromCoords(lat, lon)
+
+      // Вставляем или обновляем данные о городе и стране в базу данных
+      await t.one(
+        `WITH 
+          city_insert AS (
+            INSERT INTO govno_db.govno_cities(city_name, lat, lon, shit_count) 
+            VALUES($1, $2, $3, 1)
+            ON CONFLICT (city_name) 
+            DO UPDATE SET shit_count = govno_db.govno_cities.shit_count + 1
+          ),
+          country_insert AS (
+            INSERT INTO govno_db.govno_countries(country_name, lat, lon, shit_count) 
+            VALUES($4, $5, $6, 1)
+            ON CONFLICT (country_name) 
+            DO UPDATE SET shit_count = govno_db.govno_countries.shit_count + 1
+          )
+        SELECT 1;`, // Здесь добавляем SELECT 1 для завершения запроса
+        [city, lat, lon, country, lat, lon]
+      )
+
+      // Сохраняем запись о визите в таблице govno_map
+      await t.none(
+        `INSERT INTO govno_db.govno_map(user_id, visit_lat, visit_lon, visit_count, date, visit_time, city)
+         VALUES($1, $2, $3, $4, CURRENT_DATE, NOW(), $5)`,
+        [user_id, lat, lon, visitCount + 1, city]
+      )
+
+      if (places_index.length > 0) {
+        const insertPromises = places_index.map((placeIndex: number) =>
+          t.none(
+            `INSERT INTO govno_db.near_position(user_id, place_index) 
+             VALUES($1, $2)
+             ON CONFLICT (user_id, place_index) DO NOTHING`,
+            [user_id, placeIndex]
+          )
         )
-      SELECT city_insert.city_id, country_insert.country_id
-      FROM city_insert, country_insert;`,
-      [city, lat, lon, country, lat, lon]
-    )
+        await Promise.all(insertPromises)
+      }
 
-    console.log('City ID:', govno.city_name)
-    console.log('Country ID:', govno.country_name)
-
-    // Сохраняем запись в БД
-    await db.none(
-      `INSERT INTO govno_db.govno_map(user_id, visit_lat, visit_lon, visit_count, date, visit_time, city)
-       VALUES($1, $2, $3, $4, CURRENT_DATE, NOW(), $5)`,
-      [user_id, lat, lon, visitCount + 1, city]
-    )
-
-    res.sendStatus(200)
+      res.sendStatus(200)
+    })
   } catch (error) {
     console.error(error)
     res.status(500).send('Server error')
