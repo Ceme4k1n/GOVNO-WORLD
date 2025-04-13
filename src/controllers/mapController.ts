@@ -86,6 +86,11 @@ export const update_shit = async (req: Request, res: Response) => {
           UPDATE govno_db.our_loss
           SET poop_payout = poop_payout - 0.01
           WHERE id = TRUE;
+
+          IF NOT FOUND THEN
+            INSERT INTO govno_db.our_loss (id, poop_payout)
+            VALUES (TRUE, -0.01);
+          END IF;
         END
         $$;
       `,

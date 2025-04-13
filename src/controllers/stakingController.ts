@@ -477,10 +477,26 @@ export const staking_cashout = async (req: Request, res: Response) => {
 
       await t.none(
         `
+        DO $$
+        DECLARE
+          _updated INTEGER;
+        BEGIN
           INSERT INTO govno_db.stake_platform_profits 
             (user_id, stake_id_${stake_type}, stake_type, action, payout, amount, profit)
-          VALUES ($1, $2, $3, 'stake_cashout', $4, $5, $6)
-        `,
+          VALUES ($1, $2, $3, 'stake_cashout', $4, $5, $6);
+      
+          UPDATE govno_db.our_loss
+          SET stake_payout = stake_payout + $6
+          WHERE id = TRUE;
+      
+          GET DIAGNOSTICS _updated = ROW_COUNT;
+      
+          IF _updated = 0 THEN
+            INSERT INTO govno_db.our_loss (id, stake_payout)
+            VALUES (TRUE, $6);
+          END IF;
+        END $$;
+      `,
         [user_id, stake_id, stake_type, potencial_win, amount, profit]
       )
     })
