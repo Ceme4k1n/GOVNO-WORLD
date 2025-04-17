@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Магазин скинов</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #121212;
+        color: #fff;
+        margin: 0;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+      }
+      .skins-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+      .skin-card {
+        background-color: #1e1e1e;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .skin-card img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin-bottom: 10px;
+      }
+      .skin-name {
+        font-size: 18px;
+        margin-bottom: 5px;
+      }
+      .skin-price {
+        color: #aaa;
+        margin-bottom: 5px;
+      }
+      .skin-emission {
+        font-size: 12px;
+        color: #777;
+        margin-bottom: 10px;
+      }
+      .buy-button {
+        padding: 8px 16px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      .buy-button:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Магазин скинов</h1>
+    <div class="skins-container" id="skinsContainer"></div>
+
+    <script>
+      const userId = 1029163005 // TODO: заменить на реальный user_id из Telegram WebApp
+      const REFRESH_INTERVAL_MS = 60 * 1000 // 1 минута
+
+      function renderSkins(skins) {
+        const container = document.getElementById('skinsContainer')
+        container.innerHTML = ''
+
+        skins.forEach((skin) => {
+          const card = document.createElement('div')
+          card.className = 'skin-card'
+          card.innerHTML = `
+            <img src="${skin.skin_url}" alt="${skin.skin_name}" />
+            <div class="skin-name">${skin.skin_name}</div>
+            <div class="skin-price">Цена: ${skin.skin_price}₽</div>
+            <div class="skin-emission">Осталось: ${skin.skin_emission}</div>
+            <button class="buy-button" ${skin.skin_emission === 0 ? 'disabled' : ''} onclick="buySkin(${skin.id})">
+              ${skin.skin_emission === 0 ? 'Нет в наличии' : 'Купить'}
+            </button>
+          `
+          container.appendChild(card)
+        })
+      }
+
+      async function fetchSkins() {
+        const now = Date.now()
+        const lastFetch = parseInt(localStorage.getItem('lastSkinsFetch') || '0', 10)
+
+        const cached = localStorage.getItem('cachedSkins')
+        if (cached) {
+          try {
+            const skins = JSON.parse(cached)
+            renderSkins(skins)
+          } catch (e) {
+            console.warn('Не удалось распарсить кэшированные скины')
+          }
+        }
+
+        if (now - lastFetch < REFRESH_INTERVAL_MS) {
+          const secondsLeft = Math.ceil((REFRESH_INTERVAL_MS - (now - lastFetch)) / 1000)
+          console.log(`Обновление с сервера будет доступно через ${secondsLeft} сек.`)
+          return
+        }
+
+        localStorage.setItem('lastSkinsFetch', now.toString())
+
+        try {
+          const res = await fetch('/shop/get_skins')
+          if (!res.ok) throw new Error('Сервер вернул ошибку')
+
+          const skins = await res.json()
+          localStorage.setItem('cachedSkins', JSON.stringify(skins))
+          renderSkins(skins)
+        } catch (err) {
+          console.error('Ошибка загрузки скинов с сервера. Используется кэш.', err)
+        }
+      }
+
+      async function buySkin(skinId) {
+        try {
+          const res = await fetch('/shop/purchase_skin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, skin_id: skinId }),
+          })
+
+          if (res.status === 200) {
+            alert('Скин успешно куплен!')
+            localStorage.setItem('lastSkinsFetch', '0')
+            fetchSkins()
+          } else if (res.status === 403) {
+            alert('Недостаточно средств или скин уже куплен.')
+          } else {
+            alert('Ошибка при покупке.')
+          }
+        } catch (err) {
+          console.error('Ошибка покупки:', err)
+          alert('Сервер недоступен.')
+        }
+      }
+
+      fetchSkins()
+    </script>
+  </body>
+</html>

@@ -7,33 +7,57 @@ dotenv.config()
 
 export const generate_turn = async () => {
   try {
-    // Начинаем транзакцию
     await db.tx(async (t) => {
-      // Получаем все города из таблицы, сортируя по shit_count в убывающем порядке
-      const cities = await t.any('SELECT city_name FROM govno_db.govno_cities ORDER BY shit_count DESC LIMIT 10')
+      const cities = await t.any(`
+        SELECT city_name 
+        FROM govno_db.govno_cities 
+        ORDER BY shit_count DESC 
+        LIMIT 10
+      `)
 
-      // Массив для хранения турнирных пар
-      const tournaments: { player1: string; player2: string }[] = []
+      const cityTournaments: { player1: string; player2: string }[] = []
 
-      // Перебираем города по очереди и формируем пары
       for (let i = 0; i < cities.length - 1; i += 2) {
-        const player1 = cities[i].city_name
-        const player2 = cities[i + 1].city_name
-
-        tournaments.push({ player1, player2 })
+        cityTournaments.push({
+          player1: cities[i].city_name,
+          player2: cities[i + 1].city_name,
+        })
       }
 
-      // Если пар больше 0, добавляем их в таблицу турниров
-      if (tournaments.length > 0) {
-        const tournamentInsertQueries = tournaments.map((tournament) => {
-          return t.none('INSERT INTO govno_db.tournaments(player1, player2) VALUES($1, $2)', [tournament.player1, tournament.player2])
+      if (cityTournaments.length > 0) {
+        const cityInsertQueries = cityTournaments.map((tournament) => {
+          return t.none('INSERT INTO govno_db.tournaments(player1, player2, version_id) VALUES($1, $2, 0)', [tournament.player1, tournament.player2])
         })
-
-        // Выполняем все запросы на добавление турнирных пар в рамках транзакции
-        await Promise.all(tournamentInsertQueries)
-        console.log('Турниры успешно добавлены')
+        await Promise.all(cityInsertQueries)
+        console.log('Турниры по городам успешно добавлены')
       } else {
         console.log('Недостаточно городов для создания турниров')
+      }
+
+      const countries = await t.any(`
+        SELECT country_name 
+        FROM govno_db.govno_countries 
+        ORDER BY shit_count DESC 
+        LIMIT 10
+      `)
+
+      const countryTournaments: { player1: string; player2: string }[] = []
+
+      for (let i = 0; i < countries.length - 1; i += 2) {
+        countryTournaments.push({
+          player1: countries[i].country_name,
+          player2: countries[i + 1].country_name,
+        })
+      }
+
+      if (countryTournaments.length > 0) {
+        const countryInsertQueries = countryTournaments.map((tournament) => {
+          return t.none('INSERT INTO govno_db.tournaments(player1, player2, version_id) VALUES($1, $2, 1)', [tournament.player1, tournament.player2])
+        })
+        await Promise.all(countryInsertQueries)
+        console.log('Турниры по странам успешно добавлены')
+      } else {
+        console.log('Недостаточно стран для создания турниров')
       }
     })
   } catch (error) {

@@ -15,6 +15,7 @@ import profileRouter from './routes/profile'
 import mapRouter from './routes/map'
 import tournament from './routes/tournament'
 import staking from './routes/staking'
+import shop from './routes/shop'
 
 import path from 'path'
 
@@ -37,6 +38,7 @@ app.use('/profile', profileRouter)
 app.use('/map', mapRouter)
 app.use('/turs', tournament)
 app.use('/staking', staking)
+app.use('/shop', shop)
 
 // Комментируем часть для HTTPS
 /*

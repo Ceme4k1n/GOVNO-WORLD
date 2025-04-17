@@ -111,11 +111,6 @@ export const update_stakings = async (req: Request, res: Response) => {
 
     await db.tx(async (t) => {
       if (stake_type === 'day') {
-        if (currentHour < 6 || currentHour >= 24) {
-          res.status(403).json({ error: 'Дневной стейк можно подтвердить только с 06:00 до 23:59' })
-          return
-        }
-
         const row = await t.oneOrNone(
           `
             SELECT last_claim, gambler_level
@@ -166,10 +161,6 @@ export const update_stakings = async (req: Request, res: Response) => {
         res.status(200).json({ last_claim: claim_time })
         return
       } else if (stake_type === 'night') {
-        if (currentHour >= 6) {
-          res.status(403).json({ error: 'Ночной стейк можно подтвердить только с 00:00 до 05:59' })
-          return
-        }
         const row = await t.oneOrNone(
           `
             SELECT last_claim, gambler_level
