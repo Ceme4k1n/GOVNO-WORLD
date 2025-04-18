@@ -70,12 +70,85 @@
         display: flex;
         flex-direction: column-reverse; /* Новый лог сверху */
       }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        padding-top: 60px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      .modal-content {
+        background-color: white;
+        margin: auto;
+        padding: 20px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      }
+
+      .skin-card img {
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+        max-height: 150px;
+        object-fit: contain;
+        border-radius: 8px;
+        background: white;
+        display: block;
+        margin: 0 auto;
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 24px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .close:hover {
+        color: black;
+      }
+
+      .skins-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .skin-card {
+        background-color: #f1f1f1;
+        padding: 10px;
+        text-align: center;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
     </style>
   </head>
   <body>
     <div class="top-buttons">
       <button id="citiesBtn">Города</button>
       <button id="countriesBtn">Страны</button>
+      <button class="button" id="openSkinsBtn">Скины</button>
+    </div>
+
+    <div id="skinsModal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="closeSkinsModal">&times;</span>
+        <h2>Доступные скины</h2>
+        <div id="skinsList" class="skins-container"></div>
+      </div>
     </div>
 
     <div id="map"></div>
@@ -91,9 +164,92 @@
       const tg = window.Telegram.WebApp
       const locationManager = tg.LocationManager
       const initDataUnsafe = tg.initDataUnsafe
+      const user_id = window.Telegram.WebApp.initDataUnsafe.user.id
+
       let selectButton = null
+      const skinButton = document.getElementById('openSkinsBtn')
+      const modal = document.getElementById('skinsModal')
+      const closeBtn = document.getElementById('closeSkinsModal')
+      const skinsList = document.getElementById('skinsList')
+      const SKINS_CACHE_KEY = 'cachedSkins'
+      const SKINS_CACHE_TIME_KEY = 'lastSkinsFetchTime'
+      const SELECTED_SKIN_KEY = 'selectedSkinId'
+      const CACHE_TTL = 10 * 60 * 1000 // 10 минут
 
       document.addEventListener('DOMContentLoaded', initializeLocation)
+
+      skinButton.onclick = async () => {
+        modal.style.display = 'block'
+        skinsList.innerHTML = ''
+
+        let skins = []
+
+        const now = Date.now()
+        const lastFetch = localStorage.getItem(SKINS_CACHE_TIME_KEY)
+        const cachedSkins = localStorage.getItem(SKINS_CACHE_KEY)
+
+        if (lastFetch && cachedSkins && now - parseInt(lastFetch) < CACHE_TTL) {
+          // Используем кэш
+          skins = JSON.parse(cachedSkins)
+        } else {
+          try {
+            const res = await fetch(`/map/get_user_skins?user_id=${user_id}`)
+            skins = await res.json()
+            localStorage.setItem(SKINS_CACHE_KEY, JSON.stringify(skins))
+            localStorage.setItem(SKINS_CACHE_TIME_KEY, now.toString())
+          } catch (err) {
+            console.error('Ошибка при получении скинов:', err)
+            skinsList.innerHTML = '<p>Ошибка загрузки скинов.</p>'
+            return
+          }
+        }
+
+        const selectedSkinId = localStorage.getItem(SELECTED_SKIN_KEY)
+
+        skins.forEach((skin) => {
+          const skinCard = document.createElement('div')
+          skinCard.className = 'skin-card'
+          const isSelected = selectedSkinId == skin.id
+          skinCard.innerHTML = `
+          <img src="${skin.skin_url}" alt="${skin.skin_name}" />
+          <div class="skin-name">${skin.skin_name}</div>
+          <button class="select-button">${isSelected ? 'Выбран' : 'Выбрать'}</button>
+        `
+
+          const btn = skinCard.querySelector('.select-button')
+          btn.onclick = () => {
+            localStorage.setItem(SELECTED_SKIN_KEY, skin.id)
+            updateButtonStates(skins)
+          }
+          skinsList.appendChild(skinCard)
+        })
+
+        updateButtonStates(skins)
+      }
+      function updateButtonStates(skins) {
+        const selectedSkinId = localStorage.getItem(SELECTED_SKIN_KEY)
+        const cards = document.querySelectorAll('.skin-card')
+        cards.forEach((card, index) => {
+          const btn = card.querySelector('.select-button')
+          if (skins[index].id == selectedSkinId) {
+            btn.textContent = 'Выбран'
+            btn.style.backgroundColor = '#007bff'
+          } else {
+            btn.textContent = 'Выбрать'
+            btn.style.backgroundColor = '#28a745'
+          }
+        })
+      }
+
+      closeBtn.onclick = () => {
+        modal.style.display = 'none'
+      }
+
+      window.onclick = (event) => {
+        if (event.target === modal) {
+          modal.style.display = 'none'
+        }
+      }
 
       let map = L.map('map').setView([55.76, 37.64], 10) // Москва по умолчанию
 
@@ -109,7 +265,7 @@
 
         const logContainer = document.getElementById('log')
         logContainer.innerHTML = logHistory.map((msg) => `<div>${msg}</div>`).join('')
-        logContainer.scrollTop = logContainer.scrollHeight // Автопрокрутка вниз
+        logContainer.scrollTop = logContainer.scrollHeight
       }
 
       function updateLogDisplay() {
@@ -222,10 +378,8 @@
           selectButton = 'shit'
           reloadMap()
           loadShits()
-          const sound = document.getElementById('clickSound')
-          sound.play().catch((error) => {
-            console.error('Ошибка при воспроизведении звука:', error)
-          })
+          const skin = parseInt(localStorage.getItem(SELECTED_SKIN_KEY) || '0', 10)
+
           try {
             const lastShitTime = localStorage.getItem('lastShitTime')
 
@@ -255,8 +409,8 @@
 
             addLog('📍 Отправляем данные на сервер...')
 
-            const lat = location.latitude + Math.random() / 10000
-            const lon = location.longitude - Math.random() / 10000
+            const lat = location.latitude + Math.random() / 1000
+            const lon = location.longitude - Math.random() / 1000
 
             let nearbyIndexes = []
 
@@ -266,6 +420,29 @@
                 nearbyIndexes.push(i)
               }
             }
+
+            let iconUrl
+            switch (skin) {
+              case 0:
+                iconUrl = 'https://cdn-icons-png.flaticon.com/128/8277/8277628.png' // Дефолтная иконка
+                break
+              case 1:
+                iconUrl = 'https://i.imgur.com/1DwAMm9.png' // Иконка для скина 1
+                break
+              case 2:
+                iconUrl = 'https://i.imgur.com/yBB8R6q.png' // Иконка для скина 2
+                break
+              case 3:
+                iconUrl = 'https://cdn-icons-png.flaticon.com/128/1719/1719655.png' // Иконка для скина 3
+                break
+              case 4:
+                iconUrl = 'https://cdn-icons-png.flaticon.com/128/1719/1719656.png' // Иконка для скина 4
+                break
+              default:
+                iconUrl = 'https://cdn-icons-png.flaticon.com/128/8277/8277628.png' // Иконка по умолчанию
+                break
+            }
+            addLog(iconUrl)
 
             if (nearbyIndexes.length === 0) {
               addLog('📭 Поблизости нет доступных мест.')
@@ -277,7 +454,7 @@
             fetch('/map/update_shit', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ initDataUnsafe, lat, lon, places_index: nearbyIndexes }),
+              body: JSON.stringify({ initDataUnsafe, lat, lon, places_index: nearbyIndexes, skin }),
             })
               .then((response) => {
                 if (response.status === 200) {
@@ -286,18 +463,22 @@
 
                   const poopIcon = L.divIcon({
                     className: 'poop-icon',
-                    html: `<img src="https://cdn-icons-png.flaticon.com/128/8277/8277628.png" style="width: 40px; height: 40px;"/>`,
+                    html: `<img src="${iconUrl}" style="width: 40px; height: 40px;"/>`,
                   })
                   L.marker([lat, lon], { icon: poopIcon }).addTo(map)
                   map.setView([lat, lon], 20)
 
                   try {
                     const cached = JSON.parse(localStorage.getItem('cachedShits') || '[]')
-                    cached.push({ lat, lon, skin: 0, date: new Date() })
+                    cached.push({ lat, lon, skin, date: new Date() })
                     localStorage.setItem('cachedShits', JSON.stringify(cached))
                   } catch (e) {
                     console.error('❌ Ошибка обновления кеша:', e)
                   }
+                  const sound = document.getElementById('clickSound')
+                  sound.play().catch((error) => {
+                    console.error('Ошибка при воспроизведении звука:', error)
+                  })
                 } else if (response.status === 401) {
                   addLog('Ты покакал уже 5 раз, больше сегодня нельзя')
                   throw new Error('401 Unauthorized')
@@ -507,10 +688,10 @@
               iconUrl = 'https://cdn-icons-png.flaticon.com/128/8277/8277628.png' // Дефолтная иконка
               break
             case 1:
-              iconUrl = 'https://i.imgur.com/eznSQgw.png' // Иконка для скина 1
+              iconUrl = 'https://i.imgur.com/1DwAMm9.png' // Иконка для скина 1
               break
             case 2:
-              iconUrl = 'https://cdn-icons-png.flaticon.com/128/1719/1719654.png' // Иконка для скина 2
+              iconUrl = 'https://i.imgur.com/yBB8R6q.png' // Иконка для скина 2
               break
             case 3:
               iconUrl = 'https://cdn-icons-png.flaticon.com/128/1719/1719655.png' // Иконка для скина 3

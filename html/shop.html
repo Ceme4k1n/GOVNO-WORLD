@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Магазин скинов</title>
+
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -65,9 +66,10 @@
   <body>
     <h1>Магазин скинов</h1>
     <div class="skins-container" id="skinsContainer"></div>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <script>
-      const userId = 1029163005 // TODO: заменить на реальный user_id из Telegram WebApp
+      const user_id = window.Telegram.WebApp.initDataUnsafe.user.id
       const REFRESH_INTERVAL_MS = 60 * 1000 // 1 минута
 
       function renderSkins(skins) {

@@ -5,9 +5,9 @@ const dotenv = require('dotenv')
 dotenv.config()
 
 export const update_shit = async (req: Request, res: Response) => {
-  const { initDataUnsafe, lat, lon, places_index } = req.body
+  const { initDataUnsafe, lat, lon, places_index, skin } = req.body
 
-  if (!initDataUnsafe || !lat || !lon || !places_index) {
+  if (!initDataUnsafe || !lat || !lon || !places_index || !skin) {
     res.sendStatus(403)
     return
   }
@@ -62,16 +62,26 @@ export const update_shit = async (req: Request, res: Response) => {
             ON CONFLICT (country_name) 
             DO UPDATE SET shit_count = govno_db.govno_countries.shit_count + 1
           )
-        SELECT 1;`, // Здесь добавляем SELECT 1 для завершения запроса
+        SELECT 1;`,
         [city, lat, lon, country, lat, lon]
       )
+      const true_skin = await t.oneOrNone(`SELECT skin_id FROM govno_db.user_skins WHERE user_id = $1 AND skin_id = $2 LIMIT 1`, [user_id, skin])
 
-      // Сохраняем запись о визите в таблице govno_map
-      await t.none(
-        `INSERT INTO govno_db.govno_map(user_id, visit_lat, visit_lon, visit_count, date, visit_time, city)
-         VALUES($1, $2, $3, $4, CURRENT_DATE, NOW(), $5)`,
-        [user_id, lat, lon, visitCount + 1, city]
-      )
+      if (true_skin) {
+        // Сохраняем запись о визите в таблице govno_map
+        await t.none(
+          `INSERT INTO govno_db.govno_map(user_id, visit_lat, visit_lon, visit_count, date, visit_time, city, shit_skin)
+         VALUES($1, $2, $3, $4, CURRENT_DATE, NOW(), $5, $6)`,
+          [user_id, lat, lon, visitCount + 1, city, skin]
+        )
+      } else {
+        // Сохраняем запись о визите в таблице govno_map
+        await t.none(
+          `INSERT INTO govno_db.govno_map(user_id, visit_lat, visit_lon, visit_count, date, visit_time, city, shit_skin)
+         VALUES($1, $2, $3, $4, CURRENT_DATE, NOW(), $5, $6)`,
+          [user_id, lat, lon, visitCount + 1, city, 0]
+        )
+      }
 
       await db.none(
         `
@@ -190,5 +200,31 @@ async function getCountryFromCoords(lat: number, lon: number) {
   } catch (error) {
     console.error('Ошибка при получении страны:', error)
     return 'Ошибка'
+  }
+}
+
+export const get_user_skins = async (req: Request, res: Response) => {
+  const { user_id } = req.query
+
+  if (!user_id) {
+    res.sendStatus(401)
+    return
+  }
+
+  try {
+    const skins = await db.any(
+      `
+      SELECT sd.*
+      FROM govno_db.user_skins us
+      JOIN govno_db.skins_data sd ON us.skin_id = sd.id
+      WHERE us.user_id = $1
+      `,
+      [user_id]
+    )
+
+    res.status(200).send(skins)
+  } catch (error) {
+    console.error('Ошибка при получении скинов пользователя:', error)
+    res.sendStatus(500)
   }
 }
